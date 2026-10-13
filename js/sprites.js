@@ -203,90 +203,69 @@ class SpriteRenderer {
       const vx = player.vx || 0;
       const speed = Math.hypot(vx, vy);
       const isStroking = player.swimStrokeTimer > 0;
-      const strokeWave = isStroking ? Math.sin(time * 24) * 1.8 : Math.sin(time * 7);
-      const swimPitch = Math.max(-0.52, Math.min(0.52, vy * 0.09 + (speed > 1 ? 0.08 : 0)));
+      const swimPitch = Math.max(-0.45, Math.min(0.45, vy * 0.08 + (speed > 1 ? 0.06 : 0)));
 
-      const targetH = player.displayHeight || 64;
-      const targetW = targetH;
+      const frames = (this.images.hoodie && this.images.hoodie[0]) ? this.images.hoodie : this.images.jeans;
+      const img = (frames && frames[0] && frames[0].complete && frames[0].naturalWidth > 0) ? frames[0] : null;
 
-      ctx.translate(0, -targetH * 0.42);
+      // Natural vertical centering of swimmer
+      const totalH = player.displayHeight || 64;
+      ctx.translate(0, -totalH * 0.38);
       ctx.rotate(swimPitch);
 
-      // Flowing underwater ponytail drifting in current
-      ctx.save();
-      const hairWave = Math.sin(time * 10) * 4;
+      // 1. ÁMBAR COMPLETE UPPER BODY (Head, Hair, Glasses, Smile, Neck, Torso & Arms)
+      // Crop exactly at the waist seam (row 95 of 152 in sprite = 0.625)
+      let upperH = Math.round(totalH * 0.52);
+      let upperW = Math.round(upperH * (62 / 95));
+      if (img) {
+        const cropH = Math.floor(img.naturalHeight * 0.625);
+        ctx.drawImage(img, 0, 0, img.naturalWidth, cropH, Math.round(-upperW / 2), -upperH, upperW, upperH);
+      }
+
+      // Flowing underwater ponytail hair waving in current behind head
+      const hairWave = Math.sin(time * 9) * 4;
       ctx.fillStyle = '#451a03';
       ctx.beginPath();
-      ctx.ellipse(-14, -targetH * 0.38 + hairWave * 0.5, 9, 5, -0.4, 0, Math.PI * 2);
-      ctx.ellipse(-22, -targetH * 0.35 + hairWave, 8, 4, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(-14, -upperH * 0.78 + hairWave * 0.5, 9, 5, -0.35, 0, Math.PI * 2);
+      ctx.ellipse(-22, -upperH * 0.72 + hairWave, 8, 4, -0.25, 0, Math.PI * 2);
       ctx.fill();
-      // Pink ribbon in hair
       ctx.fillStyle = '#f43f5e';
       ctx.beginPath();
-      ctx.arc(-8, -targetH * 0.42, 3.5, 0, Math.PI * 2);
+      ctx.arc(-8, -upperH * 0.82, 3.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
 
-      // Draw Ámbar Upper Torso & Head (Face, Ponytail, Smile, Glasses)
-      const frames = (this.images.hoodie && this.images.hoodie[0]) ? this.images.hoodie : this.images.jeans;
-      if (frames && frames[0] && frames[0].complete && frames[0].naturalWidth > 0) {
-        const img = frames[0];
-        const srcW = img.naturalWidth;
-        const srcH = Math.floor(img.naturalHeight * 0.44); // Crop exactly at the natural ribcage/waistline!
-        const topH = Math.round(targetH * 0.46);
-        const topW = Math.round(targetW * 0.88);
-        ctx.drawImage(img, 0, 0, srcW, srcH, Math.round(-topW / 2), Math.round(-topH), topW, topH);
-      }
-
-      // Elegant Mermaid Seashell Bodice / Top (Pink & Gold)
-      ctx.save();
-      const bustY = -targetH * 0.16;
-      ctx.fillStyle = '#ec4899';
-      // Left and right seashell cups
-      ctx.beginPath();
-      ctx.ellipse(-6, bustY, 6, 5, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(6, bustY, 6, 5, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#fde047';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      // Gold star medallion in center
-      ctx.fillStyle = '#facc15';
-      ctx.fillRect(-2, bustY - 2, 4, 4);
-      // Delicate pearl necklace
-      ctx.fillStyle = '#ffffff';
-      for (let p = -3; p <= 3; p++) {
-        ctx.beginPath();
-        ctx.arc(p * 3.5, bustY - 6 + Math.abs(p) * 0.8, 1.2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // Golden Scale Waist Transition & Pearl Girdle
+      // 2. GOLDEN WAIST SCALE GIRDLE (Seamless transition at y: 0)
       const waistY = 0;
-      ctx.save();
+      const waistW = Math.round(upperW * 0.76);
       ctx.fillStyle = '#f59e0b';
       ctx.beginPath();
-      ctx.ellipse(0, waistY, 13, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, waistY, waistW / 2 + 2, 4, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#fef08a';
       ctx.beginPath();
-      ctx.ellipse(0, waistY - 1, 11, 2.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, waistY - 1, waistW / 2, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Iridescent Side Hip Fins (Flaring sea fans)
+      // Delicate pearl dots along waist seam
+      ctx.fillStyle = '#ffffff';
+      for (let p = -3; p <= 3; p++) {
+        ctx.beginPath();
+        ctx.arc(p * (waistW / 7), waistY, 1.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Iridescent Side Hip Fins (curving sea fans)
       ctx.fillStyle = 'rgba(45, 212, 191, 0.85)';
       ctx.beginPath();
-      ctx.moveTo(-12, waistY);
-      ctx.quadraticCurveTo(-19, waistY - 4, -20, waistY + 6);
-      ctx.lineTo(-11, waistY + 3);
+      ctx.moveTo(-waistW / 2, waistY - 1);
+      ctx.quadraticCurveTo(-waistW / 2 - 8, waistY - 4, -waistW / 2 - 9, waistY + 7);
+      ctx.lineTo(-waistW / 2 + 1, waistY + 4);
       ctx.fill();
       ctx.beginPath();
-      ctx.moveTo(12, waistY);
-      ctx.quadraticCurveTo(19, waistY - 4, 20, waistY + 6);
-      ctx.lineTo(11, waistY + 3);
+      ctx.moveTo(waistW / 2, waistY - 1);
+      ctx.quadraticCurveTo(waistW / 2 + 8, waistY - 4, waistW / 2 + 9, waistY + 7);
+      ctx.lineTo(waistW / 2 - 1, waistY + 4);
       ctx.fill();
-      ctx.restore();
 
       // Organic Curving Serpentine Mermaid Tail
       // Computed via multi-joint spine with dynamic dolphin kick flex!
@@ -443,123 +422,91 @@ class SpriteRenderer {
         const targetW = Math.round(targetH * aspect);
 
         // Aerodynamic skating lean
-        const skateTilt = isGrinding ? Math.sin(time * 18) * 0.06 : (onGround && speed > 0.5 ? 0.12 : 0);
+        const skateTilt = isGrinding ? Math.sin(time * 18) * 0.05 : (onGround && speed > 0.5 ? 0.09 : 0);
         ctx.rotate(skateTilt);
 
-        // Draw Ámbar in full glory
+        // Elevate Ámbar by 4px so the roller skate wheels underneath her soles rest flush at y: 0
+        const wheelY = 0;
+        const soleY = -4;
+
         ctx.drawImage(
           img,
           Math.round(-targetW / 2),
-          Math.round(-targetH + 3),
+          Math.round(-targetH + soleY),
           targetW,
           targetH
         );
 
         // ----------------------------------------------------------------------
-        // AUTHENTIC INDEPENDENT QUAD ROLLER SKATES (UN PATÍN EN CADA PIE)
+        // AUTHENTIC QUAD ROLLER SKATES ATTACHED TO ÁMBAR'S FEET
         // ----------------------------------------------------------------------
-        // Stride phase calculates the natural back-and-forth glide of each leg
         const strideAngle = onGround && speed > 0.2 ? (time * (speed * 4.5 + 8)) : 0;
-        const strideOffset = onGround && speed > 0.2 ? Math.sin(strideAngle) * 7 : 0;
+        const strideOffset = onGround && speed > 0.2 ? Math.sin(strideAngle) * 5 : 0;
 
-        // Left foot skate and Right foot skate - clearly separated and articulated!
+        // Left and right foot skate positions directly aligned with her sneakers
         const skates = isGrinding
           ? [
-              { x: -9, y: -2, lead: false, angle: 0 },
-              { x: 7, y: -2, lead: true, angle: 0 }
+              { x: -8, y: soleY, lead: false },
+              { x: 7, y: soleY, lead: true }
             ]
           : [
-              { x: -8 - strideOffset, y: -2 + Math.max(0, -Math.sin(strideAngle) * 3), lead: false, angle: -strideOffset * 0.02 },
-              { x: 6 + strideOffset, y: -2 + Math.max(0, Math.sin(strideAngle) * 3), lead: true, angle: strideOffset * 0.02 }
+              { x: -7 - strideOffset, y: soleY + Math.max(0, -Math.sin(strideAngle) * 2), lead: false },
+              { x: 7 + strideOffset, y: soleY + Math.max(0, Math.sin(strideAngle) * 2), lead: true }
             ];
 
-        skates.forEach((sk, sIdx) => {
+        const wheelTurn = time * (speed * 20 + 12);
+
+        skates.forEach((sk) => {
           ctx.save();
           ctx.translate(sk.x, sk.y);
-          ctx.rotate(sk.angle);
 
-          const bootW = 14;
-          const bootH = 10;
-
-          // 1. Retro High-Top Roller Skate Boot (White & Hot Pink)
-          // Boot body
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.roundRect(-bootW / 2, -bootH, bootW, bootH, 2);
-          ctx.fill();
-          ctx.strokeStyle = '#0f172a';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Hot pink athletic side swoosh / lightning stripe
+          // 1. Hot Pink Roller Skate Ankle Strap & Counter (wraps around her sneaker)
           ctx.fillStyle = '#f43f5e';
-          ctx.beginPath();
-          ctx.moveTo(-bootW / 2 + 2, -bootH + 3);
-          ctx.lineTo(bootW / 2 - 2, -bootH + 6);
-          ctx.lineTo(bootW / 2 - 4, -bootH + 8);
-          ctx.lineTo(-bootW / 2 + 2, -bootH + 5);
-          ctx.closePath();
-          ctx.fill();
+          ctx.fillRect(-6, -3, 12, 2.5);
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(-1, -3, 2, 2.5); // Gold buckle
 
-          // Golden eyelets & laces
-          ctx.fillStyle = '#facc15';
-          for (let l = 0; l < 3; l++) {
-            ctx.fillRect(-1, -bootH + 2 + l * 2.2, 3, 1.2);
-          }
-
-          // Reinforced pink heel counter & toe cap
-          ctx.fillStyle = '#ec4899';
-          ctx.fillRect(-bootW / 2, -bootH + 4, 3, 5); // Heel
-          ctx.fillRect(bootW / 2 - 3, -bootH + 5, 3, 4); // Toe
-
-          // 2. Heavy-Duty Aluminum Chassis (Truck Plate)
-          ctx.fillStyle = '#94a3b8';
-          ctx.fillRect(-bootW / 2, 0, bootW, 2.5);
+          // 2. Heavy-Duty Aluminum Chassis (Truck Plate directly under sole)
+          ctx.fillStyle = '#64748b';
+          ctx.fillRect(-7, 0, 14, 2);
           ctx.fillStyle = '#cbd5e1';
-          ctx.fillRect(-bootW / 2 + 1, 0, bootW - 2, 1);
+          ctx.fillRect(-6, 0, 12, 1);
 
           // Front Rubber Toe-Stop Brake Plug
           ctx.fillStyle = '#ec4899';
           ctx.beginPath();
-          ctx.arc(bootW / 2 + 1, 0, 2.2, 0, Math.PI * 2);
+          ctx.arc(7.5, 0.5, 2, 0, Math.PI * 2);
           ctx.fill();
 
-          // 3. Independent Front & Rear Quad Wheels with Spinning Star Hubs
-          const wheelTurn = time * (speed * 18 + 12);
-          const drawQuadWheel = (wx, wy) => {
-            // Tire rubber
-            ctx.fillStyle = '#0e7490';
+          // 3. Quad Urethane Wheels (Front wheel & Rear wheel touching the ground at wheelY)
+          const drawWheel = (wx) => {
+            const wy = 2; // Centers wheel so bottom reaches y: 4 relative to soleY (-4), touching y: 0!
+            // Cyan Urethane Tire
+            ctx.fillStyle = '#083344';
             ctx.beginPath();
-            ctx.arc(wx, wy, 3.8, 0, Math.PI * 2);
+            ctx.arc(wx, wy, 2.8, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#083344';
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-
-            // Urethane rim
-            ctx.fillStyle = '#22d3ee';
+            ctx.fillStyle = '#06b6d4';
             ctx.beginPath();
-            ctx.arc(wx, wy, 2.6, 0, Math.PI * 2);
+            ctx.arc(wx, wy, 2.2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Spinning 4-spoke star axle
-            ctx.fillStyle = '#fef08a';
+            // Spinning Star Axle Hub
             ctx.save();
             ctx.translate(wx, wy);
             ctx.rotate(wheelTurn);
-            ctx.fillRect(-1, -2.2, 2, 4.4);
-            ctx.fillRect(-2.2, -1, 4.4, 2);
-            // Center bearing nut
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-0.7, -1.8, 1.4, 3.6);
+            ctx.fillRect(-1.8, -0.7, 3.6, 1.4);
             ctx.fillStyle = '#e11d48';
             ctx.beginPath();
-            ctx.arc(0, 0, 1.2, 0, Math.PI * 2);
+            ctx.arc(0, 0, 0.9, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
           };
 
-          // Front wheel and Back wheel clearly separated!
-          drawQuadWheel(-bootW / 2 + 3, 4);
-          drawQuadWheel(bootW / 2 - 3, 4);
+          drawWheel(-4.5); // Rear quad wheel
+          drawWheel(4.5);  // Front quad wheel
 
           ctx.restore();
         });
@@ -1619,30 +1566,58 @@ class SpriteRenderer {
       }
 
       case 'H': {
-        const key = 'snes_hard_block';
+        const key = `snes_hard_block_${levelTheme}`;
         if (!this.cache[key]) {
           const cnv = document.createElement('canvas');
           cnv.width = 32;
           cnv.height = 32;
           const g = cnv.getContext('2d');
-          g.fillStyle = '#141824';
+
+          // Authentic Super Mario All-Stars Sandstone Stair Block
+          // Outer dark stone border
+          g.fillStyle = '#1f140a';
           g.fillRect(0, 0, 32, 32);
 
-          g.fillStyle = '#d8b4fe';
-          g.fillRect(1, 1, 30, 30);
+          // Top/Left sunlit beveled edge (warm cream stone)
+          g.fillStyle = '#f5ebe0';
+          g.fillRect(1, 1, 30, 3);
+          g.fillRect(1, 1, 3, 30);
 
-          g.fillStyle = '#4c1d95';
+          // Bottom/Right shadow beveled edge (dark umber stone)
+          g.fillStyle = '#5c3d24';
+          g.fillRect(1, 28, 30, 3);
+          g.fillRect(28, 1, 3, 30);
+
+          // Warm sandstone center face
+          g.fillStyle = '#ab8560';
+          g.fillRect(4, 4, 24, 24);
+          g.fillStyle = '#c49e79';
+          g.fillRect(4, 4, 24, 2);
+          g.fillRect(4, 4, 2, 24);
+          g.fillStyle = '#8c6847';
+          g.fillRect(4, 26, 24, 2);
+          g.fillRect(26, 4, 2, 24);
+
+          // Iconic Super Mario All-Stars center circular bolt indentation
+          g.fillStyle = '#452b16';
           g.beginPath();
-          g.moveTo(31, 1);
-          g.lineTo(31, 31);
-          g.lineTo(1, 31);
-          g.closePath();
+          g.arc(16, 16, 4.5, 0, Math.PI * 2);
           g.fill();
+          g.fillStyle = '#f5ebe0';
+          g.fillRect(15, 14, 2, 2);
 
-          g.fillStyle = '#7c3aed';
-          g.fillRect(5, 5, 22, 22);
-          g.fillStyle = '#a78bfa';
-          g.fillRect(6, 6, 20, 2);
+          // 4 corner bolt rivets
+          const bolts = [
+            { x: 6, y: 6 }, { x: 23, y: 6 },
+            { x: 6, y: 23 }, { x: 23, y: 23 }
+          ];
+          bolts.forEach(b => {
+            g.fillStyle = '#3d2511';
+            g.fillRect(b.x, b.y, 3, 3);
+            g.fillStyle = '#f5ebe0';
+            g.fillRect(b.x, b.y, 1, 1);
+          });
+
           this.cache[key] = cnv;
         }
         ctx.drawImage(this.cache[key], x, y, size, size);

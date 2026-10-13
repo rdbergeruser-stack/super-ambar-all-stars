@@ -3104,61 +3104,121 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 10) {
-      // MUNDO 2-1: PARQUE COSTERO EN PATINES (Tropical Sunset Boulevard & Palm Silhouettes)
+      // MUNDO 2-1: PARQUE COSTERO EN PATINES (Super Mario All-Stars Sunny Coastal Promenade)
+      // 1. Rich 16-Bit Cerulean to Horizon Azure Sky
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#311042');
-      grad.addColorStop(0.3, '#701a75');
-      grad.addColorStop(0.6, '#db2777');
-      grad.addColorStop(0.85, '#f97316');
-      grad.addColorStop(1, '#fde047');
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(0.35, '#0ea5e9');
+      grad.addColorStop(0.7, '#38bdf8');
+      grad.addColorStop(0.88, '#7dd3fc');
+      grad.addColorStop(1, '#bae6fd');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Distant Ocean Horizon & Island Silhouettes
-      ctx.fillStyle = '#4a044e';
-      for (let i = 0; i < 4; i++) {
-        const mx = ((i * 280 - this.cameraX * 0.08) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 100;
+      // 2. Radiant Sunny 16-Bit Sun with Soft Golden Aura
+      const sunX = ((560 - this.cameraX * 0.04) % (LOGICAL_WIDTH + 260) + LOGICAL_WIDTH + 260) % (LOGICAL_WIDTH + 260) - 130;
+      const sunY = 95;
+      const sGlow = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 52);
+      sGlow.addColorStop(0, '#fef08a');
+      sGlow.addColorStop(0.5, 'rgba(253, 224, 71, 0.45)');
+      sGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+      ctx.fillStyle = sGlow;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 52, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(sunX - 4, sunY - 4, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Parallax Layer 1: Distant Tropical Island Hills & Ocean Horizon (Parallax 0.08)
+      for (let i = 0; i < 5; i++) {
+        const mx = ((i * 260 - this.cameraX * 0.08) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 120;
+        // Distant cyan/green island
+        ctx.fillStyle = '#0f766e';
         ctx.beginPath();
-        ctx.ellipse(mx + 80, 240, 90, 26, 0, Math.PI, 0);
+        ctx.ellipse(mx + 90, 248, 110, 36, 0, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#14b8a6';
+        ctx.beginPath();
+        ctx.ellipse(mx + 86, 244, 98, 28, 0, Math.PI, 0);
         ctx.fill();
       }
 
-      // Giant Radiant Sunset Sun
-      const sunX = ((540 - this.cameraX * 0.05) % (LOGICAL_WIDTH + 260) + LOGICAL_WIDTH + 260) % (LOGICAL_WIDTH + 260) - 130;
-      const sGrad = ctx.createRadialGradient(sunX, 210, 10, sunX, 210, 60);
-      sGrad.addColorStop(0, '#fef08a');
-      sGrad.addColorStop(0.6, '#fb923c');
-      sGrad.addColorStop(1, 'rgba(251, 146, 60, 0)');
-      ctx.fillStyle = sGrad;
-      ctx.beginPath();
-      ctx.arc(sunX, 210, 60, 0, Math.PI * 2);
-      ctx.fill();
+      // Distant Sparkling Ocean Sea Line
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(0, 248, LOGICAL_WIDTH, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(0, 248, LOGICAL_WIDTH, 2);
 
-      // Parallax Tropical Palm Trees & Boardwalk Lampposts
-      for (let i = 0; i < 7; i++) {
-        const px = ((i * 180 - this.cameraX * 0.32) % (LOGICAL_WIDTH + 200) + LOGICAL_WIDTH + 200) % (LOGICAL_WIDTH + 200) - 80;
+      // 4. Parallax Layer 2: Shaded 16-Bit Super Mario All-Stars Clouds (Parallax 0.2)
+      for (let i = 0; i < 5; i++) {
+        const cx = ((i * 220 - this.cameraX * 0.2) % (LOGICAL_WIDTH + 220) + LOGICAL_WIDTH + 220) % (LOGICAL_WIDTH + 220) - 80;
+        const cy = 60 + (i % 3) * 32;
+        this.drawSnesCloud(ctx, cx, cy);
+      }
+
+      // 5. Parallax Layer 3: Lush Green Tropical Palm Trees (Parallax 0.35)
+      for (let i = 0; i < 6; i++) {
+        const px = ((i * 210 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 240) + LOGICAL_WIDTH + 240) % (LOGICAL_WIDTH + 240) - 100;
         const py = 13 * TILE_SIZE;
 
-        // Palm trunk
-        ctx.fillStyle = '#1e1b4b';
+        // Curved brown segmented palm trunk
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(px, py);
-        ctx.quadraticCurveTo(px + 8, py - 60, px + 14, py - 110);
-        ctx.lineTo(px + 18, py - 110);
-        ctx.quadraticCurveTo(px + 12, py - 60, px + 5, py);
-        ctx.closePath();
+        ctx.quadraticCurveTo(px + 12, py - 60, px + 18, py - 125);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(px + 1, py);
+        ctx.quadraticCurveTo(px + 13, py - 60, px + 19, py - 125);
+        ctx.stroke();
+
+        // Tropical Palm Fronds (Rich 16-bit green)
+        const topX = px + 18;
+        const topY = py - 125;
+
+        // Golden coconuts
+        ctx.fillStyle = '#ca8a04';
+        ctx.beginPath();
+        ctx.arc(topX - 4, topY + 4, 3.5, 0, Math.PI * 2);
+        ctx.arc(topX + 4, topY + 4, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Palm fronds
-        const topX = px + 16;
-        const topY = py - 110;
-        ctx.strokeStyle = '#3b0764';
-        ctx.lineWidth = 4;
+        // 6 lush fronds
         for (let a = 0; a < 6; a++) {
           const ang = (a / 6) * Math.PI * 2;
+          ctx.strokeStyle = '#15803d';
+          ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.moveTo(topX, topY);
-          ctx.quadraticCurveTo(topX + Math.cos(ang) * 28, topY + Math.sin(ang) * 20 - 8, topX + Math.cos(ang) * 38, topY + Math.sin(ang) * 28 + 6);
+          ctx.quadraticCurveTo(
+            topX + Math.cos(ang) * 26,
+            topY + Math.sin(ang) * 18 - 8,
+            topX + Math.cos(ang) * 42,
+            topY + Math.sin(ang) * 26 + 8
+          );
+          ctx.stroke();
+
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(topX, topY);
+          ctx.quadraticCurveTo(
+            topX + Math.cos(ang) * 26,
+            topY + Math.sin(ang) * 18 - 10,
+            topX + Math.cos(ang) * 40,
+            topY + Math.sin(ang) * 26 + 6
+          );
           ctx.stroke();
         }
       }
