@@ -188,10 +188,28 @@ class RetroAudio {
         break;
       }
 
+      case 'oneup':
       case 'oneUp': {
         const notes = ['E5', 'G5', 'E6', 'C6', 'D6', 'G6'];
         notes.forEach((n, i) => {
           this.playTone(this.noteFreq(n), 0.11, 'square', 0.38, i * 0.085);
+        });
+        break;
+      }
+
+      case 'starCoin': {
+        const notes = ['C5', 'G5', 'C6', 'E6'];
+        notes.forEach((n, i) => {
+          this.playTone(this.noteFreq(n), 0.14, 'triangle', 0.42, i * 0.06);
+          this.playTone(this.noteFreq(n) * 2, 0.08, 'sine', 0.25, i * 0.06);
+        });
+        break;
+      }
+
+      case 'trick': {
+        const notes = ['G4', 'C5', 'E5', 'G5'];
+        notes.forEach((n, i) => {
+          this.playTone(this.noteFreq(n), 0.08, 'square', 0.35, i * 0.04);
         });
         break;
       }

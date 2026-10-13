@@ -650,10 +650,28 @@ class RetroAudio {
         break;
       }
 
+      case 'oneup':
       case 'oneUp': {
         const notes = ['E5', 'G5', 'E6', 'C6', 'D6', 'G6'];
         notes.forEach((n, i) => {
           this.playTone(this.noteFreq(n), 0.11, 'square', 0.38, i * 0.085);
+        });
+        break;
+      }
+
+      case 'starCoin': {
+        const notes = ['C5', 'G5', 'C6', 'E6'];
+        notes.forEach((n, i) => {
+          this.playTone(this.noteFreq(n), 0.14, 'triangle', 0.42, i * 0.06);
+          this.playTone(this.noteFreq(n) * 2, 0.08, 'sine', 0.25, i * 0.06);
+        });
+        break;
+      }
+
+      case 'trick': {
+        const notes = ['G4', 'C5', 'E5', 'G5'];
+        notes.forEach((n, i) => {
+          this.playTone(this.noteFreq(n), 0.08, 'square', 0.35, i * 0.04);
         });
         break;
       }
@@ -3604,7 +3622,7 @@ class SuperAmbarGame {
             p.bikeTricks++;
             p.bikeSpinRot -= Math.PI * 2;
             this.addFloatingText(p.x, p.y - 16, p.bikeTricks > 1 ? '¡DOBLE FLIP!' : '¡360° FLIP!', '#f472b6');
-            window.retroAudio.playSfx('coin');
+            window.retroAudio.playSfx('trick');
             this.addScore(300, p.x, p.y);
           }
         } else {
@@ -4047,7 +4065,7 @@ class SuperAmbarGame {
         this.addScore(1000, sc.x, sc.y);
         const collectedCount = this.starCoins.filter(s => s.collected).length;
         this.addFloatingText(sc.x, sc.y - 18, `¡MONEDA ESTRELLA ${collectedCount}/3! +1000`, '#fde047');
-        window.retroAudio.playSfx('oneup');
+        window.retroAudio.playSfx('starCoin');
         this.triggerScreenShake(0.12, 2.5);
         this.triggerHitStop(0.04);
         for (let k = 0; k < 16; k++) {

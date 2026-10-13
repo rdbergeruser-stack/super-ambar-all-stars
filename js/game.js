@@ -683,7 +683,7 @@ class SuperAmbarGame {
             p.bikeTricks++;
             p.bikeSpinRot -= Math.PI * 2;
             this.addFloatingText(p.x, p.y - 16, p.bikeTricks > 1 ? '¡DOBLE FLIP!' : '¡360° FLIP!', '#f472b6');
-            window.retroAudio.playSfx('coin');
+            window.retroAudio.playSfx('trick');
             this.addScore(300, p.x, p.y);
           }
         } else {
@@ -1126,7 +1126,7 @@ class SuperAmbarGame {
         this.addScore(1000, sc.x, sc.y);
         const collectedCount = this.starCoins.filter(s => s.collected).length;
         this.addFloatingText(sc.x, sc.y - 18, `¡MONEDA ESTRELLA ${collectedCount}/3! +1000`, '#fde047');
-        window.retroAudio.playSfx('oneup');
+        window.retroAudio.playSfx('starCoin');
         this.triggerScreenShake(0.12, 2.5);
         this.triggerHitStop(0.04);
         for (let k = 0; k < 16; k++) {
