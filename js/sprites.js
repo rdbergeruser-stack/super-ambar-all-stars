@@ -659,6 +659,108 @@ class SpriteRenderer {
         ctx.drawImage(this.cache[key], x - 2, y - 2, size + 4, size + 4);
         break;
       }
+
+      case 'K': {
+        // 16-BIT SNES GOLDEN SECRET KEY (Llave Secreta)
+        const bob = Math.sin(time * 6) * 3;
+        ctx.save();
+        ctx.translate(x + size / 2, y + size / 2 + bob);
+        // Golden glow
+        ctx.fillStyle = 'rgba(253, 224, 71, 0.25)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 16, 0, Math.PI * 2);
+        ctx.fill();
+        // Golden Key body
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-12, -4, 24, 8);
+        ctx.beginPath();
+        ctx.arc(-8, 0, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(4, 0, 4, 9);
+        ctx.fillRect(10, 0, 4, 7);
+
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-11, -3, 22, 6);
+        ctx.beginPath();
+        ctx.arc(-8, 0, 7.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(4, 0, 3, 8);
+        ctx.fillRect(10, 0, 3, 6);
+
+        // Center hole of key
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath();
+        ctx.arc(-8, 0, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Shimmer highlight
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(-6, -2, 14, 2);
+        ctx.restore();
+        break;
+      }
+
+      case 'O': {
+        // 16-BIT SNES SWIRLING MAGICAL KEYHOLE / PORTAL DE SALIDA SECRETA
+        const rot = time * 2.5;
+        const pulse = 1.0 + Math.sin(time * 5) * 0.12;
+        ctx.save();
+        ctx.translate(x + size / 2, y + size / 2);
+        ctx.scale(pulse, pulse);
+
+        // Swirling vortex background
+        const grad = ctx.createRadialGradient(0, 0, 3, 0, 0, 22);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.3, '#f472b6');
+        grad.addColorStop(0.6, '#818cf8');
+        grad.addColorStop(1, 'rgba(30, 27, 75, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rotating spiral star sparks
+        ctx.save();
+        ctx.rotate(rot);
+        for (let i = 0; i < 4; i++) {
+          ctx.rotate(Math.PI / 2);
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(11, 0, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // The Keyhole Silhouette
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath();
+        ctx.arc(0, -3, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-3, -1);
+        ctx.lineTo(3, -1);
+        ctx.lineTo(5, 10);
+        ctx.lineTo(-5, 10);
+        ctx.closePath();
+        ctx.fill();
+
+        // Golden rim around the keyhole
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, -3, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-3, -1);
+        ctx.lineTo(3, -1);
+        ctx.lineTo(5, 10);
+        ctx.lineTo(-5, 10);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.restore();
+        break;
+      }
     }
     ctx.restore();
   }
@@ -1078,6 +1180,91 @@ class SpriteRenderer {
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(barX, barY, (barW * Math.max(0, enemy.hp)) / maxHp, 6);
     }
+    ctx.restore();
+  }
+
+  // ==========================================================================
+  // MINI ÁMBAR OVERWORLD MAP SPRITE (16-BIT SNES MAP AVATAR)
+  // ==========================================================================
+  drawMiniAmbarMap(ctx, x, y, facing = 1, walkFrame = 0) {
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if (facing < 0) ctx.scale(-1, 1);
+
+    const bob = Math.sin(walkFrame * Math.PI) * 2;
+    const legSwing = Math.sin(walkFrame * Math.PI * 2) * 4;
+
+    // Shadow on the map path
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, 16, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Legs / Sneakers
+    ctx.fillStyle = '#0284c7'; // Denim shorts
+    ctx.fillRect(-6, 4, 12, 6);
+
+    // Left Shoe
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillRect(-6 - legSwing * 0.4, 9 + bob * 0.3, 5, 6);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-7 - legSwing * 0.4, 13 + bob * 0.3, 6, 3);
+
+    // Right Shoe
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillRect(1 + legSwing * 0.4, 9 - bob * 0.3, 5, 6);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0 + legSwing * 0.4, 13 - bob * 0.3, 6, 3);
+
+    // Torso: Pink Hoodie
+    ctx.fillStyle = '#db2777';
+    ctx.fillRect(-7, -8 + bob, 14, 13);
+    ctx.fillStyle = '#ec4899';
+    ctx.fillRect(-6, -7 + bob, 12, 11);
+    ctx.fillStyle = '#f472b6';
+    ctx.fillRect(-5, -7 + bob, 4, 9);
+
+    // Hoodie pocket & white cords
+    ctx.fillStyle = '#be185d';
+    ctx.fillRect(-4, -1 + bob, 8, 4);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-2, -6 + bob, 1, 4);
+    ctx.fillRect(1, -6 + bob, 1, 4);
+
+    // Head / Face
+    ctx.fillStyle = '#fed7aa'; // Skin
+    ctx.fillRect(-6, -18 + bob, 12, 11);
+
+    // Brown Hair
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(-7, -21 + bob, 14, 6);
+    ctx.fillRect(-7, -19 + bob, 3, 9);
+    ctx.fillRect(4, -19 + bob, 3, 9);
+
+    // Hair Buns on top
+    ctx.fillRect(-8, -24 + bob, 5, 5);
+    ctx.fillRect(3, -24 + bob, 5, 5);
+    // Red Ribbons on buns
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(-6, -21 + bob, 3, 2);
+    ctx.fillRect(3, -21 + bob, 3, 2);
+
+    // Violet-tinted Glasses
+    ctx.fillStyle = '#581c87';
+    ctx.fillRect(-4, -15 + bob, 4, 4);
+    ctx.fillRect(1, -15 + bob, 4, 4);
+    ctx.fillRect(-1, -14 + bob, 2, 2);
+    ctx.fillStyle = '#c084fc';
+    ctx.fillRect(-3, -14 + bob, 2, 2);
+    ctx.fillRect(2, -14 + bob, 2, 2);
+
+    // Rosy cheeks and smile
+    ctx.fillStyle = '#fb7185';
+    ctx.fillRect(-5, -11 + bob, 2, 1);
+    ctx.fillRect(3, -11 + bob, 2, 1);
+    ctx.fillStyle = '#991b1b';
+    ctx.fillRect(-1, -10 + bob, 3, 1);
+
     ctx.restore();
   }
 }

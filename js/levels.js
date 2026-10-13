@@ -254,6 +254,18 @@ function buildLevel2() {
   addStairs(grid, 132, 7, 1);
   grid[12][139] = 'H';
 
+  // Ruta Secreta estilo Super Mario World: Estante Alto con Llave Dorada ('K') y Cerradura Cósmica ('O')
+  grid[12][123] = 'J'; // Resorte para alcanzar el estante secreto superior
+  fillRect(grid, 126, 4, 16, 1, 'H'); // Estante alto de juguetes
+  for (let c = 127; c <= 140; c++) {
+    coins.push({ x: c * 32 + 4, y: 2 * 32 });
+  }
+  grid[3][129] = 'K'; // ¡La Llave Dorada Secreta!
+  grid[3][138] = 'O'; // ¡La Cerradura Cósmica que desbloquea 1-S!
+
+  // Portal Secreto Alternativo detrás del Castillo (col 154)
+  grid[12][154] = 'O';
+
   return {
     id: 2,
     name: 'MUNDO 1-2: TALLER DE JUGUETES Y TRENCITOS',
@@ -494,6 +506,10 @@ function buildLevel4Bike() {
   grid[13][167] = 'T';
   addStairs(grid, 169, 6, 1);
   grid[12][175] = 'H';
+
+  // Salida Secreta Alternativa en Bici: Mega Salto hacia la Nube Cósmica
+  fillRect(grid, 172, 4, 6, 1, 'C');
+  grid[3][174] = 'O'; // ¡Portal Secreto hacia 1-S!
 
   return {
     id: 4,
@@ -915,6 +931,126 @@ function buildLevel8FinalCastle() {
   };
 }
 
+// ============================================================================
+// NIVEL 1-S: LA VÍA LÁCTEA ESTELAR (NIVEL SECRETO DESBLOQUEABLE)
+// ============================================================================
+function buildLevelSecret() {
+  const cols = 175;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Cosmic neon platforms & starry ground sections
+  fillRect(grid, 0, 13, 30, 2, '#');
+  fillRect(grid, 35, 13, 22, 2, '#');
+  fillRect(grid, 62, 13, 32, 2, '#');
+  fillRect(grid, 100, 13, 28, 2, '#');
+  fillRect(grid, 135, 13, 40, 2, '#');
+
+  // Welcome Question blocks with Super Star!
+  grid[9][6] = '?';
+  grid[9][8] = 'S'; // Super Estrella Invencible!
+  grid[9][10] = '?';
+  grid[9][12] = 'M'; // Super Hongo
+
+  // Turbo speed boost pads
+  grid[12][16] = 'T';
+  grid[12][19] = 'T';
+  grid[12][22] = 'T';
+
+  // Rainbow Star spring launch
+  grid[12][28] = 'J';
+
+  // Floating high cloud / star bridges
+  fillRect(grid, 32, 7, 10, 1, 'C');
+  for (let c = 33; c <= 40; c++) {
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  // Floating rainbow platforms
+  platforms.push({
+    x: 44 * 32,
+    y: 9 * 32,
+    w: 110,
+    h: 20,
+    minX: 42 * 32,
+    maxX: 55 * 32,
+    vx: 1.8,
+    vy: 0,
+    style: 'rainbow'
+  });
+
+  // Cosmic enemies
+  enemies.push({ type: 'cloud', x: 48 * 32, y: 5 * 32, baseY: 5 * 32 });
+  enemies.push({ type: 'koopa', x: 65 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 68 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 74 * 32, y: 12 * 32 });
+
+  // Floating 1-UP & Star blocks
+  grid[8][68] = 'L'; // 1-UP Mushroom!
+  grid[8][72] = 'S'; // Second Star!
+
+  // AMBAR Coin Constellation
+  addAmbarCoinBanner(coins, 78, 3);
+
+  // Checkpoint at col 90
+  const checkpointCol = 90;
+
+  // Platform moving vertically over starry void
+  platforms.push({
+    x: 94 * 32,
+    y: 11 * 32,
+    w: 96,
+    h: 20,
+    minY: 6 * 32,
+    maxY: 12 * 32,
+    vx: 0,
+    vy: 1.5,
+    style: 'rainbow'
+  });
+
+  // Second Turbo track section
+  grid[12][102] = 'T';
+  grid[12][106] = 'T';
+  grid[12][110] = 'T';
+  grid[12][114] = 'T';
+
+  // Moving Star Train platform
+  platforms.push({
+    x: 128 * 32,
+    y: 9 * 32,
+    w: 120,
+    h: 22,
+    minX: 126 * 32,
+    maxX: 134 * 32,
+    vx: 2.0,
+    vy: 0,
+    style: 'train'
+  });
+
+  // Grand Cosmic Golden Stairs
+  addStairs(grid, 142, 6, 1);
+  addStairs(grid, 150, 6, -1);
+
+  return {
+    id: 9,
+    name: 'MUNDO 1-S: LA VÍA LÁCTEA ESTELAR',
+    subtitle: '¡Pistas Cósmicas de Neón, Turbo Estelar y Monedas Galácticas!',
+    theme: 6,
+    bgm: 'star',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 160 * 32,
+    castleX: 164 * 32
+  };
+}
+
 window.LEVEL_BUILDERS = [
   buildLevel1,
   buildLevel2,
@@ -923,5 +1059,6 @@ window.LEVEL_BUILDERS = [
   buildLevel5Crystal,
   buildLevel6Sky,
   buildLevel7Flying,
-  buildLevel8FinalCastle
+  buildLevel8FinalCastle,
+  buildLevelSecret
 ];

@@ -24,6 +24,9 @@
       </div>
 
       <div class="toolbar-buttons">
+        <button class="retro-btn" id="btnMap" onclick="window.game && window.game.enterMapScreen()" title="Ver Mapa del Mundo (Overworld Map)">
+          🗺️ Mapa
+        </button>
         <button class="retro-btn level-btn current-level" onclick="window.game && window.game.selectLevel(0)">
           🌳 1-1
         </button>
@@ -47,6 +50,9 @@
         </button>
         <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(7)">
           👑 1-8
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(8)" title="¡Nivel Secreto Desbloqueable: La Vía Láctea Estelar!">
+          ⭐ 1-S Secreto
         </button>
         <button class="retro-btn" onclick="window.game && window.game.cycleAmbarPowerUp()" title="Cambiar el look de Ámbar (Tecla T)">
           👓 Look

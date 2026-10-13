@@ -258,6 +258,36 @@ class RetroAudio {
         break;
       }
 
+      case 'mapMove': {
+        this.playTone(392, 0.04, 'square', 0.28, 0, 523);
+        break;
+      }
+
+      case 'mapSelect': {
+        this.playTone(523.25, 0.08, 'square', 0.35, 0);
+        this.playTone(659.25, 0.08, 'square', 0.35, 0.05);
+        this.playTone(783.99, 0.14, 'square', 0.40, 0.10);
+        break;
+      }
+
+      case 'secretExit': {
+        const notes = [
+          { n: 'G4', d: 0.10, t: 0.00 },
+          { n: 'Bb4', d: 0.10, t: 0.09 },
+          { n: 'D5', d: 0.10, t: 0.18 },
+          { n: 'G5', d: 0.16, t: 0.27 },
+          { n: 'F5', d: 0.10, t: 0.45 },
+          { n: 'Bb5', d: 0.12, t: 0.54 },
+          { n: 'D6', d: 0.14, t: 0.65 },
+          { n: 'G6', d: 0.45, t: 0.78 }
+        ];
+        notes.forEach(item => {
+          this.playTone(this.noteFreq(item.n), item.d, 'square', 0.42, item.t);
+          this.playTone(this.noteFreq(item.n) * 0.5, item.d * 1.1, 'triangle', 0.30, item.t);
+        });
+        break;
+      }
+
       case 'gameover': {
         const notes = [
           { n: 'C5', d: 0.18, t: 0.00 },
@@ -282,6 +312,30 @@ class RetroAudio {
   // Background Music Sequencer
   getTracks() {
     return {
+      map: {
+        // Cheerful Super Mario World style Overworld Map theme
+        tempo: 148,
+        lead: [
+          'C5', '-', 'E5', 'G5', 'A5', 'G5', 'E5', '-',
+          'F5', '-', 'A5', 'C6', 'B5', '-', 'G5', '-',
+          'C5', '-', 'E5', 'G5', 'A5', 'C6', 'D6', '-',
+          'B5', 'G5', 'E5', 'D5', 'C5', '-', '-', '-',
+          'G5', 'A5', 'G5', 'E5', 'F5', 'G5', 'F5', 'D5',
+          'E5', 'F5', 'E5', 'C5', 'D5', '-', 'G4', '-',
+          'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5', 'C6',
+          'D6', 'B5', 'G5', 'D5', 'C5', '-', '-', '-'
+        ],
+        bass: [
+          'C3', 'G3', 'E3', 'G3', 'F3', 'C4', 'A3', 'C4',
+          'D3', 'A3', 'F3', 'A3', 'G3', 'D4', 'B3', 'D4',
+          'C3', 'G3', 'E3', 'G3', 'F3', 'C4', 'A3', 'C4',
+          'G3', 'D4', 'B3', 'D4', 'C3', 'G3', 'C3', '-',
+          'C3', 'G3', 'E3', 'G3', 'D3', 'A3', 'F3', 'A3',
+          'C3', 'G3', 'E3', 'G3', 'G3', 'D4', 'B3', 'G3',
+          'C3', 'G3', 'E3', 'G3', 'F3', 'C4', 'A3', 'C4',
+          'G3', 'D4', 'B3', 'G3', 'C3', 'G3', 'C3', '-'
+        ]
+      },
       title: {
         tempo: 165,
         lead: [

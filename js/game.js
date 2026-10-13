@@ -14,7 +14,8 @@ const STAR_COINS_DATA = {
   5: [{ col: 34, row: 5 }, { col: 75, row: 4 }, { col: 120, row: 4 }],
   6: [{ col: 32, row: 5 }, { col: 72, row: 4 }, { col: 116, row: 4 }],
   7: [{ col: 35, row: 4 }, { col: 82, row: 10 }, { col: 128, row: 2 }],
-  8: [{ col: 28, row: 5 }, { col: 70, row: 4 }, { col: 112, row: 5 }]
+  8: [{ col: 28, row: 5 }, { col: 70, row: 4 }, { col: 112, row: 5 }],
+  9: [{ col: 38, row: 4 }, { col: 84, row: 6 }, { col: 136, row: 4 }]
 };
 
 class SuperAmbarGame {
@@ -65,6 +66,35 @@ class SuperAmbarGame {
     this.ghosts = [];
     this.ghostTimer = 0;
 
+    // Super Mario World 16-Bit Overworld Map System
+    this.mapNodes = [
+      { id: 0, levelIdx: 0, x: 130, y: 340, name: '1-1 Pradera', subtitle: 'Pradera Arcoíris', icon: 'level', paths: { right: 1 }, unlocked: true, cleared: false },
+      { id: 1, levelIdx: 1, x: 240, y: 310, name: '1-2 Taller', subtitle: 'Fábrica de Juguetes', icon: 'level', paths: { left: 0, right: 2 }, secretPath: { up: 8 }, hasSecretExit: true, unlocked: false, cleared: false },
+      { id: 2, levelIdx: 2, x: 350, y: 270, name: '1-3 Castillo', subtitle: 'Fortaleza de Dulces', icon: 'fortress', paths: { left: 1, down: 3 }, unlocked: false, cleared: false },
+      { id: 3, levelIdx: 3, x: 440, y: 360, name: '1-4 Playa Bici', subtitle: 'Costa en Bicicleta', icon: 'bike', paths: { up: 2, right: 4 }, secretPath: { up: 8 }, hasSecretExit: true, unlocked: false, cleared: false },
+      { id: 4, levelIdx: 4, x: 550, y: 320, name: '1-5 Cueva', subtitle: 'Caverna Amatista', icon: 'gem', paths: { left: 3, up: 5 }, unlocked: false, cleared: false },
+      { id: 5, levelIdx: 5, x: 670, y: 240, name: '1-6 Cielo', subtitle: 'Nubes de Algodón', icon: 'cloud', paths: { down: 4, left: 6 }, unlocked: false, cleared: false },
+      { id: 6, levelIdx: 6, x: 540, y: 150, name: '1-7 Vuelo', subtitle: 'Vuelo Estelar Superman', icon: 'wing', paths: { right: 5, left: 7 }, unlocked: false, cleared: false },
+      { id: 7, levelIdx: 7, x: 370, y: 120, name: '1-8 Fortaleza', subtitle: 'Castillo Bowser Supremo', icon: 'castle', paths: { right: 6 }, unlocked: false, cleared: false },
+      { id: 8, levelIdx: 8, x: 240, y: 170, name: '1-S Isla Secreta', subtitle: 'Vía Láctea Estelar', icon: 'secret_star', paths: { down: 1, right: 6 }, isSecret: true, unlocked: false, cleared: false }
+    ];
+    this.currentMapNodeId = 0;
+    this.mapAmbar = {
+      x: 130,
+      y: 340,
+      facing: 1,
+      targetNodeId: 0,
+      isMoving: false,
+      moveT: 0,
+      walkFrame: 0,
+      fromX: 130,
+      fromY: 340,
+      toX: 130,
+      toY: 340
+    };
+    this.secretPathUnlockedAnim = 0;
+    this.isSecretExit = false;
+
     this.bindEvents();
     this.loadLevel(0, false);
     this.state = 'TITLE';
@@ -80,6 +110,7 @@ class SuperAmbarGame {
       y: 10 * TILE_SIZE,
       w: powerState >= 1 ? 30 : 24,
       h: powerState >= 1 ? 54 : 36,
+      hasKey: false,
       vx: 0,
       vy: 0,
       prevVy: 0,
@@ -135,12 +166,14 @@ class SuperAmbarGame {
       if (e.code === 'Enter' || e.code === 'Space') {
         if (this.state === 'TITLE') {
           this.startGame();
+        } else if (this.state === 'MAP') {
+          this.launchCurrentMapLevel();
         } else if (this.state === 'GAMEOVER') {
           this.lives = 5;
-          this.startLevelIntro(this.currentLevelIdx, false);
+          this.enterMapScreen();
         } else if (this.state === 'VICTORY') {
           this.currentLevelIdx = 0;
-          this.startGame();
+          this.enterMapScreen();
         }
       }
 
@@ -162,16 +195,18 @@ class SuperAmbarGame {
       }
     });
 
-    this.canvas.addEventListener('pointerdown', () => {
+    this.canvas.addEventListener('pointerdown', (e) => {
       window.retroAudio.init();
       if (this.state === 'TITLE') {
         this.startGame();
+      } else if (this.state === 'MAP') {
+        this.handleMapPointerDown(e);
       } else if (this.state === 'GAMEOVER') {
         this.lives = 5;
-        this.startLevelIntro(this.currentLevelIdx, false);
+        this.enterMapScreen();
       } else if (this.state === 'VICTORY') {
         this.currentLevelIdx = 0;
-        this.startGame();
+        this.enterMapScreen();
       }
     });
 
@@ -185,7 +220,11 @@ class SuperAmbarGame {
         if (keyName === 'jump' && !this.keys.jump) this.keys.jumpJustPressed = true;
         if (keyName === 'action' && !this.keys.action) this.keys.actionJustPressed = true;
         this.keys[keyName] = true;
-        if (this.state === 'TITLE') this.startGame();
+        if (this.state === 'TITLE') {
+          this.startGame();
+        } else if (this.state === 'MAP' && (keyName === 'jump' || keyName === 'action')) {
+          this.launchCurrentMapLevel();
+        }
       };
       const release = (ev) => {
         ev.preventDefault();
@@ -266,20 +305,40 @@ class SuperAmbarGame {
     this.coinsCount = 0;
     this.lives = 5;
     this.player.powerState = 0;
-    this.startLevelIntro(this.currentLevelIdx, false);
+    this.enterMapScreen();
+  }
+
+  enterMapScreen() {
+    this.state = 'MAP';
+    this.stateTimer = 0;
+    window.retroAudio.playBgm('map');
+    const node = this.mapNodes[this.currentMapNodeId] || this.mapNodes[0];
+    this.mapAmbar.x = node.x;
+    this.mapAmbar.y = node.y;
+    this.mapAmbar.isMoving = false;
+    this.updateLevelButtonsUI();
   }
 
   selectLevel(idx) {
     this.currentLevelIdx = idx;
     this.checkpointReached = false;
+    const nodeIdx = this.mapNodes.findIndex(n => n.levelIdx === idx);
+    if (nodeIdx !== -1) {
+      this.currentMapNodeId = nodeIdx;
+      this.mapNodes[nodeIdx].unlocked = true;
+    }
     this.updateLevelButtonsUI();
     this.startLevelIntro(idx, true);
   }
 
   updateLevelButtonsUI() {
     document.querySelectorAll('.level-btn').forEach((btn, i) => {
-      btn.classList.toggle('current-level', i === this.currentLevelIdx);
+      btn.classList.toggle('current-level', this.state !== 'MAP' && i === this.currentLevelIdx);
     });
+    const mapBtn = document.getElementById('btnMap');
+    if (mapBtn) {
+      mapBtn.classList.toggle('active', this.state === 'MAP');
+    }
   }
 
   startLevelIntro(idx, keepPower = true) {
@@ -387,6 +446,11 @@ class SuperAmbarGame {
   update(dt) {
     if (this.state === 'TITLE') return;
 
+    if (this.state === 'MAP') {
+      this.updateOverworldMap(dt);
+      return;
+    }
+
     if (this.state === 'LEVEL_INTRO') {
       this.stateTimer -= dt;
       if (this.stateTimer <= 0) {
@@ -402,29 +466,37 @@ class SuperAmbarGame {
       this.updateFloatingTexts(dt);
       this.updateFireworks(dt);
 
-      if (this.player.y < 12 * TILE_SIZE - this.player.h) {
-        this.player.y += 190 * dt;
-        this.flagSlideY = Math.min(11.5 * TILE_SIZE, this.flagSlideY + 190 * dt);
-      } else {
-        this.player.y = 13 * TILE_SIZE - this.player.h;
-        this.player.onGround = true;
-        if (this.player.x < this.level.castleX + 36) {
-          this.player.x += 120 * dt;
-          this.player.vx = 2;
-          this.player.facing = 1;
+      if (!this.isSecretExit) {
+        if (this.player.y < 12 * TILE_SIZE - this.player.h) {
+          this.player.y += 190 * dt;
+          this.flagSlideY = Math.min(11.5 * TILE_SIZE, this.flagSlideY + 190 * dt);
         } else {
-          this.player.vx = 0;
+          this.player.y = 13 * TILE_SIZE - this.player.h;
+          this.player.onGround = true;
+          if (this.player.x < this.level.castleX + 36) {
+            this.player.x += 120 * dt;
+            this.player.vx = 2;
+            this.player.facing = 1;
+          } else {
+            this.player.vx = 0;
+          }
+        }
+      } else {
+        // Floating secret exit celestial sparkles
+        this.player.vy = 0;
+        this.player.vx = 0;
+        if (Math.random() < 0.25) {
+          this.spawnSparkle(this.player.x + Math.random() * this.player.w, this.player.y + Math.random() * this.player.h);
         }
       }
 
       if (this.stateTimer <= 0) {
-        if (this.currentLevelIdx + 1 < window.LEVEL_BUILDERS.length) {
-          this.checkpointReached = false;
-          this.startLevelIntro(this.currentLevelIdx + 1, true);
-        } else {
+        if (this.currentLevelIdx === 7 && !this.isSecretExit) {
           this.state = 'VICTORY';
           window.retroAudio.stopBgm();
           window.retroAudio.playSfx('stageClear');
+        } else {
+          this.onStageClearReturnToMap();
         }
       }
       return;
@@ -781,6 +853,31 @@ class SuperAmbarGame {
       this.addFloatingText(p.x, p.y - 20, '¡CHECKPOINT!', '#5cdbd3');
       for (let i = 0; i < 14; i++) {
         this.spawnSparkle(this.level.checkpointX + 12, 10 * TILE_SIZE + Math.random() * 60);
+      }
+    }
+
+    // Check Secret Key ('K') and Secret Keyhole / Portal ('O')
+    const startCol = Math.floor(p.x / TILE_SIZE);
+    const endCol = Math.floor((p.x + p.w) / TILE_SIZE);
+    const startRow = Math.floor(p.y / TILE_SIZE);
+    const endRow = Math.floor((p.y + p.h) / TILE_SIZE);
+
+    for (let r = startRow; r <= endRow; r++) {
+      for (let c = startCol; c <= endCol; c++) {
+        const ch = this.getTile(r, c);
+        if (ch === 'K') {
+          this.level.grid[r][c] = '.';
+          p.hasKey = true;
+          window.retroAudio.playSfx('powerupAppear');
+          this.addScore(1000, c * TILE_SIZE, r * TILE_SIZE);
+          this.addFloatingText(p.x, p.y - 24, '¡LLAVE MÁGICA!', '#fde047');
+          for (let k = 0; k < 12; k++) {
+            this.spawnSparkle(c * TILE_SIZE + 16, r * TILE_SIZE + 16);
+          }
+        } else if (ch === 'O') {
+          this.triggerSecretExit(c * TILE_SIZE, r * TILE_SIZE);
+          return;
+        }
       }
     }
 
@@ -1453,6 +1550,210 @@ class SuperAmbarGame {
     }
   }
 
+  triggerSecretExit(gx, gy) {
+    if (this.state === 'STAGE_CLEAR') return;
+    this.state = 'STAGE_CLEAR';
+    this.isSecretExit = true;
+    this.stateTimer = 4.2;
+    window.retroAudio.stopBgm();
+    window.retroAudio.playSfx('secretExit');
+
+    this.addScore(5000, this.player.x, this.player.y - 20);
+    this.addFloatingText(this.player.x, this.player.y - 30, '¡¡SALIDA SECRETA DESCUBIERTA!!', '#fde047');
+    this.addFloatingText(this.player.x, this.player.y - 50, '¡CAMINO ESTELAR A 1-S DESBLOQUEADO!', '#38bdf8');
+
+    // Dazzling spiral galaxy star burst
+    const originX = gx !== undefined ? gx + 16 : this.player.x + 16;
+    const originY = gy !== undefined ? gy + 16 : this.player.y + 16;
+    for (let i = 0; i < 40; i++) {
+      const ang = (i / 40) * Math.PI * 4;
+      const spd = 2 + (i % 5) * 1.5;
+      this.particles.push({
+        x: originX,
+        y: originY,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        life: 2.2,
+        color: ['#fde047', '#f472b6', '#38bdf8', '#c084fc', '#ffffff'][i % 5],
+        size: 4 + (i % 3) * 2,
+        sparkle: true
+      });
+    }
+  }
+
+  onStageClearReturnToMap() {
+    const curId = this.currentMapNodeId;
+    const node = this.mapNodes[curId];
+    if (node) {
+      node.cleared = true;
+    }
+
+    if (this.isSecretExit) {
+      // Unlocks secret level node (Node 8: 1-S) and triggers secret path animation!
+      const secretNode = this.mapNodes.find(n => n.id === 8);
+      if (secretNode) {
+        secretNode.unlocked = true;
+      }
+      this.secretPathUnlockedAnim = 2.8;
+      this.currentMapNodeId = 8;
+    } else {
+      // Normal exit: unlock next connected nodes
+      if (node && node.paths) {
+        for (const dir in node.paths) {
+          const nextId = node.paths[dir];
+          if (this.mapNodes[nextId]) {
+            this.mapNodes[nextId].unlocked = true;
+          }
+        }
+      }
+      // If clearing 1-S (secret level), unlock the shortcut path to node 6 (1-7 Vuelo)!
+      if (curId === 8) {
+        if (this.mapNodes[6]) this.mapNodes[6].unlocked = true;
+      }
+      // Advance Ámbar to next connected unlocked node if available
+      if (node && node.paths) {
+        const primaryNext = node.paths.right !== undefined ? node.paths.right : (node.paths.down !== undefined ? node.paths.down : Object.values(node.paths)[0]);
+        if (primaryNext !== undefined && this.mapNodes[primaryNext]) {
+          this.currentMapNodeId = primaryNext;
+        }
+      }
+    }
+
+    this.isSecretExit = false;
+    this.checkpointReached = false;
+    this.enterMapScreen();
+  }
+
+  updateOverworldMap(dt) {
+    if (this.secretPathUnlockedAnim > 0) {
+      this.secretPathUnlockedAnim -= dt;
+      // Spawn golden sparkles between 1-2 and 1-S during unlock fanfare!
+      const n1 = this.mapNodes[1];
+      const n8 = this.mapNodes[8];
+      if (n1 && n8) {
+        const t = Math.random();
+        this.particles.push({
+          x: n1.x + (n8.x - n1.x) * t + (Math.random() - 0.5) * 16,
+          y: n1.y + (n8.y - n1.y) * t + (Math.random() - 0.5) * 16,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: -Math.random() * 2 - 0.5,
+          life: 0.8,
+          color: ['#fde047', '#f472b6', '#38bdf8', '#c084fc'][Math.floor(Math.random() * 4)],
+          size: 3 + Math.random() * 3,
+          sparkle: true
+        });
+      }
+    }
+
+    this.updateParticles(dt);
+    this.updateFloatingTexts(dt);
+
+    if (this.mapAmbar.isMoving) {
+      this.mapAmbar.moveT += dt * 3.6;
+      this.mapAmbar.walkFrame = this.mapAmbar.moveT * 4;
+      const t = Math.min(1.0, this.mapAmbar.moveT);
+      this.mapAmbar.x = this.mapAmbar.fromX + (this.mapAmbar.toX - this.mapAmbar.fromX) * t;
+      this.mapAmbar.y = this.mapAmbar.fromY + (this.mapAmbar.toY - this.mapAmbar.fromY) * t;
+      if (this.mapAmbar.moveT >= 1.0) {
+        this.mapAmbar.isMoving = false;
+        this.currentMapNodeId = this.mapAmbar.targetNodeId;
+        const n = this.mapNodes[this.currentMapNodeId];
+        this.mapAmbar.x = n.x;
+        this.mapAmbar.y = n.y;
+        this.updateLevelButtonsUI();
+      }
+    } else {
+      this.mapAmbar.walkFrame = 0;
+      this.handleMapInput(dt);
+    }
+  }
+
+  handleMapInput(dt) {
+    const cur = this.mapNodes[this.currentMapNodeId];
+    if (!cur) return;
+    let nextId = null;
+    let targetFacing = this.mapAmbar.facing;
+
+    if (this.keys.right) {
+      if (cur.paths && cur.paths.right !== undefined) nextId = cur.paths.right;
+      targetFacing = 1;
+    } else if (this.keys.left) {
+      if (cur.paths && cur.paths.left !== undefined) nextId = cur.paths.left;
+      targetFacing = -1;
+    } else if (this.keys.up) {
+      if (cur.paths && cur.paths.up !== undefined) nextId = cur.paths.up;
+      else if (cur.secretPath && cur.secretPath.up !== undefined && this.mapNodes[cur.secretPath.up].unlocked) {
+        nextId = cur.secretPath.up;
+      }
+    } else if (this.keys.down) {
+      if (cur.paths && cur.paths.down !== undefined) nextId = cur.paths.down;
+      else if (cur.secretPath && cur.secretPath.down !== undefined && this.mapNodes[cur.secretPath.down].unlocked) {
+        nextId = cur.secretPath.down;
+      }
+    }
+
+    if (nextId !== null && this.mapNodes[nextId] && this.mapNodes[nextId].unlocked) {
+      this.startMapTravel(nextId, targetFacing);
+    }
+
+    if (this.keys.jumpJustPressed || this.keys.actionJustPressed) {
+      this.launchCurrentMapLevel();
+    }
+  }
+
+  startMapTravel(targetNodeId, facing) {
+    const cur = this.mapNodes[this.currentMapNodeId];
+    const target = this.mapNodes[targetNodeId];
+    if (!target || !target.unlocked) return;
+    this.mapAmbar.fromX = cur.x;
+    this.mapAmbar.fromY = cur.y;
+    this.mapAmbar.toX = target.x;
+    this.mapAmbar.toY = target.y;
+    this.mapAmbar.targetNodeId = targetNodeId;
+    this.mapAmbar.facing = facing !== undefined ? facing : (target.x >= cur.x ? 1 : -1);
+    this.mapAmbar.moveT = 0;
+    this.mapAmbar.isMoving = true;
+    window.retroAudio.playSfx('mapMove');
+  }
+
+  launchCurrentMapLevel() {
+    const cur = this.mapNodes[this.currentMapNodeId];
+    if (cur && cur.unlocked) {
+      window.retroAudio.playSfx('mapSelect');
+      this.startLevelIntro(cur.levelIdx, true);
+    }
+  }
+
+  handleMapPointerDown(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = LOGICAL_WIDTH / rect.width;
+    const scaleY = LOGICAL_HEIGHT / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    // Check if clicked the bottom level action card
+    if (my > 410) {
+      this.launchCurrentMapLevel();
+      return;
+    }
+
+    // Check node clicks
+    for (let i = 0; i < this.mapNodes.length; i++) {
+      const node = this.mapNodes[i];
+      if (!node.unlocked) continue;
+      const dx = mx - node.x;
+      const dy = my - node.y;
+      if (dx * dx + dy * dy <= 28 * 28) {
+        if (this.currentMapNodeId === i) {
+          this.launchCurrentMapLevel();
+        } else {
+          this.startMapTravel(i, node.x >= this.mapAmbar.x ? 1 : -1);
+        }
+        return;
+      }
+    }
+  }
+
   getTile(r, c) {
     if (!this.level || r < 0 || r >= this.level.rows || c < 0 || c >= this.level.cols) {
       return '.';
@@ -1619,6 +1920,11 @@ class SuperAmbarGame {
 
     if (this.state === 'TITLE') {
       this.renderTitleScreen(ctx);
+      return;
+    }
+
+    if (this.state === 'MAP') {
+      this.renderOverworldMap(ctx);
       return;
     }
 
@@ -2582,6 +2888,492 @@ class SuperAmbarGame {
 
     ctx.fillStyle = '#fde047';
     ctx.fillText('PRESIONA ENTER O HAZ CLIC PARA CONTINUAR', LOGICAL_WIDTH / 2, 285);
+    ctx.restore();
+  }
+
+  // ==========================================================================
+  // OVERWORLD WORLD MAP RENDERING (16-BIT SUPER MARIO WORLD RETRO MAP)
+  // ==========================================================================
+  renderOverworldMap(ctx) {
+    const t = this.time;
+
+    // 1. Animated Deep Ocean with wave foam
+    const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+    oceanGrad.addColorStop(0, '#0284c7');
+    oceanGrad.addColorStop(0.5, '#0369a1');
+    oceanGrad.addColorStop(1, '#075985');
+    ctx.fillStyle = oceanGrad;
+    ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+    // Gentle wave ripples across ocean
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    for (let row = 0; row < 16; row++) {
+      const wy = row * 30 + 10;
+      const speed = (row % 2 === 0 ? 1 : -1) * 18;
+      const offX = ((t * speed) % 80 + 80) % 80;
+      for (let wx = -40 + offX; wx < LOGICAL_WIDTH + 40; wx += 80) {
+        ctx.fillRect(wx, wy, 16, 2);
+        ctx.fillRect(wx + 4, wy + 2, 8, 1);
+      }
+    }
+
+    // 2. The Main Overworld Island ("Isla Reino Ámbar")
+    // Golden Beach Shoreline
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.ellipse(390, 260, 320, 160, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#ca8a04';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Lush Green Island Interior
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.ellipse(390, 260, 290, 138, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Darker green grass contours
+    ctx.fillStyle = '#16a34a';
+    ctx.beginPath();
+    ctx.ellipse(390, 260, 250, 115, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cartoon Smiling Hills with eyes (Super Mario World style!)
+    const drawCartoonHill = (hx, hy, hr, hCol) => {
+      ctx.fillStyle = hCol;
+      ctx.beginPath();
+      ctx.arc(hx, hy, hr, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#14532d';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Cute SMW eyes
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(hx - 5, hy - hr * 0.5, 3, 7);
+      ctx.fillRect(hx + 2, hy - hr * 0.5, 3, 7);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(hx - 4, hy - hr * 0.45, 2, 4);
+      ctx.fillRect(hx + 3, hy - hr * 0.45, 2, 4);
+    };
+
+    drawCartoonHill(180, 310, 26, '#4ade80');
+    drawCartoonHill(300, 270, 32, '#86efac');
+    drawCartoonHill(480, 240, 28, '#4ade80');
+
+    // Themed Island Regions:
+    // - Desert Sand Beach around 1-4 (south-center)
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.ellipse(440, 360, 65, 30, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // - Purple Amethyst Cavern Mountain around 1-5 (east)
+    ctx.fillStyle = '#475569';
+    ctx.beginPath();
+    ctx.ellipse(550, 315, 55, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#a855f7';
+    ctx.beginPath();
+    ctx.ellipse(550, 318, 42, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // - Dark Volcanic Mountain & Crags around 1-8 Bowser Castle (north)
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.ellipse(370, 130, 95, 45, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(362, 126, 16, 4); // Lava fissure
+
+    // - Floating Celestial Star Island (Node 8: 1-S) in upper left
+    const starIslandPulse = Math.sin(t * 3) * 3;
+    const sIslandX = 240;
+    const sIslandY = 170 + starIslandPulse;
+
+    // Cosmic purple nebula glow behind floating star island
+    const nebGrad = ctx.createRadialGradient(sIslandX, sIslandY, 5, sIslandX, sIslandY, 70);
+    nebGrad.addColorStop(0, 'rgba(192, 132, 252, 0.45)');
+    nebGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.25)');
+    nebGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
+    ctx.fillStyle = nebGrad;
+    ctx.beginPath();
+    ctx.arc(sIslandX, sIslandY, 70, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Floating Star Island Landmass
+    ctx.fillStyle = '#312e81';
+    ctx.beginPath();
+    ctx.ellipse(sIslandX, sIslandY + 6, 60, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#818cf8';
+    ctx.beginPath();
+    ctx.ellipse(sIslandX, sIslandY, 56, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#c084fc';
+    ctx.beginPath();
+    ctx.ellipse(sIslandX, sIslandY - 3, 48, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Floating fluffy clouds drifting over the islands
+    for (let ci = 0; ci < 4; ci++) {
+      const cx = ((ci * 230 + t * 14) % (LOGICAL_WIDTH + 140)) - 70;
+      const cy = 60 + ci * 70;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.arc(cx + 18, cy - 6, 16, 0, Math.PI * 2);
+      ctx.arc(cx - 18, cy + 4, 15, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 3. Roads / Paths connecting nodes
+    this.mapNodes.forEach(node => {
+      if (node.paths) {
+        for (const dir in node.paths) {
+          const targetId = node.paths[dir];
+          const target = this.mapNodes[targetId];
+          if (!target || targetId < node.id) continue;
+
+          const isUnlocked = node.unlocked && target.unlocked;
+
+          // Road shadow / outline
+          ctx.strokeStyle = isUnlocked ? '#78350f' : 'rgba(120, 53, 15, 0.25)';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(target.x, target.y);
+          ctx.stroke();
+
+          // Cobblestone / path surface
+          ctx.strokeStyle = isUnlocked ? '#fde68a' : 'rgba(254, 243, 199, 0.35)';
+          ctx.lineWidth = 4;
+          if (!isUnlocked) ctx.setLineDash([6, 6]);
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(target.x, target.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+    });
+
+    // Secret Rainbow Path (Node 1 -> Node 8)
+    const secretNode = this.mapNodes[8];
+    const n1 = this.mapNodes[1];
+    if (secretNode && n1) {
+      const secretUnlocked = secretNode.unlocked;
+      if (secretUnlocked) {
+        // Radiant 7-Color Rainbow Bridge!
+        const colors = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#818cf8', '#c084fc'];
+        colors.forEach((col, idx) => {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(n1.x - 6 + idx * 2, n1.y);
+          ctx.lineTo(secretNode.x - 6 + idx * 2, secretNode.y);
+          ctx.stroke();
+        });
+
+        // Pulsing sparkling stars along the rainbow bridge
+        for (let s = 1; s <= 4; s++) {
+          const st = (s / 5 + t * 0.4) % 1.0;
+          const sx = n1.x + (secretNode.x - n1.x) * st;
+          const sy = n1.y + (secretNode.y - n1.y) * st;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(sx - 1.5, sy - 1.5, 3, 3);
+        }
+      } else {
+        // Mystical question mark dotted trail
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.35)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.moveTo(n1.x, n1.y);
+        ctx.lineTo(secretNode.x, secretNode.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // Shortcut Path (Node 8 -> Node 6)
+    const n6 = this.mapNodes[6];
+    if (secretNode && secretNode.cleared && n6) {
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(secretNode.x, secretNode.y);
+      ctx.lineTo(n6.x, n6.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // 4. Render All Map Nodes
+    this.mapNodes.forEach((node, i) => {
+      this.renderMapNode(ctx, node, i === this.currentMapNodeId, t);
+    });
+
+    // 5. Mini Ámbar Avatar on Map
+    window.spriteRenderer.drawMiniAmbarMap(
+      ctx,
+      this.mapAmbar.x,
+      this.mapAmbar.y - 6,
+      this.mapAmbar.facing,
+      this.mapAmbar.walkFrame
+    );
+
+    // 6. Particles on map (secret path sparkles)
+    this.particles.forEach(pt => {
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+    });
+
+    // 7. Top SNES HUD Banner
+    this.renderMapTopHeader(ctx);
+
+    // 8. Bottom Level Info & Action Card
+    this.renderMapBottomCard(ctx);
+  }
+
+  renderMapNode(ctx, node, isSelected, time) {
+    ctx.save();
+    const x = node.x;
+    const y = node.y;
+
+    if (!node.unlocked) {
+      // Locked node
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+      ctx.beginPath();
+      ctx.arc(x, y, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('?', x, y + 4);
+      ctx.restore();
+      return;
+    }
+
+    // Active Selection Pulsing Ring
+    if (isSelected) {
+      const pulse = 1.0 + Math.sin(time * 8) * 0.18;
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, 20 * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    if (node.isSecret) {
+      // Secret Pulsating Rainbow Star Node
+      const rot = time * 2;
+      const starScale = 1.0 + Math.sin(time * 6) * 0.15;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(starScale, starScale);
+
+      // Glowing aura
+      const aura = ctx.createRadialGradient(0, 0, 4, 0, 0, 22);
+      aura.addColorStop(0, '#fef08a');
+      aura.addColorStop(0.5, '#f472b6');
+      aura.addColorStop(1, 'rgba(168, 85, 247, 0)');
+      ctx.fillStyle = aura;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rotating 5-point Star
+      ctx.rotate(rot);
+      ctx.fillStyle = '#facc15';
+      this.drawStarPolygon(ctx, 0, 0, 5, 14, 6.5);
+      ctx.fill();
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    } else if (node.icon === 'castle' || node.icon === 'fortress') {
+      // 16-Bit Castle Fortress Icon
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = node.icon === 'castle' ? '#475569' : '#64748b';
+      ctx.fillRect(x - 14, y - 8, 28, 18);
+      ctx.fillRect(x - 14, y - 14, 8, 8);
+      ctx.fillRect(x - 4, y - 12, 8, 6);
+      ctx.fillRect(x + 6, y - 14, 8, 8);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(x - 4, y + 2, 8, 8);
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(x + 10, y - 14);
+      ctx.lineTo(x + 18, y - 11);
+      ctx.lineTo(x + 10, y - 8);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (node.hasSecretExit) {
+      // Dual-ring Red Level Dot (Super Mario World style for levels with secret exits!)
+      const pulseRed = Math.floor(time * 6) % 2 === 0;
+      ctx.fillStyle = '#7f1d1d';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = pulseRed ? '#ef4444' : '#dc2626';
+      ctx.beginPath();
+      ctx.arc(x, y, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      // Normal Level Yellow Dot
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(x - 3, y - 3, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Cleared Golden Star Badge inside node
+    if (node.cleared) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('★', x, y + 4);
+    }
+
+    // Node mini label underneath
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '9px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 4;
+    ctx.fillText(node.name.split(' ')[0], x, y + 26);
+    ctx.shadowBlur = 0;
+
+    ctx.restore();
+  }
+
+  drawStarPolygon(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+  }
+
+  renderMapTopHeader(ctx) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    window.spriteRenderer.roundRect(ctx, 24, 12, LOGICAL_WIDTH - 48, 44, 10);
+    ctx.fill();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.font = '11px "Press Start 2P", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fde047';
+    ctx.fillText('★ SUPER ÁMBAR ALL-STARS ★ ISLA ÁMBAR', 42, 38);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#f472b6';
+    ctx.fillText(`♥ x${this.lives}`, LOGICAL_WIDTH - 260, 38);
+
+    ctx.fillStyle = '#fde047';
+    ctx.fillText(`🪙 ${this.coinsCount}`, LOGICAL_WIDTH - 170, 38);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText(`PTS ${String(this.score).padStart(6, '0')}`, LOGICAL_WIDTH - 42, 38);
+    ctx.restore();
+  }
+
+  renderMapBottomCard(ctx) {
+    ctx.save();
+    const cur = this.mapNodes[this.currentMapNodeId] || this.mapNodes[0];
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    window.spriteRenderer.roundRect(ctx, 24, 408, LOGICAL_WIDTH - 48, 62, 12);
+    ctx.fill();
+    ctx.strokeStyle = cur.isSecret ? '#c084fc' : '#38bdf8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.font = '12px "Press Start 2P", monospace';
+    ctx.fillStyle = cur.isSecret ? '#fde047' : '#ffffff';
+    ctx.fillText(`MUNDO ${cur.name.toUpperCase()}`, 44, 432);
+
+    ctx.font = '9px "Press Start 2P", monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(cur.subtitle, 44, 452);
+
+    const saved = this.savedStarCoins[cur.levelIdx] || [false, false, false];
+    ctx.textAlign = 'right';
+    ctx.font = '11px "Press Start 2P", monospace';
+    ctx.fillStyle = '#fbbf24';
+    const starStr = `ESTRELLAS: ${saved[0] ? '★' : '☆'} ${saved[1] ? '★' : '☆'} ${saved[2] ? '★' : '☆'}`;
+    ctx.fillText(starStr, LOGICAL_WIDTH - 44, 432);
+
+    const flash = Math.floor(this.time * 3) % 2 === 0;
+    ctx.fillStyle = flash ? '#4ade80' : '#86efac';
+    ctx.font = '10px "Press Start 2P", monospace';
+    ctx.fillText('▶ PRESIONA ESPACIO / SALTO PARA ENTRAR ◀', LOGICAL_WIDTH - 44, 454);
+
     ctx.restore();
   }
 }
