@@ -17,6 +17,7 @@ class SpriteRenderer {
       mushroom: null,
       oneup: null,
       star: null,
+      rainbow: null,
       shell: null
     };
     this.loadSpriteAssets();
@@ -35,7 +36,7 @@ class SpriteRenderer {
       }
     });
 
-    ['goomba', 'koopa', 'robot', 'boss', 'mushroom', 'oneup', 'star', 'shell'].forEach(key => {
+    ['goomba', 'koopa', 'robot', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
       if (window.SPRITE_ASSETS[key]) {
         const img = new Image();
         img.src = window.SPRITE_ASSETS[key];
@@ -631,15 +632,53 @@ class SpriteRenderer {
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.drawImage(img, Math.round(cx - 19), Math.round(y + h - 38), 38, 38);
       }
-    } else if (item.type === 'star' || item.type === 'magic_wand') {
-      // 16-Bit SNES Super Star (Estrella Mágica)
+    } else if (item.type === 'magic_wand' || item.type === 'rainbow') {
+      // 16-Bit SNES Magical Rainbow Power-Up (da a Ámbar el poder de disparar arcoíris!)
+      const img = this.images.rainbow;
+      if (img && img.complete && img.naturalWidth > 0) {
+        const hue = Math.floor((time * 360) % 360);
+        ctx.shadowColor = `hsl(${hue}, 100%, 65%)`;
+        ctx.shadowBlur = 10;
+        ctx.drawImage(img, Math.round(cx - 23), Math.round(y + h - 36), 46, 36);
+      }
+    } else if (item.type === 'star') {
+      // 16-Bit SNES Invincibility Super Star (Estrella de Invencibilidad)
       const img = this.images.star;
       if (img && img.complete && img.naturalWidth > 0) {
         const hue = Math.floor((time * 480) % 360);
-        ctx.shadowColor = item.type === 'star' ? `hsl(${hue}, 100%, 60%)` : '#fde047';
+        ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
         ctx.shadowBlur = 10;
         ctx.drawImage(img, Math.round(cx - 20), Math.round(y + h - 40), 40, 40);
       }
+    }
+    ctx.restore();
+  }
+
+  // ==========================================================================
+  // 16-BIT SNES RAINBOW PROJECTILE (DISPARO DE ARCOÍRIS DE ÁMBAR)
+  // ==========================================================================
+  drawRainbowProjectile(ctx, pr, time) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    const cx = Math.round(pr.x + pr.w / 2);
+    const cy = Math.round(pr.y + pr.h / 2);
+    ctx.translate(cx, cy);
+    if (pr.vx < 0) ctx.scale(-1, 1);
+
+    const img = this.images.rainbow;
+    if (img && img.complete && img.naturalWidth > 0) {
+      const wobble = Math.sin(time * 24) * 0.18;
+      ctx.rotate(wobble);
+      ctx.drawImage(img, -16, -13, 32, 26);
+    } else {
+      const bands = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#38bdf8', '#a855f7'];
+      bands.forEach((col, i) => {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 4, 12 - i * 1.6, Math.PI, 0);
+        ctx.stroke();
+      });
     }
     ctx.restore();
   }

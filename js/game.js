@@ -1311,8 +1311,7 @@ class SuperAmbarGame {
     });
 
     this.projectiles.forEach(pr => {
-      const hue = Math.floor((this.time * 720) % 360);
-      window.spriteRenderer.drawStarShape(ctx, pr.x + 7, pr.y + 7, 5, 10, 4.5, `hsl(${hue}, 100%, 65%)`, '#23153c');
+      window.spriteRenderer.drawRainbowProjectile(ctx, pr, this.time);
     });
 
     this.enemyProjectiles.forEach(ep => {
@@ -1783,7 +1782,7 @@ class SuperAmbarGame {
     const outfitLabels = [
       'CHIQUITA (JARDINERO)',
       'SUPER ÁMBAR (BUZO+LENTES) ★',
-      'PODER ESTRELLA ARCOÍRIS ★★'
+      '🌈 PODER ARCOÍRIS (TECLA X)'
     ];
     const outfitColors = ['#93c5fd', '#f472b6', '#fde047'];
     ctx.fillStyle = this.player.onBike ? '#4ade80' : (outfitColors[this.player.powerState] || '#fff');
