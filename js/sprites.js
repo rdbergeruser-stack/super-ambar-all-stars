@@ -11,10 +11,10 @@ class SpriteRenderer {
       hoodie: [],
       bike: [],
       fly: [],
+      cloud: [],
       goomba: null,
       koopa: null,
       robot: null,
-      cloud: null,
       boss: null,
       mushroom: null,
       oneup: null,
@@ -28,7 +28,7 @@ class SpriteRenderer {
   loadSpriteAssets() {
     if (!window.SPRITE_ASSETS) return;
 
-    ['jeans', 'hoodie', 'bike', 'fly'].forEach(group => {
+    ['jeans', 'hoodie', 'bike', 'fly', 'cloud'].forEach(group => {
       if (Array.isArray(window.SPRITE_ASSETS[group])) {
         this.images[group] = window.SPRITE_ASSETS[group].map(src => {
           const img = new Image();
@@ -38,7 +38,7 @@ class SpriteRenderer {
       }
     });
 
-    ['goomba', 'koopa', 'robot', 'cloud', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
+    ['goomba', 'koopa', 'robot', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
       if (window.SPRITE_ASSETS[key]) {
         const img = new Image();
         img.src = window.SPRITE_ASSETS[key];
@@ -935,8 +935,12 @@ class SpriteRenderer {
         ctx.drawImage(img, -29, -54 + bob, 58, 54);
       }
     } else if (enemy.type === 'cloud') {
-      // 16-Bit SNES Winged Dragon-Koopa Cloud Rider!
-      const img = this.images.cloud;
+      // 16-Bit SNES Winged Dragon-Koopa Cloud Rider (2-Frame Wing-Flapping Animation!)
+      const cloudFrames = this.images.cloud;
+      const flapIdx = Math.floor(time * 9 + enemy.x * 0.03) % 2;
+      const img = Array.isArray(cloudFrames)
+        ? (cloudFrames[flapIdx] || cloudFrames[0])
+        : cloudFrames;
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.translate(cx, bottomY);
         if (enemy.vx > 0) ctx.scale(-1, 1);
@@ -945,7 +949,7 @@ class SpriteRenderer {
           ctx.drawImage(img, -31, -62, 62, 62);
         } else {
           const hover = Math.sin(time * 10 + enemy.x * 0.05) * 3.5;
-          const tilt = Math.sin(time * 8) * 0.05;
+          const tilt = Math.sin(time * 8) * 0.04;
           ctx.rotate(tilt);
           ctx.drawImage(img, -31, -62 + hover, 62, 62);
         }
