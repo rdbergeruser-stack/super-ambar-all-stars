@@ -300,8 +300,8 @@ class SuperAmbarGame {
       type: e.type,
       x: e.x,
       y: e.y,
-      w: e.w || 36,
-      h: e.h || 36,
+      w: e.w || (e.type === 'cloud' ? 44 : 36),
+      h: e.h || (e.type === 'cloud' ? 46 : 36),
       vx: e.type === 'boss' ? -1.4 : -1.1,
       vy: 0,
       onGround: false,
@@ -551,9 +551,15 @@ class SuperAmbarGame {
     // Move & Collide Y
     const prevBottom = p.y + p.h - p.vy;
     p.y += p.vy;
-    if (p.isFlying && p.y < 14) {
-      p.y = 14;
-      p.vy = Math.max(0, p.vy);
+    if (p.isFlying) {
+      if (p.y < 14) {
+        p.y = 14;
+        p.vy = Math.max(0, p.vy);
+      } else if (p.y + p.h > LOGICAL_HEIGHT - 14) {
+        // Sea of clouds upward air current at the bottom of the sky level (no solid floor needed!)
+        p.y = LOGICAL_HEIGHT - p.h - 14;
+        p.vy = Math.min(0, -1.6);
+      }
     }
     p.onGround = false;
     this.resolvePlayerTileCollisionsY(p);
@@ -598,23 +604,23 @@ class SuperAmbarGame {
 
   shootRainbowStar() {
     const p = this.player;
-    p.shootCooldown = 0.26;
+    p.shootCooldown = 0.24;
     p.shootAnimTimer = 0.18;
     window.retroAudio.playSfx('shoot');
 
+    // Fires a straight, high-speed radiant Light Beam ("Haz de Luz")!
     this.projectiles.push({
-      x: p.facing > 0 ? p.x + p.w + 2 : p.x - 14,
-      y: p.y + 12,
-      w: 14,
-      h: 14,
-      vx: p.facing * 8.0,
-      vy: 2.2,
-      bounces: 0
+      x: p.facing > 0 ? p.x + p.w + 2 : p.x - 30,
+      y: p.y + Math.round(p.h * 0.36),
+      w: 32,
+      h: 12,
+      vx: p.facing * 10.5,
+      vy: 0
     });
   }
 
   isSolidTile(ch) {
-    return ['B', '?', 'M', 'S', 'L', 'E', 'H', 'P', 'p', '#', '=', 'J', 'T'].includes(ch);
+    return ['B', '?', 'M', 'S', 'L', 'E', 'H', 'P', 'p', '#', '=', 'J', 'T', 'C'].includes(ch);
   }
 
   resolvePlayerTileCollisionsX(p) {
@@ -883,7 +889,7 @@ class SuperAmbarGame {
           window.retroAudio.playSfx('powerup');
           this.setPlayerPowerState(2);
           this.addScore(1000, it.x, it.y);
-          this.addFloatingText(p.x, p.y - 20, '¡PODER ARCOÍRIS (TECLA X)!', '#ffe58f');
+          this.addFloatingText(p.x, p.y - 20, '¡PODER ARCOÍRIS: HAZ DE LUZ (X)!', '#ffe58f');
           for (let k = 0; k < 15; k++) this.spawnSparkle(p.x + 14, p.y + 20);
         } else if (it.type === 'star') {
           p.starTimer = 10.0;
@@ -904,24 +910,24 @@ class SuperAmbarGame {
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const pr = this.projectiles[i];
       pr.x += pr.vx;
-      pr.vy += 0.35;
       pr.y += pr.vy;
 
-      if (Math.random() < 0.5) {
-        this.spawnSparkle(pr.x + 6, pr.y + 6);
-      }
-
-      const col = Math.floor((pr.x + pr.w / 2) / TILE_SIZE);
-      const row = Math.floor((pr.y + pr.h) / TILE_SIZE);
-      if (pr.vy > 0 && this.isSolidTile(this.getTile(row, col))) {
-        pr.y = row * TILE_SIZE - pr.h;
-        pr.vy = -5.4;
-        pr.bounces++;
+      // Spawn glowing light trail particles behind the Light Beam ("Haz de Luz")
+      if (Math.random() < 0.65) {
+        this.particles.push({
+          x: pr.vx > 0 ? pr.x - 4 : pr.x + pr.w + 2,
+          y: pr.y + pr.h / 2 + (Math.random() - 0.5) * 6,
+          vx: -pr.vx * 0.12,
+          vy: (Math.random() - 0.5) * 1.2,
+          size: 4 + Math.random() * 3,
+          color: Math.random() < 0.5 ? '#fde047' : '#38bdf8',
+          life: 0.22
+        });
       }
 
       const wallCol = Math.floor((pr.vx > 0 ? pr.x + pr.w : pr.x) / TILE_SIZE);
       const midRow = Math.floor((pr.y + pr.h / 2) / TILE_SIZE);
-      if (this.isSolidTile(this.getTile(midRow, wallCol)) || pr.bounces > 4 || pr.x < this.cameraX - 40 || pr.x > this.cameraX + LOGICAL_WIDTH + 40) {
+      if (this.isSolidTile(this.getTile(midRow, wallCol)) || pr.x < this.cameraX - 60 || pr.x > this.cameraX + LOGICAL_WIDTH + 60) {
         this.projectiles.splice(i, 1);
         continue;
       }
@@ -930,6 +936,9 @@ class SuperAmbarGame {
         const en = this.enemies[j];
         if (!en.dead && !en.squished && this.rectsOverlap(pr, en)) {
           this.projectiles.splice(i, 1);
+          for (let k = 0; k < 8; k++) {
+            this.spawnSparkle(en.x + en.w / 2, en.y + en.h / 2);
+          }
           if (en.type === 'boss') {
             this.damageBoss(en);
           } else {
@@ -1576,6 +1585,15 @@ class SuperAmbarGame {
         const cy = 70 + (i % 4) * 65;
         this.drawSnesCloud(ctx, cx, cy);
       }
+
+      // Soft sea of clouds at the bottom when in the Flying Level (no solid floor!)
+      if (this.level && this.level.isFlyingLevel) {
+        for (let i = 0; i < 16; i++) {
+          const bx = ((i * 75 - this.cameraX * 0.55) % (LOGICAL_WIDTH + 160) + LOGICAL_WIDTH + 160) % (LOGICAL_WIDTH + 160) - 80;
+          const by = LOGICAL_HEIGHT - 12 + Math.sin(this.time * 2 + i) * 3;
+          this.drawSnesCloud(ctx, bx, by);
+        }
+      }
     } else if (theme === 2) {
       // SUPER MARIO ALL-STARS WORLD 1-2: Timber & Brick Cavern / Workshop
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
@@ -1817,7 +1835,7 @@ class SuperAmbarGame {
     const outfitLabels = [
       'CHIQUITA (JARDINERO)',
       'SUPER ÁMBAR (BUZO+LENTES) ★',
-      '🌈 PODER ARCOÍRIS (TECLA X)'
+      '🌈 ARCOÍRIS: HAZ DE LUZ (X)'
     ];
     const outfitColors = ['#93c5fd', '#f472b6', '#fde047'];
     ctx.fillStyle = this.player.isFlying
@@ -1828,7 +1846,7 @@ class SuperAmbarGame {
     ctx.font = '9px "Press Start 2P", monospace';
     ctx.fillText(
       this.player.isFlying
-        ? '🦸‍♀️ ¡SÚPER VUELO + ARCOÍRIS (X)!'
+        ? '🦸‍♀️ ¡SÚPER VUELO + HAZ DE LUZ (X)!'
         : this.player.onBike
           ? '🚲 ¡EN BICICLETA TURBO!'
           : outfitLabels[this.player.powerState],

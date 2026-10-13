@@ -14,6 +14,7 @@ class SpriteRenderer {
       goomba: null,
       koopa: null,
       robot: null,
+      cloud: null,
       boss: null,
       mushroom: null,
       oneup: null,
@@ -37,7 +38,7 @@ class SpriteRenderer {
       }
     });
 
-    ['goomba', 'koopa', 'robot', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
+    ['goomba', 'koopa', 'robot', 'cloud', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
       if (window.SPRITE_ASSETS[key]) {
         const img = new Image();
         img.src = window.SPRITE_ASSETS[key];
@@ -613,6 +614,49 @@ class SpriteRenderer {
         ctx.stroke();
         break;
       }
+
+      case 'C': {
+        // 16-BIT SNES FLUFFY CLOUD TILE (Nube esponjosa para el nivel de vuelo)
+        const key = 'snes_cloud_tile';
+        if (!this.cache[key]) {
+          const cnv = document.createElement('canvas');
+          cnv.width = 36;
+          cnv.height = 36;
+          const g = cnv.getContext('2d');
+
+          // Outer dark-blue 16-bit pixel outline
+          g.fillStyle = '#1e3a8a';
+          g.beginPath();
+          g.arc(10, 18, 9, 0, Math.PI * 2);
+          g.arc(18, 13, 11, 0, Math.PI * 2);
+          g.arc(26, 18, 9, 0, Math.PI * 2);
+          g.arc(14, 23, 8, 0, Math.PI * 2);
+          g.arc(22, 23, 8, 0, Math.PI * 2);
+          g.fill();
+
+          // Soft sky-blue lower cloud shading
+          g.fillStyle = '#bfdbfe';
+          g.beginPath();
+          g.arc(10, 18, 7.5, 0, Math.PI * 2);
+          g.arc(18, 13, 9.5, 0, Math.PI * 2);
+          g.arc(26, 18, 7.5, 0, Math.PI * 2);
+          g.arc(14, 22, 6.5, 0, Math.PI * 2);
+          g.arc(22, 22, 6.5, 0, Math.PI * 2);
+          g.fill();
+
+          // Pure white fluffy upper cloud highlight
+          g.fillStyle = '#ffffff';
+          g.beginPath();
+          g.arc(10, 16, 6.2, 0, Math.PI * 2);
+          g.arc(18, 12, 8.2, 0, Math.PI * 2);
+          g.arc(25, 16, 6.2, 0, Math.PI * 2);
+          g.fill();
+
+          this.cache[key] = cnv;
+        }
+        ctx.drawImage(this.cache[key], x - 2, y - 2, size + 4, size + 4);
+        break;
+      }
     }
     ctx.restore();
   }
@@ -662,7 +706,7 @@ class SpriteRenderer {
         ctx.drawImage(img, Math.round(cx - 19), Math.round(y + h - 38), 38, 38);
       }
     } else if (item.type === 'magic_wand' || item.type === 'rainbow') {
-      // 16-Bit SNES Magical Rainbow Power-Up (da a Ámbar el poder de disparar arcoíris!)
+      // 16-Bit SNES Magical Rainbow Power-Up (da a Ámbar el poder de lanzar Haces de Luz!)
       const img = this.images.rainbow;
       if (img && img.complete && img.naturalWidth > 0) {
         const hue = Math.floor((time * 360) % 360);
@@ -684,31 +728,51 @@ class SpriteRenderer {
   }
 
   // ==========================================================================
-  // 16-BIT SNES RAINBOW PROJECTILE (DISPARO DE ARCOÍRIS DE ÁMBAR)
+  // 16-BIT SNES LIGHT BEAM PROJECTILE ("HAZ DE LUZ" DE ÁMBAR)
   // ==========================================================================
   drawRainbowProjectile(ctx, pr, time) {
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
     const cx = Math.round(pr.x + pr.w / 2);
     const cy = Math.round(pr.y + pr.h / 2);
     ctx.translate(cx, cy);
     if (pr.vx < 0) ctx.scale(-1, 1);
 
-    const img = this.images.rainbow;
-    if (img && img.complete && img.naturalWidth > 0) {
-      const wobble = Math.sin(time * 24) * 0.18;
-      ctx.rotate(wobble);
-      ctx.drawImage(img, -16, -13, 32, 26);
-    } else {
-      const bands = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#38bdf8', '#a855f7'];
-      bands.forEach((col, i) => {
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 4, 12 - i * 1.6, Math.PI, 0);
-        ctx.stroke();
-      });
-    }
+    const pulse = 0.88 + 0.22 * Math.sin(time * 38);
+    const hue = Math.floor((time * 420 + pr.x * 2) % 360);
+
+    // Outer radiant prismatic light halo
+    ctx.shadowColor = `hsl(${hue}, 100%, 65%)`;
+    ctx.shadowBlur = 14;
+
+    // Trailing light streaks behind the beam
+    const trailGrad = ctx.createLinearGradient(-28, 0, 16, 0);
+    trailGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+    trailGrad.addColorStop(0.35, 'rgba(56, 189, 248, 0.65)');
+    trailGrad.addColorStop(0.7, 'rgba(250, 204, 21, 0.92)');
+    trailGrad.addColorStop(1, '#ffffff');
+
+    ctx.fillStyle = trailGrad;
+    this.roundRect(ctx, -28, Math.round(-6 * pulse), 42, Math.round(12 * pulse), 6);
+    ctx.fill();
+
+    // Secondary golden/cyan energy wave lines
+    ctx.strokeStyle = '#fde047';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-22, -4);
+    ctx.lineTo(10, -4);
+    ctx.moveTo(-22, 4);
+    ctx.lineTo(10, 4);
+    ctx.stroke();
+
+    // Intense pure-white laser core ("Haz de Luz" central)
+    ctx.fillStyle = '#ffffff';
+    this.roundRect(ctx, -16, -3, 30, 6, 3);
+    ctx.fill();
+
+    // Glowing star-flash at the tip of the light beam
+    this.drawStarShape(ctx, 13, 0, 4, 8 * pulse, 3, '#ffffff', '#fde047');
+
     ctx.restore();
   }
 
@@ -871,31 +935,21 @@ class SpriteRenderer {
         ctx.drawImage(img, -29, -54 + bob, 58, 54);
       }
     } else if (enemy.type === 'cloud') {
-      const cy = y + h / 2;
-      ctx.translate(cx, cy);
-      ctx.scale(1.35, 1.35);
-      ctx.strokeStyle = '#140c1c';
-      ctx.lineWidth = 2;
-
-      const flap = Math.sin(time * 12) * 4;
-      ctx.fillStyle = '#f8fafc';
-      ctx.beginPath();
-      ctx.ellipse(-10, -4 + flap, 7, 4, -0.4, 0, Math.PI * 2);
-      ctx.ellipse(10, -4 + flap, 7, 4, 0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#e2e8f0';
-      ctx.beginPath();
-      ctx.arc(0, 0, 12, 0, Math.PI * 2);
-      ctx.arc(-7, 2, 8, 0, Math.PI * 2);
-      ctx.arc(7, 2, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(-5, -2, 2.5, 5);
-      ctx.fillRect(2.5, -2, 2.5, 5);
+      // 16-Bit SNES Winged Dragon-Koopa Cloud Rider!
+      const img = this.images.cloud;
+      if (img && img.complete && img.naturalWidth > 0) {
+        ctx.translate(cx, bottomY);
+        if (enemy.vx > 0) ctx.scale(-1, 1);
+        if (enemy.squished) {
+          ctx.scale(1.25, 0.45);
+          ctx.drawImage(img, -31, -62, 62, 62);
+        } else {
+          const hover = Math.sin(time * 10 + enemy.x * 0.05) * 3.5;
+          const tilt = Math.sin(time * 8) * 0.05;
+          ctx.rotate(tilt);
+          ctx.drawImage(img, -31, -62 + hover, 62, 62);
+        }
+      }
     } else if (enemy.type === 'boss') {
       const img = this.images.boss;
       if (img && img.complete && img.naturalWidth > 0) {

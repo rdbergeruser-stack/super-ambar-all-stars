@@ -714,11 +714,16 @@ function buildLevel7Flying() {
   const enemies = [];
   const platforms = [];
 
-  // Soft cloud safety floor at the bottom so Ámbar never falls into a pit while flying!
-  fillRect(grid, 0, 14, cols, 1, '#');
-  // Starting launch pad & ending landing sanctuary
-  fillRect(grid, 0, 13, 18, 1, '#');
-  fillRect(grid, 160, 13, 25, 1, '#');
+  // NO SOLID GROUND FLOOR! Pure open sky with soft 16-bit cloud islands ('C')!
+  // Small starting cloud cushion & ending cloud sanctuary for the Goal Flag
+  fillRect(grid, 1, 12, 8, 1, 'C');
+  fillRect(grid, 162, 13, 22, 2, 'C');
+
+  // Scattered fluffy cloud islands along the lower sky
+  fillRect(grid, 20, 13, 5, 1, 'C');
+  fillRect(grid, 38, 12, 6, 1, 'C');
+  fillRect(grid, 112, 13, 6, 1, 'C');
+  fillRect(grid, 138, 12, 6, 1, 'C');
 
   // Opening Rainbow Power-Up & Star
   grid[8][8] = 'M';
@@ -745,26 +750,26 @@ function buildLevel7Flying() {
   grid[4][37] = 'T';
   grid[8][47] = 'T';
 
-  // Sky squadron of flying clouds
+  // Sky squadron of 16-bit winged dragon-koopa cloud riders!
   enemies.push({ type: 'cloud', x: 29 * 32, y: 5 * 32, baseY: 5 * 32 });
   enemies.push({ type: 'cloud', x: 39 * 32, y: 7 * 32, baseY: 7 * 32 });
   enemies.push({ type: 'cloud', x: 48 * 32, y: 4 * 32, baseY: 4 * 32 });
 
-  // Floating Sky Pillars / Gates to slalom through in flight (cols 54..76)
-  fillRect(grid, 55, 0, 2, 5, 'H');
-  fillRect(grid, 55, 10, 2, 4, 'H');
+  // Floating Cloud Gates ('C') to slalom through in flight (cols 54..78)
+  fillRect(grid, 55, 1, 2, 4, 'C');
+  fillRect(grid, 55, 10, 2, 3, 'C');
   addCoinRing(56, 7);
 
-  fillRect(grid, 66, 0, 2, 3, 'H');
-  fillRect(grid, 66, 8, 2, 6, 'H');
+  fillRect(grid, 66, 1, 2, 3, 'C');
+  fillRect(grid, 66, 8, 2, 4, 'C');
   addCoinRing(67, 5);
 
-  fillRect(grid, 77, 0, 2, 6, 'H');
-  fillRect(grid, 77, 11, 2, 3, 'H');
+  fillRect(grid, 77, 1, 2, 5, 'C');
+  fillRect(grid, 77, 11, 2, 3, 'C');
   addCoinRing(78, 8);
 
-  // Checkpoint island in mid-air at col 86!
-  fillRect(grid, 84, 13, 8, 1, '#');
+  // Checkpoint cloud island in mid-air at col 86!
+  fillRect(grid, 84, 13, 8, 1, 'C');
   const checkpointCol = 86;
   grid[8][88] = 'M';
   grid[8][90] = 'L'; // 1-UP Green Mushroom!
@@ -787,14 +792,15 @@ function buildLevel7Flying() {
   addCoinRing(152, 7);
   grid[6][148] = 'T';
 
-  // Final landing staircase to the Sky Goal Flagpole!
-  addStairs(grid, 162, 6, 1);
-  grid[12][168] = 'H';
+  // Cloud staircase leading to the Sky Goal Flagpole!
+  for (let s = 0; s < 5; s++) {
+    fillRect(grid, 163 + s, 12 - s, 1, s + 1, 'C');
+  }
 
   return {
     id: 7,
     name: 'MUNDO 1-7: ¡SUPER ÁMBAR VUELA POR EL CIELO!',
-    subtitle: '¡Vuela como Superman con las flechas / ESPACIO y dispara Arcoíris con X!',
+    subtitle: '¡Vuela entre las nubes como Superman y lanza Haces de Luz con X!',
     theme: 6,
     isFlyingLevel: true,
     bgm: 'star',
