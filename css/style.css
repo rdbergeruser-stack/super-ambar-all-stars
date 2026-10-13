@@ -236,11 +236,70 @@ body {
   display: flex;
 }
 
-.touch-dpad, .touch-actions {
+.touch-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(3, 50px);
+  gap: 3px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.touch-dpad .touch-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  font-size: 18px;
+  padding: 0;
+  box-shadow: 0 4px 0 rgba(15, 23, 42, 0.9), 0 5px 12px rgba(0, 0, 0, 0.6);
+}
+
+.touch-dpad .dpad-up {
+  grid-column: 2;
+  grid-row: 1;
+  border-radius: 12px 12px 4px 4px;
+}
+
+.touch-dpad .dpad-left {
+  grid-column: 1;
+  grid-row: 2;
+  border-radius: 12px 4px 4px 12px;
+}
+
+.touch-dpad .dpad-center {
+  grid-column: 2;
+  grid-row: 2;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid #334155;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #facc15;
+  font-size: 13px;
+  pointer-events: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.touch-dpad .dpad-right {
+  grid-column: 3;
+  grid-row: 2;
+  border-radius: 4px 12px 12px 4px;
+}
+
+.touch-dpad .dpad-down {
+  grid-column: 2;
+  grid-row: 3;
+  border-radius: 4px 4px 12px 12px;
+}
+
+.touch-actions {
   display: flex;
   gap: 14px;
   pointer-events: auto;
   touch-action: none;
+  align-self: flex-end;
 }
 
 .touch-btn {
@@ -346,5 +405,14 @@ body {
     bottom: 12px;
     left: 16px;
     right: 16px;
+  }
+  .touch-dpad {
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(3, 44px);
+  }
+  .touch-dpad .touch-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
   }
 }

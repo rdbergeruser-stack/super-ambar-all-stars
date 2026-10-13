@@ -369,8 +369,8 @@ function buildLevel3() {
 
   return {
     id: 3,
-    name: 'MUNDO 1-3: CASTILLO DEL GUARDIÁN',
-    subtitle: '¡Cruza el puente de lava y vence al Guardián para seguir tu aventura!',
+    name: 'MUNDO 1-3: PALACIO DE DULCES Y CARAMELOS',
+    subtitle: '¡Cruza el palacio de azúcar, rebota en gelatinas y esquiva galletas rodantes!',
     theme: 3,
     bgm: 'level3',
     cols,
@@ -815,9 +815,9 @@ function buildLevel7Flying() {
 
   return {
     id: 7,
-    name: 'MUNDO 1-7: ¡SUPER ÁMBAR VUELA POR EL CIELO!',
-    subtitle: '¡Vuela entre las nubes como Superman y lanza Haces de Luz con X!',
-    theme: 6,
+    name: 'MUNDO 1-7: VUELO HEROICO EN LA ESTRATOSFERA',
+    subtitle: '¡Vuela como Superman por la Aurora Boreal y lanza Haces de Luz con X!',
+    theme: 7,
     isFlyingLevel: true,
     bgm: 'star',
     cols,
@@ -915,9 +915,9 @@ function buildLevel8FinalCastle() {
 
   return {
     id: 8,
-    name: 'MUNDO 1-8: GRAN FORTALEZA FINAL',
-    subtitle: '¡Batalla Final contra el Rey Tormenta! Salva el Reino de Ámbar',
-    theme: 3,
+    name: 'MUNDO 1-8: GRAN FORTALEZA VOLCÁNICA FINAL',
+    subtitle: '¡Cruza el foso de lava ardiente y derrota a Bowser para salvar el Reino!',
+    theme: 8,
     bgm: 'level3',
     cols,
     rows: 15,
@@ -1035,9 +1035,9 @@ function buildLevelSecret() {
 
   return {
     id: 9,
-    name: 'MUNDO 1-S: LA VÍA LÁCTEA ESTELAR',
+    name: 'MUNDO 1-S: LA VÍA LÁCTEA ESTELAR (NIVEL SECRETO)',
     subtitle: '¡Pistas Cósmicas de Neón, Turbo Estelar y Monedas Galácticas!',
-    theme: 6,
+    theme: 9,
     bgm: 'star',
     cols,
     rows: 15,

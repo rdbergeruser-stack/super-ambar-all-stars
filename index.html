@@ -81,8 +81,11 @@
     <!-- Mobile / On-Screen Touch Gamepad (overlays in landscape, sits below screen in portrait!) -->
     <div class="touch-controls" id="touchControls">
       <div class="touch-dpad" id="touchDpad">
-        <button class="touch-btn" id="touchLeft" aria-label="Izquierda">◀</button>
-        <button class="touch-btn" id="touchRight" aria-label="Derecha">▶</button>
+        <button class="touch-btn dpad-up" id="touchUp" aria-label="Subir">▲</button>
+        <button class="touch-btn dpad-left" id="touchLeft" aria-label="Izquierda">◀</button>
+        <div class="dpad-center" aria-hidden="true">★</div>
+        <button class="touch-btn dpad-right" id="touchRight" aria-label="Derecha">▶</button>
+        <button class="touch-btn dpad-down" id="touchDown" aria-label="Bajar">▼</button>
       </div>
       <div class="touch-actions">
         <button class="touch-btn action-magic" id="touchMagic" aria-label="Magia / Correr">

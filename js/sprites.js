@@ -267,8 +267,9 @@ class SpriteRenderer {
           cnv.height = 32;
           const g = cnv.getContext('2d');
 
-          if (levelTheme === 1 || levelTheme === 6) {
-            g.fillStyle = levelTheme === 6 ? '#312e81' : '#3d1e10';
+          if (levelTheme === 1) {
+            // THEME 1: PRADERA ARCOÍRIS (Grassland)
+            g.fillStyle = '#3d1e10';
             g.fillRect(0, 0, 32, 32);
 
             const stones = [
@@ -279,82 +280,278 @@ class SpriteRenderer {
               { x: 25, y: 22, w: 6, h: 8 }
             ];
             stones.forEach(st => {
-              g.fillStyle = levelTheme === 6 ? '#4338ca' : '#6e3b20';
+              g.fillStyle = '#6e3b20';
               g.fillRect(st.x, st.y, st.w, st.h);
-              g.fillStyle = levelTheme === 6 ? '#6366f1' : '#9c5a35';
+              g.fillStyle = '#9c5a35';
               g.fillRect(st.x + 1, st.y + 1, st.w - 2, st.h - 2);
-              g.fillStyle = levelTheme === 6 ? '#a5b4fc' : '#c47d52';
+              g.fillStyle = '#c47d52';
               g.fillRect(st.x + 1, st.y + 1, st.w - 3, 2);
               g.fillRect(st.x + 1, st.y + 1, 2, st.h - 3);
             });
 
-            g.fillStyle = levelTheme === 6 ? '#93c5fd' : '#0f3818';
+            g.fillStyle = '#0f3818';
             g.fillRect(0, 0, 32, 11);
-            g.fillStyle = levelTheme === 6 ? '#dbeafe' : '#1f6e2c';
+            g.fillStyle = '#1f6e2c';
             g.fillRect(0, 0, 32, 9);
-            g.fillStyle = levelTheme === 6 ? '#eff6ff' : '#38a845';
+            g.fillStyle = '#38a845';
             g.fillRect(0, 1, 32, 6);
-            g.fillStyle = levelTheme === 6 ? '#ffffff' : '#7be07d';
+            g.fillStyle = '#7be07d';
             g.fillRect(0, 1, 32, 2);
+
+          } else if (levelTheme === 2) {
+            // THEME 2: TALLER DE JUGUETES (Polished Oak Wood Planks)
+            g.fillStyle = '#271004';
+            g.fillRect(0, 0, 32, 32);
+
+            // 3 horizontal wooden planks
+            const planks = [0, 11, 22];
+            planks.forEach((py, idx) => {
+              const ph = idx === 2 ? 10 : 10;
+              g.fillStyle = '#5c2c08';
+              g.fillRect(0, py, 32, ph);
+              g.fillStyle = '#85420a';
+              g.fillRect(0, py + 1, 32, ph - 2);
+              g.fillStyle = '#b45309';
+              g.fillRect(0, py + 1, 32, 2);
+
+              // Wood grain lines
+              g.fillStyle = '#d97706';
+              g.fillRect(4, py + 4, 14, 1);
+              g.fillRect(21, py + 6, 8, 1);
+
+              // Brass nail heads at plank ends
+              g.fillStyle = '#fde047';
+              g.fillRect(2, py + 2, 2, 2);
+              g.fillRect(28, py + 2, 2, 2);
+              g.fillStyle = '#451a03';
+              g.fillRect(3, py + 3, 1, 1);
+              g.fillRect(29, py + 3, 1, 1);
+            });
+
+          } else if (levelTheme === 3) {
+            // THEME 3: PALACIO DE DULCES (Strawberry Wafer & Frosting)
+            g.fillStyle = '#4a044e';
+            g.fillRect(0, 0, 32, 32);
+
+            // Waffle wafer grid base
+            g.fillStyle = '#831843';
+            g.fillRect(1, 10, 30, 21);
+            g.fillStyle = '#9d174d';
+            for (let wx = 3; wx < 30; wx += 6) {
+              for (let wy = 12; wy < 30; wy += 6) {
+                g.fillStyle = '#db2777';
+                g.fillRect(wx, wy, 4, 4);
+                g.fillStyle = '#f472b6';
+                g.fillRect(wx, wy, 3, 1);
+              }
+            }
+
+            // Thick wavy white sugar frosting layer dripping down
+            g.fillStyle = '#fbcfe8';
+            g.fillRect(0, 0, 32, 10);
+            g.fillStyle = '#ffffff';
+            g.fillRect(0, 0, 32, 7);
+
+            // Scalloped frosting drips
+            const drips = [2, 8, 14, 21, 27];
+            drips.forEach((dx, i) => {
+              const dh = 4 + (i % 3) * 2;
+              g.fillStyle = '#ffffff';
+              g.fillRect(dx, 7, 4, dh);
+              g.fillRect(dx + 1, 7 + dh, 2, 2);
+            });
+
+            // Sugar sprinkles (red, yellow, cyan)
+            g.fillStyle = '#f43f5e';
+            g.fillRect(4, 2, 3, 2);
+            g.fillStyle = '#facc15';
+            g.fillRect(16, 3, 3, 2);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(25, 2, 3, 2);
+
           } else if (levelTheme === 4) {
-            // BICYCLE TRACK ASPHALT & CURB (MUNDO 1-4)
+            // THEME 4: PLAYA COSTERA (Paved Bike Asphalt & Golden Sand Edge)
             g.fillStyle = '#1e293b';
             g.fillRect(0, 0, 32, 32);
-            // Paved asphalt top surface
             g.fillStyle = '#334155';
             g.fillRect(0, 0, 32, 12);
             g.fillStyle = '#475569';
             g.fillRect(0, 1, 32, 3);
-            // Red & white bike lane curb + dashed yellow line
+
+            // Yellow bike lane dashed line
             g.fillStyle = '#facc15';
             g.fillRect(4, 6, 10, 2);
             g.fillRect(20, 6, 8, 2);
-            g.fillStyle = '#22c55e';
+
+            // Golden tropical beach sand curb
+            g.fillStyle = '#d97706';
             g.fillRect(0, 11, 32, 3);
-            // Cobblestone base under bike track
+            g.fillStyle = '#f59e0b';
+            g.fillRect(0, 12, 32, 2);
+
+            // Cobblestone foundation
             g.fillStyle = '#64748b';
             g.fillRect(2, 16, 13, 12);
             g.fillRect(17, 16, 13, 12);
-          } else if (levelTheme === 2 || levelTheme === 5) {
-            g.fillStyle = '#1f2430';
-            g.fillRect(0, 0, 32, 32);
-            g.fillStyle = levelTheme === 5 ? '#1e3a8a' : '#3a4459';
-            g.fillRect(2, 10, 13, 10);
-            g.fillRect(17, 10, 13, 10);
-            g.fillRect(2, 22, 20, 8);
-            g.fillRect(24, 22, 6, 8);
-            g.fillStyle = levelTheme === 5 ? '#38bdf8' : '#586580';
-            g.fillRect(3, 11, 11, 2);
-            g.fillRect(18, 11, 11, 2);
+            g.fillStyle = '#94a3b8';
+            g.fillRect(3, 17, 11, 2);
+            g.fillRect(18, 17, 11, 2);
 
-            g.fillStyle = levelTheme === 5 ? '#0284c7' : '#6e4220';
-            g.fillRect(0, 0, 32, 9);
-            g.fillStyle = levelTheme === 5 ? '#38bdf8' : '#a36836';
-            g.fillRect(0, 1, 32, 6);
-            g.fillStyle = levelTheme === 5 ? '#bae6fd' : '#d4975c';
-            g.fillRect(0, 1, 32, 2);
-          } else {
-            g.fillStyle = '#141720';
+          } else if (levelTheme === 5) {
+            // THEME 5: CAVERNA AMATISTA (Faceted Purple Crystal Rock)
+            g.fillStyle = '#0f051d';
             g.fillRect(0, 0, 32, 32);
-            const bricks = [
-              [1, 1, 14, 14], [17, 1, 14, 14],
-              [1, 17, 21, 14], [24, 17, 7, 14]
+
+            // Deep violet rock body
+            g.fillStyle = '#2e1065';
+            g.fillRect(1, 9, 30, 22);
+
+            // Glowing faceted amethyst crystal shards inside rock
+            const gems = [
+              { x: 3, y: 13, w: 11, h: 8, c: '#7e22ce', hi: '#c084fc' },
+              { x: 17, y: 12, w: 12, h: 9, c: '#9333ea', hi: '#e9d5ff' },
+              { x: 5, y: 22, w: 10, h: 8, c: '#6b21a8', hi: '#a855f7' },
+              { x: 18, y: 23, w: 11, h: 7, c: '#0891b2', hi: '#22d3ee' } // Teal geode speck!
             ];
-            bricks.forEach(([bx, by, bw, bh]) => {
-              g.fillStyle = '#333b52';
-              g.fillRect(bx, by, bw, bh);
-              g.fillStyle = '#4e5978';
-              g.fillRect(bx + 1, by + 1, bw - 2, bh - 2);
-              g.fillStyle = '#7583a6';
-              g.fillRect(bx + 1, by + 1, bw - 3, 2);
-              g.fillRect(bx + 1, by + 1, 2, bh - 3);
+            gems.forEach(gm => {
+              g.fillStyle = gm.c;
+              g.fillRect(gm.x, gm.y, gm.w, gm.h);
+              g.fillStyle = gm.hi;
+              g.fillRect(gm.x + 1, gm.y + 1, gm.w - 2, 2);
+              g.fillRect(gm.x + 1, gm.y + 1, 2, gm.h - 2);
             });
+
+            // Glistening amethyst top rim
+            g.fillStyle = '#581c87';
+            g.fillRect(0, 0, 32, 10);
+            g.fillStyle = '#9333ea';
+            g.fillRect(0, 0, 32, 8);
+            g.fillStyle = '#c084fc';
+            g.fillRect(0, 1, 32, 5);
+            g.fillStyle = '#fae8ff';
+            g.fillRect(0, 1, 32, 2);
+
+          } else if (levelTheme === 6) {
+            // THEME 6: CIELO DE ALGODÓN (Pure White Fluffy Cloud Mounds)
+            g.fillStyle = '#0369a1';
+            g.fillRect(0, 0, 32, 32);
+
+            g.fillStyle = '#38bdf8';
+            g.fillRect(0, 9, 32, 23);
+            g.fillStyle = '#7dd3fc';
+            g.fillRect(0, 14, 32, 18);
+
+            // Puffy cloud lobes
+            g.fillStyle = '#bae6fd';
+            g.beginPath();
+            g.arc(8, 12, 10, 0, Math.PI * 2);
+            g.arc(24, 12, 10, 0, Math.PI * 2);
+            g.fill();
+
+            g.fillStyle = '#e0f2fe';
+            g.beginPath();
+            g.arc(8, 9, 9, 0, Math.PI * 2);
+            g.arc(24, 9, 9, 0, Math.PI * 2);
+            g.arc(16, 7, 10, 0, Math.PI * 2);
+            g.fill();
+
+            // Cloud top highlight
+            g.fillStyle = '#ffffff';
+            g.fillRect(0, 0, 32, 8);
+            g.beginPath();
+            g.arc(8, 6, 8, 0, Math.PI * 2);
+            g.arc(24, 6, 8, 0, Math.PI * 2);
+            g.arc(16, 4, 9, 0, Math.PI * 2);
+            g.fill();
+
+          } else if (levelTheme === 7) {
+            // THEME 7: VUELO HEROICO EN LA ESTRATOSFERA (Twilight Stardust Aerocrystal)
+            g.fillStyle = '#0b0a26';
+            g.fillRect(0, 0, 32, 32);
+
+            // Indigo celestial bedrock
+            g.fillStyle = '#1e1b4b';
+            g.fillRect(1, 9, 30, 22);
+
+            // Stardust crystals
+            g.fillStyle = '#3730a3';
+            g.fillRect(3, 12, 12, 9);
+            g.fillRect(17, 13, 12, 8);
+            g.fillStyle = '#6366f1';
+            g.fillRect(4, 13, 10, 2);
+            g.fillRect(18, 14, 10, 2);
+
+            // Aurora borealis glowing green & cyan crest
+            g.fillStyle = '#1e1b4b';
+            g.fillRect(0, 0, 32, 10);
+            g.fillStyle = '#4f46e5';
+            g.fillRect(0, 0, 32, 8);
+            g.fillStyle = '#34d399'; // Emerald aurora glow
+            g.fillRect(0, 1, 32, 5);
+            g.fillStyle = '#a7f3d0';
+            g.fillRect(0, 1, 32, 2);
+
+          } else if (levelTheme === 8) {
+            // THEME 8: GRAN FORTALEZA VOLCÁNICA (Black Obsidian & Molten Magma Cracks)
+            g.fillStyle = '#09090b';
+            g.fillRect(0, 0, 32, 32);
+
+            // Obsidian fortress bricks
+            const obsBlocks = [
+              { x: 1, y: 1, w: 14, h: 14 },
+              { x: 17, y: 1, w: 14, h: 14 },
+              { x: 1, y: 17, w: 14, h: 14 },
+              { x: 17, y: 17, w: 14, h: 14 }
+            ];
+            obsBlocks.forEach(b => {
+              g.fillStyle = '#18181b';
+              g.fillRect(b.x, b.y, b.w, b.h);
+              g.fillStyle = '#27272a';
+              g.fillRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+              g.fillStyle = '#3f3f46';
+              g.fillRect(b.x + 1, b.y + 1, b.w - 3, 2);
+            });
+
+            // Fiery Molten Magma Cracks glowing between bricks!
+            g.fillStyle = '#7f1d1d';
+            g.fillRect(0, 15, 32, 2);
+            g.fillRect(15, 0, 2, 32);
+            g.fillStyle = '#dc2626';
+            g.fillRect(1, 15, 30, 1);
+            g.fillRect(15, 1, 1, 30);
+            g.fillStyle = '#f87171';
+            g.fillRect(15, 15, 2, 2);
+
+          } else {
+            // THEME 9: LA VÍA LÁCTEA ESTELAR (Cosmic Neon Highway)
+            g.fillStyle = '#030712';
+            g.fillRect(0, 0, 32, 32);
+
+            // Deep cyber grid
+            g.fillStyle = '#0f172a';
+            g.fillRect(2, 2, 28, 28);
+
+            // Neon cyan edge circuits
+            g.fillStyle = '#06b6d4';
+            g.fillRect(0, 0, 32, 2);
+            g.fillRect(0, 30, 32, 2);
+            g.fillStyle = '#22d3ee';
+            g.fillRect(4, 4, 24, 2);
+
+            // Glowing neon magenta star node in center
+            g.fillStyle = '#f43f5e';
+            g.fillRect(14, 14, 4, 4);
+            g.fillStyle = '#fb7185';
+            g.fillRect(15, 15, 2, 2);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(6, 15, 4, 2);
+            g.fillRect(22, 15, 4, 2);
           }
           this.cache[key] = cnv;
         }
         ctx.drawImage(this.cache[key], x, y, size, size);
 
-        // If this is a TURBO BOOST PAD ('T') on the bicycle road, draw glowing animated chevrons!
+        // If this is a TURBO BOOST PAD ('T') on the road, draw glowing animated chevrons!
         if (type === 'T') {
           const pulse = Math.floor(time * 12) % 3;
           ctx.fillStyle = '#0f172a';
@@ -382,29 +579,182 @@ class SpriteRenderer {
           cnv.height = 32;
           const g = cnv.getContext('2d');
 
-          g.fillStyle = '#1f0c05';
-          g.fillRect(0, 0, 32, 32);
+          if (levelTheme === 2) {
+            // THEME 2: Wooden Toy Puzzle Blocks with Brass Corner Brackets
+            g.fillStyle = '#451a03';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#92400e';
+            g.fillRect(2, 2, 28, 28);
+            g.fillStyle = '#b45309';
+            g.fillRect(4, 4, 24, 24);
+            g.fillStyle = '#d97706';
+            g.fillRect(4, 4, 24, 3);
+            g.fillRect(4, 4, 3, 24);
 
-          const rows = [
-            { y: 1, h: 7, offsets: [1, 17] },
-            { y: 9, h: 7, offsets: [-7, 9, 25] },
-            { y: 17, h: 7, offsets: [1, 17] },
-            { y: 25, h: 6, offsets: [-7, 9, 25] }
-          ];
+            // Brass brackets
+            g.fillStyle = '#f59e0b';
+            g.fillRect(2, 2, 6, 6);
+            g.fillRect(24, 2, 6, 6);
+            g.fillRect(2, 24, 6, 6);
+            g.fillRect(24, 24, 6, 6);
+            g.fillStyle = '#fde68a';
+            g.fillRect(3, 3, 3, 3);
+            g.fillRect(25, 3, 3, 3);
 
-          rows.forEach(r => {
-            r.offsets.forEach(ox => {
-              const bx = Math.max(0, ox);
-              const bw = Math.min(32, ox + 15) - bx;
-              if (bw <= 0) return;
-              g.fillStyle = '#702912';
-              g.fillRect(bx, r.y, bw, r.h);
-              g.fillStyle = '#a84422';
-              g.fillRect(bx, r.y, bw - 1, r.h - 1);
-              g.fillStyle = '#de6d43';
-              g.fillRect(bx, r.y, bw - 2, 2);
+          } else if (levelTheme === 3) {
+            // THEME 3: Strawberry Waffle Wafer Blocks with Sugar Icing
+            g.fillStyle = '#701a75';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#be185d';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#db2777';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#f472b6';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+
+            // Waffle grid grooves
+            g.fillStyle = '#9d174d';
+            g.fillRect(15, 3, 2, 26);
+            g.fillRect(3, 15, 26, 2);
+
+            // White icing frosting dots
+            g.fillStyle = '#ffffff';
+            g.fillRect(7, 7, 4, 4);
+            g.fillRect(21, 7, 4, 4);
+            g.fillRect(7, 21, 4, 4);
+            g.fillRect(21, 21, 4, 4);
+
+          } else if (levelTheme === 4) {
+            // THEME 4: Coral Sandstone Blocks
+            g.fillStyle = '#7c2d12';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#c2410c';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#ea580c';
+            g.fillRect(2, 2, 28, 28);
+            g.fillStyle = '#fed7aa';
+            g.fillRect(2, 2, 28, 3);
+            g.fillRect(2, 2, 3, 28);
+
+          } else if (levelTheme === 5) {
+            // THEME 5: Faceted Purple Amethyst Gem Blocks
+            g.fillStyle = '#1e113a';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#581c87';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#7e22ce';
+            g.fillRect(3, 3, 26, 26);
+
+            // Gem facets
+            g.fillStyle = '#a855f7';
+            g.beginPath();
+            g.moveTo(3, 3);
+            g.lineTo(16, 16);
+            g.lineTo(29, 3);
+            g.closePath();
+            g.fill();
+
+            g.fillStyle = '#c084fc';
+            g.fillRect(14, 14, 4, 4);
+            g.fillStyle = '#ffffff';
+            g.fillRect(15, 15, 2, 2);
+
+          } else if (levelTheme === 6) {
+            // THEME 6: Ethereal Sky Cloud Blocks
+            g.fillStyle = '#0369a1';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0284c7';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#ffffff';
+            g.fillRect(3, 3, 26, 4);
+            g.fillRect(3, 3, 4, 26);
+            g.fillStyle = '#e0f2fe';
+            g.fillRect(8, 8, 16, 16);
+
+          } else if (levelTheme === 7) {
+            // THEME 7: Twilight Celestial Star-Metal Blocks
+            g.fillStyle = '#0f0c2e';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#312e81';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#4f46e5';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#818cf8';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+
+            // Glowing star rune in center
+            g.fillStyle = '#facc15';
+            g.fillRect(15, 10, 2, 12);
+            g.fillRect(10, 15, 12, 2);
+            g.fillRect(13, 13, 6, 6);
+
+          } else if (levelTheme === 8) {
+            // THEME 8: Volcanic Dark Basalt Fortress Blocks with Embers
+            g.fillStyle = '#09090b';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#18181b';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#27272a';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#3f3f46';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+
+            // Smoldering red lava seams
+            g.fillStyle = '#dc2626';
+            g.fillRect(6, 15, 20, 2);
+            g.fillStyle = '#fca5a5';
+            g.fillRect(14, 15, 4, 2);
+
+          } else if (levelTheme === 9) {
+            // THEME 9: Cosmic Neon Prism Hyper-Cube Blocks
+            g.fillStyle = '#030712';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0f172a';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#0891b2';
+            g.fillRect(2, 2, 28, 2);
+            g.fillRect(2, 2, 2, 28);
+            g.fillStyle = '#f43f5e';
+            g.fillRect(2, 28, 28, 2);
+            g.fillRect(28, 2, 2, 28);
+
+            // Glowing pulsing yellow core
+            g.fillStyle = '#facc15';
+            g.fillRect(12, 12, 8, 8);
+            g.fillStyle = '#ffffff';
+            g.fillRect(14, 14, 4, 4);
+
+          } else {
+            // Classic Terracotta Bricks (Theme 1 & fallback)
+            g.fillStyle = '#1f0c05';
+            g.fillRect(0, 0, 32, 32);
+
+            const rows = [
+              { y: 1, h: 7, offsets: [1, 17] },
+              { y: 9, h: 7, offsets: [-7, 9, 25] },
+              { y: 17, h: 7, offsets: [1, 17] },
+              { y: 25, h: 6, offsets: [-7, 9, 25] }
+            ];
+
+            rows.forEach(r => {
+              r.offsets.forEach(ox => {
+                const bx = Math.max(0, ox);
+                const bw = Math.min(32, ox + 15) - bx;
+                if (bw <= 0) return;
+                g.fillStyle = '#702912';
+                g.fillRect(bx, r.y, bw, r.h);
+                g.fillStyle = '#a84422';
+                g.fillRect(bx, r.y, bw - 1, r.h - 1);
+                g.fillStyle = '#de6d43';
+                g.fillRect(bx, r.y, bw - 2, 2);
+              });
             });
-          });
+          }
           this.cache[key] = cnv;
         }
         ctx.drawImage(this.cache[key], x, y, size, size);
@@ -520,25 +870,143 @@ class SpriteRenderer {
 
       case 'P':
       case 'p': {
-        const key = `snes_pipe_${type}`;
+        const key = `snes_pipe_${type}_${levelTheme}`;
         if (!this.cache[key]) {
           const cnv = document.createElement('canvas');
           cnv.width = 32;
           cnv.height = 32;
           const g = cnv.getContext('2d');
 
-          const bands = [
-            { x: 1, w: 3, c: '#0a2e12' },
-            { x: 4, w: 4, c: '#155724' },
-            { x: 8, w: 5, c: '#288f3d' },
-            { x: 13, w: 5, c: '#67d67a' },
-            { x: 18, w: 3, c: '#b8f5c2' },
-            { x: 21, w: 4, c: '#38a84f' },
-            { x: 25, w: 4, c: '#196129' },
-            { x: 29, w: 2, c: '#0a2e12' }
-          ];
+          let bands, bgCol, rimCol;
+          if (levelTheme === 2) {
+            // THEME 2: Polished Workshop Brass Steam Pipe
+            bgCol = '#271004';
+            rimCol = '#fef08a';
+            bands = [
+              { x: 1, w: 3, c: '#451a03' },
+              { x: 4, w: 4, c: '#78350f' },
+              { x: 8, w: 5, c: '#b45309' },
+              { x: 13, w: 5, c: '#d97706' },
+              { x: 18, w: 3, c: '#fde047' },
+              { x: 21, w: 4, c: '#f59e0b' },
+              { x: 25, w: 4, c: '#92400e' },
+              { x: 29, w: 2, c: '#451a03' }
+            ];
+          } else if (levelTheme === 3) {
+            // THEME 3: Red & White Candy Cane Warp Pipe
+            bgCol = '#4c0519';
+            rimCol = '#ffffff';
+            bands = [
+              { x: 1, w: 3, c: '#881337' },
+              { x: 4, w: 4, c: '#e11d48' },
+              { x: 8, w: 5, c: '#ffffff' },
+              { x: 13, w: 5, c: '#ffffff' },
+              { x: 18, w: 3, c: '#ffe4e6' },
+              { x: 21, w: 4, c: '#f43f5e' },
+              { x: 25, w: 4, c: '#be123c' },
+              { x: 29, w: 2, c: '#881337' }
+            ];
+          } else if (levelTheme === 4) {
+            // THEME 4: Tropical Ocean Turquoise Pipe
+            bgCol = '#042f2e';
+            rimCol = '#ccfbf1';
+            bands = [
+              { x: 1, w: 3, c: '#083344' },
+              { x: 4, w: 4, c: '#0e7490' },
+              { x: 8, w: 5, c: '#06b6d4' },
+              { x: 13, w: 5, c: '#22d3ee' },
+              { x: 18, w: 3, c: '#a5f3fc' },
+              { x: 21, w: 4, c: '#06b6d4' },
+              { x: 25, w: 4, c: '#0e7490' },
+              { x: 29, w: 2, c: '#083344' }
+            ];
+          } else if (levelTheme === 5) {
+            // THEME 5: Amethyst Geode Pipe
+            bgCol = '#0f051d';
+            rimCol = '#f5d0fe';
+            bands = [
+              { x: 1, w: 3, c: '#2e1065' },
+              { x: 4, w: 4, c: '#581c87' },
+              { x: 8, w: 5, c: '#7e22ce' },
+              { x: 13, w: 5, c: '#a855f7' },
+              { x: 18, w: 3, c: '#e9d5ff' },
+              { x: 21, w: 4, c: '#9333ea' },
+              { x: 25, w: 4, c: '#581c87' },
+              { x: 29, w: 2, c: '#2e1065' }
+            ];
+          } else if (levelTheme === 6) {
+            // THEME 6: Sky Blue Cloud Pipe
+            bgCol = '#082f49';
+            rimCol = '#ffffff';
+            bands = [
+              { x: 1, w: 3, c: '#0369a1' },
+              { x: 4, w: 4, c: '#0284c7' },
+              { x: 8, w: 5, c: '#38bdf8' },
+              { x: 13, w: 5, c: '#7dd3fc' },
+              { x: 18, w: 3, c: '#e0f2fe' },
+              { x: 21, w: 4, c: '#38bdf8' },
+              { x: 25, w: 4, c: '#0284c7' },
+              { x: 29, w: 2, c: '#0369a1' }
+            ];
+          } else if (levelTheme === 7) {
+            // THEME 7: Twilight Celestial Indigo/Gold Pipe
+            bgCol = '#0b0a26';
+            rimCol = '#fef08a';
+            bands = [
+              { x: 1, w: 3, c: '#1e1b4b' },
+              { x: 4, w: 4, c: '#312e81' },
+              { x: 8, w: 5, c: '#4f46e5' },
+              { x: 13, w: 5, c: '#818cf8' },
+              { x: 18, w: 3, c: '#facc15' },
+              { x: 21, w: 4, c: '#6366f1' },
+              { x: 25, w: 4, c: '#3730a3' },
+              { x: 29, w: 2, c: '#1e1b4b' }
+            ];
+          } else if (levelTheme === 8) {
+            // THEME 8: Volcanic Dark Cast-Iron Furnace Pipe with Molten Rim
+            bgCol = '#09090b';
+            rimCol = '#fca5a5';
+            bands = [
+              { x: 1, w: 3, c: '#18181b' },
+              { x: 4, w: 4, c: '#27272a' },
+              { x: 8, w: 5, c: '#7f1d1d' },
+              { x: 13, w: 5, c: '#dc2626' },
+              { x: 18, w: 3, c: '#f87171' },
+              { x: 21, w: 4, c: '#991b1b' },
+              { x: 25, w: 4, c: '#3f3f46' },
+              { x: 29, w: 2, c: '#18181b' }
+            ];
+          } else if (levelTheme === 9) {
+            // THEME 9: Cosmic Cyber Neon Gateway
+            bgCol = '#030712';
+            rimCol = '#f43f5e';
+            bands = [
+              { x: 1, w: 3, c: '#0f172a' },
+              { x: 4, w: 4, c: '#0e7490' },
+              { x: 8, w: 5, c: '#06b6d4' },
+              { x: 13, w: 5, c: '#22d3ee' },
+              { x: 18, w: 3, c: '#67e8f9' },
+              { x: 21, w: 4, c: '#06b6d4' },
+              { x: 25, w: 4, c: '#f43f5e' },
+              { x: 29, w: 2, c: '#0f172a' }
+            ];
+          } else {
+            // Classic Mario Green (Theme 1 & fallback)
+            bgCol = '#061a0a';
+            rimCol = '#b8f5c2';
+            bands = [
+              { x: 1, w: 3, c: '#0a2e12' },
+              { x: 4, w: 4, c: '#155724' },
+              { x: 8, w: 5, c: '#288f3d' },
+              { x: 13, w: 5, c: '#67d67a' },
+              { x: 18, w: 3, c: '#b8f5c2' },
+              { x: 21, w: 4, c: '#38a84f' },
+              { x: 25, w: 4, c: '#196129' },
+              { x: 29, w: 2, c: '#0a2e12' }
+            ];
+          }
 
-          g.fillStyle = '#061a0a';
+          g.fillStyle = bgCol;
           g.fillRect(0, 0, 32, 32);
           bands.forEach(b => {
             g.fillStyle = b.c;
@@ -546,9 +1014,9 @@ class SpriteRenderer {
           });
 
           if (type === 'P') {
-            g.fillStyle = '#061a0a';
+            g.fillStyle = bgCol;
             g.fillRect(0, 12, 32, 3);
-            g.fillStyle = '#b8f5c2';
+            g.fillStyle = rimCol;
             g.fillRect(2, 1, 28, 2);
           }
           this.cache[key] = cnv;
@@ -1074,20 +1542,43 @@ class SpriteRenderer {
             ctx.arc(0, -62 + bob, 5, 0, Math.PI * 2);
             ctx.fill();
           } else if (theme === 3) {
-            // Castle Mode: Spiked Iron Helmet / Horns!
-            ctx.fillStyle = '#64748b';
-            ctx.fillRect(-12, -50 + bob, 24, 4);
-            ctx.fillStyle = '#e2e8f0';
+            // Candy Mode: Whipped Cream Swirl with a Red Cherry!
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.moveTo(-10, -50 + bob);
-            ctx.lineTo(-14, -58 + bob);
-            ctx.lineTo(-6, -50 + bob);
+            ctx.arc(0, -50 + bob, 11, Math.PI, 0);
             ctx.fill();
             ctx.beginPath();
-            ctx.moveTo(10, -50 + bob);
-            ctx.lineTo(14, -58 + bob);
-            ctx.lineTo(6, -50 + bob);
+            ctx.arc(0, -58 + bob, 7, 0, Math.PI * 2);
             ctx.fill();
+            // Red cherry
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(0, -68 + bob, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#15803d';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -73 + bob);
+            ctx.quadraticCurveTo(5, -78 + bob, 4, -83 + bob);
+            ctx.stroke();
+
+          } else if (theme === 5) {
+            // Amethyst Cavern: Miner Helmet with Glowing Gem Lamp!
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(-14, -50 + bob, 28, 5);
+            ctx.beginPath();
+            ctx.arc(0, -50 + bob, 13, Math.PI, 0);
+            ctx.fill();
+            // Glowing turquoise gem headlight
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(0, -53 + bob, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
+            ctx.beginPath();
+            ctx.arc(0, -53 + bob, 8, 0, Math.PI * 2);
+            ctx.fill();
+
           } else if (theme === 6) {
             // Sky Mode: Fluttering Angel Wings!
             const wingFlap = Math.sin(time * 24) * 6;
@@ -1102,6 +1593,53 @@ class SpriteRenderer {
             ctx.ellipse(24, -30 + bob - wingFlap * 0.3, 10, 5, 0.4, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
+
+          } else if (theme === 7) {
+            // Twilight Stratosphere: Glowing Stardust Star Halo!
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(0, -58 + bob, 15, 5, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Golden star sparks
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-2, -66 + bob, 4, 4);
+
+          } else if (theme === 8) {
+            // Volcanic Fortress: Spiked Iron Helmet / Devilish Horns!
+            ctx.fillStyle = '#18181b';
+            ctx.fillRect(-13, -50 + bob, 26, 4);
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(-10, -50 + bob);
+            ctx.lineTo(-15, -60 + bob);
+            ctx.lineTo(-5, -50 + bob);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(10, -50 + bob);
+            ctx.lineTo(15, -60 + bob);
+            ctx.lineTo(5, -50 + bob);
+            ctx.fill();
+
+          } else if (theme === 9) {
+            // Cosmic Milky Way: Astronaut Bubble Helmet & Star Antenna!
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, -42 + bob, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // Star antenna
+            ctx.strokeStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.moveTo(0, -62 + bob);
+            ctx.lineTo(0, -72 + bob);
+            ctx.stroke();
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(0, -74 + bob, 3, 0, Math.PI * 2);
+            ctx.fill();
           }
         }
       }
