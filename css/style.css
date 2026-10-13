@@ -1,0 +1,350 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --snes-bg-dark: #0f101a;
+  --snes-purple: #5c4b99;
+  --snes-lavender: #9d8df1;
+  --snes-grey: #cbd5e1;
+  --snes-gold: #f59e0b;
+  --font-retro: 'Press Start 2P', 'Courier New', Courier, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+body {
+  background: radial-gradient(circle at center, #1e2238 0%, #090a12 100%);
+  color: #f8fafc;
+  font-family: var(--font-retro);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.arcade-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* SNES All-Stars Header Bar */
+.arcade-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  padding: 8px 12px;
+  border: 3px solid #94a3b8;
+  border-radius: 8px;
+  box-shadow: 0 5px 0 #090d16, 0 8px 20px rgba(0, 0, 0, 0.6);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #fde047;
+  text-shadow: 2px 2px 0 #000, -1px -1px 0 #713f12;
+  letter-spacing: 0.5px;
+}
+
+.brand-badge {
+  background: #6d28d9;
+  color: #fff;
+  font-size: 8px;
+  padding: 4px 7px;
+  border-radius: 4px;
+  border: 2px solid #c4b5fd;
+  box-shadow: 1px 2px 0 #000;
+}
+
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.retro-btn {
+  font-family: var(--font-retro);
+  font-size: 8.5px;
+  padding: 6px 8px;
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+  color: #f8fafc;
+  border: 2px solid #94a3b8;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0f172a;
+  transition: transform 0.08s, filter 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.retro-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.retro-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0f172a;
+}
+
+.retro-btn.active {
+  background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
+  border-color: #ddd6fe;
+}
+
+.retro-btn.level-btn {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #93c5fd;
+}
+
+.retro-btn.level-btn.current-level {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-color: #fef08a;
+  color: #0f172a;
+}
+
+/* Main SNES TV Bezel */
+.screen-bezel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100dvh - 135px);
+  background: #000;
+  border: 5px solid #475569;
+  outline: 2px solid #1e293b;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.9),
+    0 8px 0 #0f172a,
+    0 14px 35px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Optional CRT Scanlines Overlay */
+.crt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      rgba(18, 16, 16, 0) 50%, 
+      rgba(0, 0, 0, 0.22) 50%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 68%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  background-size: 100% 4px, 100% 100%;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.crt-overlay.enabled {
+  opacity: 1;
+}
+
+/* Bottom Controls Info Bar */
+.controls-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  border: 2px solid #475569;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 9px;
+  color: #e2e8f0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.control-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.key-badge {
+  background: #7c3aed;
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border-bottom: 2px solid #4c1d95;
+  font-weight: bold;
+  font-size: 8px;
+}
+
+/* Ergonomic On-Screen Touch Gamepad */
+.touch-controls {
+  position: absolute;
+  bottom: 52px;
+  left: 18px;
+  right: 18px;
+  display: none;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.touch-controls.visible {
+  display: flex;
+}
+
+.touch-dpad, .touch-actions {
+  display: flex;
+  gap: 14px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.touch-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.78);
+  border: 3px solid #cbd5e1;
+  color: #fff;
+  font-family: var(--font-retro);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 5px 0 rgba(15, 23, 42, 0.9), 0 6px 14px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.touch-btn small {
+  font-size: 6px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
+}
+
+.touch-btn:active, .touch-btn.pressed {
+  background: rgba(250, 204, 21, 0.92);
+  border-color: #ffffff;
+  color: #0f172a;
+  transform: translateY(2px) scale(0.95);
+}
+
+.touch-btn.action-jump {
+  width: 72px;
+  height: 72px;
+  background: rgba(37, 99, 235, 0.82);
+  border-color: #93c5fd;
+}
+
+.touch-btn.action-magic {
+  width: 64px;
+  height: 64px;
+  background: rgba(219, 39, 119, 0.82);
+  border-color: #f9a8d4;
+}
+
+/* Mobile Portrait Mode: Dock Gamepad below the TV Screen (Handheld Console Layout!) */
+@media (max-width: 768px) and (orientation: portrait) {
+  body {
+    justify-content: flex-start;
+    padding: 6px;
+  }
+  .brand-title {
+    font-size: 10px;
+  }
+  .controls-bar {
+    display: none;
+  }
+  .touch-controls {
+    position: static;
+    display: flex;
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border: 3px solid #475569;
+    border-radius: 14px;
+    box-shadow: 0 6px 0 #090d16;
+  }
+}
+
+/* Mobile Landscape Mode: Maximize Game Screen & Float Translucent Controls */
+@media (max-height: 540px) and (orientation: landscape) {
+  body {
+    padding: 3px 6px;
+  }
+  .arcade-wrapper {
+    gap: 4px;
+    max-width: 100%;
+  }
+  .arcade-header {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  .brand-title {
+    font-size: 9px;
+  }
+  .retro-btn {
+    font-size: 7.5px;
+    padding: 4px 6px;
+  }
+  .screen-bezel {
+    max-height: calc(100dvh - 46px);
+    border-width: 3px;
+  }
+  .controls-bar {
+    display: none;
+  }
+  .touch-controls {
+    display: flex;
+    bottom: 12px;
+    left: 16px;
+    right: 16px;
+  }
+}

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Super Ámbar" />
+  <meta name="theme-color" content="#0f101a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="assets/ambar_hoodie_0.png" />
+  <link rel="apple-touch-icon" href="assets/ambar_hoodie_0.png" />
+  <title>Super Ámbar All-Stars - 16-Bit SNES Edition</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="arcade-wrapper">
+    <!-- Top Retro SNES Header -->
+    <header class="arcade-header">
+      <div class="brand-title">
+        <span>★ SUPER ÁMBAR ALL-STARS ★</span>
+        <span class="brand-badge">16-BIT SNES</span>
+      </div>
+
+      <div class="toolbar-buttons">
+        <button class="retro-btn level-btn current-level" onclick="window.game && window.game.selectLevel(0)">
+          🌳 1-1
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(1)">
+          🚂 1-2
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(2)">
+          🏰 1-3
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(3)" title="¡Nivel en Bicicleta!">
+          🚲 1-4 Bici
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(4)">
+          💎 1-5
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(5)">
+          ☁️ 1-6
+        </button>
+        <button class="retro-btn level-btn" onclick="window.game && window.game.selectLevel(6)">
+          👑 1-7
+        </button>
+        <button class="retro-btn" onclick="window.game && window.game.cycleAmbarPowerUp()" title="Cambiar el look de Ámbar (Tecla T)">
+          👓 Look
+        </button>
+        <button class="retro-btn active" id="btnAudio" onclick="toggleAudioBtn()">
+          🔊 Sonido
+        </button>
+        <button class="retro-btn" id="btnCrt" onclick="toggleCrtBtn()">
+          📺 CRT
+        </button>
+        <button class="retro-btn" id="btnTouch" onclick="toggleTouchBtn()">
+          🎮 Táctil
+        </button>
+        <button class="retro-btn" id="btnFullscreen" onclick="toggleFullscreenBtn()" title="Pantalla Completa para Celular o PC">
+          ⛶ Pantalla
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Screen -->
+    <main class="screen-bezel" id="screenBezel">
+      <canvas id="gameCanvas" width="854" height="480"></canvas>
+      <div class="crt-overlay" id="crtOverlay"></div>
+    </main>
+
+    <!-- Mobile / On-Screen Touch Gamepad (overlays in landscape, sits below screen in portrait!) -->
+    <div class="touch-controls" id="touchControls">
+      <div class="touch-dpad" id="touchDpad">
+        <button class="touch-btn" id="touchLeft" aria-label="Izquierda">◀</button>
+        <button class="touch-btn" id="touchRight" aria-label="Derecha">▶</button>
+      </div>
+      <div class="touch-actions">
+        <button class="touch-btn action-magic" id="touchMagic" aria-label="Magia / Correr">
+          <span>★</span>
+          <small>TURBO</small>
+        </button>
+        <button class="touch-btn action-jump" id="touchJump" aria-label="Saltar">
+          <span>▲</span>
+          <small>SALTO</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls Help Bar -->
+    <footer class="controls-bar">
+      <div class="control-hint">
+        <span class="key-badge">◀ ▶</span> o <span class="key-badge">A D</span> Mover
+      </div>
+      <div class="control-hint">
+        <span class="key-badge">ESPACIO</span> o <span class="key-badge">▲ / W</span> Saltar (2 veces = Salto Doble)
+      </div>
+      <div class="control-hint">
+        <span class="key-badge">X</span> / <span class="key-badge">SHIFT</span> Correr / Disparar
+      </div>
+      <div class="control-hint">
+        <span class="key-badge">T</span> Cambiar Look (Jardinero / Buzo Rosa)
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/audio.js"></script>
+  <script src="js/sprite_assets.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/game.js"></script>
+  <script>
+    function toggleAudioBtn() {
+      const muted = window.retroAudio.toggleMute();
+      const btn = document.getElementById('btnAudio');
+      btn.textContent = muted ? '🔇 Mudo' : '🔊 Sonido';
+      btn.classList.toggle('active', !muted);
+    }
+
+    function toggleCrtBtn() {
+      const overlay = document.getElementById('crtOverlay');
+      const btn = document.getElementById('btnCrt');
+      overlay.classList.toggle('enabled');
+      btn.classList.toggle('active', overlay.classList.contains('enabled'));
+    }
+
+    function toggleTouchBtn(forceState) {
+      const tc = document.getElementById('touchControls');
+      const btn = document.getElementById('btnTouch');
+      if (typeof forceState === 'boolean') {
+        tc.classList.toggle('visible', forceState);
+      } else {
+        tc.classList.toggle('visible');
+      }
+      btn.classList.toggle('active', tc.classList.contains('visible'));
+    }
+
+    async function toggleFullscreenBtn() {
+      const wrapper = document.documentElement;
+      try {
+        if (!document.fullscreenElement) {
+          await wrapper.requestFullscreen();
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (e) {}
+    }
+
+    // Automatically activate touch gamepad on mobile phones & tablets!
+    window.addEventListener('DOMContentLoaded', () => {
+      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia('(pointer: coarse)').matches;
+      if (isTouchDevice) {
+        toggleTouchBtn(true);
+      }
+    });
+  </script>
+</body>
+</html>

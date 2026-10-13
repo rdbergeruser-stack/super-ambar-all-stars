@@ -1,0 +1,8 @@
+# Excluir carpeta de fotos personales de Ámbar
+Foto  Ambar/
+Foto Ambar/
+.vercel/
+node_modules/
+.DS_Store
+Thumbs.db
+

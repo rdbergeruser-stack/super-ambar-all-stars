@@ -1,0 +1,814 @@
+// ============================================================================
+// LEVEL DEFINITIONS - SUPER ÁMBAR ALL-STARS (7 WORLDS + BICYCLE LEVEL!)
+// Grid: 15 rows high (0 = top sky, 13-14 = ground floor), 32x32 px tiles
+// ============================================================================
+
+function createEmptyGrid(cols, rows = 15) {
+  const grid = [];
+  for (let r = 0; r < rows; r++) {
+    grid.push(new Array(cols).fill('.'));
+  }
+  return grid;
+}
+
+function fillRect(grid, c1, r1, w, h, ch) {
+  for (let r = r1; r < r1 + h; r++) {
+    for (let c = c1; c < c1 + w; c++) {
+      if (grid[r] && c >= 0 && c < grid[r].length) {
+        grid[r][c] = ch;
+      }
+    }
+  }
+}
+
+function addPipe(grid, col, topRow, groundRow = 13) {
+  grid[topRow][col] = 'P';
+  grid[topRow][col + 1] = 'P';
+  for (let r = topRow + 1; r < groundRow; r++) {
+    grid[r][col] = 'p';
+    grid[r][col + 1] = 'p';
+  }
+}
+
+function addStairs(grid, startCol, height, dir = 1, groundRow = 13) {
+  for (let step = 0; step < height; step++) {
+    const col = dir > 0 ? startCol + step : startCol + (height - 1 - step);
+    for (let r = groundRow - 1 - step; r < groundRow; r++) {
+      grid[r][col] = 'H';
+    }
+  }
+}
+
+// Helper to spell "AMBAR" in floating coins!
+function addAmbarCoinBanner(coins, startTileX, topTileY) {
+  const pattern = [
+    " .#.  #...# ####   .#.  #### ",
+    "#...# ##.## #...# #...# #...#",
+    "##### #.#.# ####  ##### #### ",
+    "#...# #...# #...# #...# #..# ",
+    "#...# #...# ####  #...# #...#"
+  ];
+  for (let r = 0; r < pattern.length; r++) {
+    for (let c = 0; c < pattern[r].length; c++) {
+      if (pattern[r][c] === '#') {
+        coins.push({ x: (startTileX + c) * 32 + 4, y: (topTileY + r) * 32 + 4 });
+      }
+    }
+  }
+}
+
+// ============================================================================
+// NIVEL 1-1: PRADERA DE ALGODÓN DE AZÚCAR Y ARCOÍRIS
+// ============================================================================
+function buildLevel1() {
+  const cols = 155;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  fillRect(grid, 0, 13, cols, 2, '#');
+  fillRect(grid, 48, 13, 3, 2, '.');
+  fillRect(grid, 88, 13, 3, 2, '.');
+
+  // Opening Mario-style Question & Super Mushroom blocks!
+  grid[9][10] = '?';
+  grid[9][13] = 'B';
+  grid[9][14] = 'M'; // <-- Super Hongo Mágico!
+  grid[9][15] = 'B';
+  grid[9][16] = '?';
+  grid[9][17] = 'B';
+  grid[5][15] = '?';
+
+  enemies.push({ type: 'goomba', x: 16 * 32, y: 12 * 32 });
+
+  addPipe(grid, 22, 11);
+  addPipe(grid, 29, 10);
+  enemies.push({ type: 'goomba', x: 26 * 32, y: 12 * 32 });
+
+  addPipe(grid, 37, 9);
+  enemies.push({ type: 'goomba', x: 33 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 35 * 32, y: 12 * 32 });
+
+  for (let c = 30; c <= 35; c++) {
+    coins.push({ x: c * 32 + 4, y: 7 * 32 });
+  }
+
+  grid[9][42] = 'B';
+  grid[9][43] = 'M';
+  grid[9][44] = 'B';
+  grid[5][45] = 'L'; // Hongo Verde 1-UP!
+
+  grid[12][53] = 'J';
+  fillRect(grid, 55, 8, 30, 1, 'B');
+  addAmbarCoinBanner(coins, 56, 2);
+
+  enemies.push({ type: 'goomba', x: 60 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 63 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 72 * 32, y: 12 * 32 });
+
+  const checkpointCol = 78;
+
+  platforms.push({
+    x: 87 * 32,
+    y: 10 * 32,
+    w: 96,
+    h: 20,
+    minX: 86 * 32,
+    maxX: 92 * 32,
+    vx: 1.2,
+    vy: 0,
+    style: 'cloud'
+  });
+
+  grid[9][96] = 'B';
+  grid[9][97] = 'S'; // Super Estrella!
+  grid[9][98] = 'B';
+
+  enemies.push({ type: 'goomba', x: 103 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 105 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 108 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 112 * 32, y: 12 * 32 });
+
+  addStairs(grid, 116, 4, 1);
+  addStairs(grid, 122, 4, -1);
+
+  addPipe(grid, 129, 11);
+
+  addStairs(grid, 134, 7, 1);
+  grid[12][141] = 'H';
+
+  return {
+    id: 1,
+    name: 'MUNDO 1-1: PRADERA ARCOÍRIS',
+    subtitle: '¡Toma el Super Hongo para crecer y usar el Buzo Rosa con Lentes Violetas!',
+    theme: 1,
+    bgm: 'level1',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 146 * 32,
+    castleX: 150 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-2: LA FÁBRICA DE JUGUETES MÁGICOS (CON EL TRENCITO DE MADERA)
+// ============================================================================
+function buildLevel2() {
+  const cols = 160;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  fillRect(grid, 0, 13, 32, 2, '#');
+  fillRect(grid, 42, 13, 34, 2, '#');
+  fillRect(grid, 85, 13, 30, 2, '#');
+  fillRect(grid, 124, 13, 36, 2, '#');
+
+  grid[9][8] = '?';
+  grid[9][9] = 'M';
+  grid[9][10] = '?';
+
+  fillRect(grid, 15, 10, 4, 1, 'H');
+  grid[12][21] = 'J';
+
+  for (let c = 21; c <= 26; c++) {
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  enemies.push({ type: 'robot', x: 18 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 27 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 32 * 32,
+    y: 11 * 32,
+    w: 112,
+    h: 22,
+    minX: 31 * 32,
+    maxX: 40 * 32,
+    vx: 1.5,
+    vy: 0,
+    style: 'train'
+  });
+
+  for (let c = 34; c <= 39; c++) {
+    coins.push({ x: c * 32 + 4, y: 8 * 32 });
+  }
+
+  fillRect(grid, 46, 9, 8, 1, 'B');
+  grid[9][50] = 'M';
+  fillRect(grid, 56, 6, 8, 1, 'B');
+  grid[6][60] = 'L';
+
+  enemies.push({ type: 'robot', x: 49 * 32, y: 12 * 32 });
+  enemies.push({ type: 'cloud', x: 55 * 32, y: 7 * 32, baseY: 7 * 32 });
+  enemies.push({ type: 'goomba', x: 64 * 32, y: 12 * 32 });
+  enemies.push({ type: 'robot', x: 70 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 75 * 32,
+    y: 10 * 32,
+    w: 104,
+    h: 22,
+    minX: 74 * 32,
+    maxX: 83 * 32,
+    vx: 1.7,
+    vy: 0,
+    style: 'train'
+  });
+
+  const checkpointCol = 88;
+
+  grid[9][92] = '?';
+  grid[9][93] = 'M';
+  grid[9][94] = 'S';
+
+  grid[12][99] = 'J';
+  fillRect(grid, 102, 7, 10, 1, 'H');
+  for (let c = 103; c <= 110; c++) {
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  enemies.push({ type: 'koopa', x: 105 * 32, y: 6 * 32 });
+  enemies.push({ type: 'robot', x: 108 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 115 * 32,
+    y: 11 * 32,
+    w: 112,
+    h: 22,
+    minX: 114 * 32,
+    maxX: 122 * 32,
+    vx: 1.6,
+    vy: 0,
+    style: 'train'
+  });
+  enemies.push({ type: 'cloud', x: 119 * 32, y: 6 * 32, baseY: 6 * 32 });
+
+  addStairs(grid, 132, 7, 1);
+  grid[12][139] = 'H';
+
+  return {
+    id: 2,
+    name: 'MUNDO 1-2: TALLER DE JUGUETES Y TRENCITOS',
+    subtitle: '¡Sube a los Trencitos de Madera y rebota en los Resortes!',
+    theme: 2,
+    bgm: 'level2',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 146 * 32,
+    castleX: 150 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-3: CASTILLO DE PIEDRA (GUARDIÁN TORMENTA)
+// ============================================================================
+function buildLevel3() {
+  const cols = 140;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  fillRect(grid, 0, 0, 105, 1, '#');
+  fillRect(grid, 0, 13, 28, 2, '#');
+  fillRect(grid, 34, 13, 28, 2, '#');
+  fillRect(grid, 68, 13, 28, 2, '#');
+  fillRect(grid, 114, 13, 26, 2, '#');
+
+  grid[9][7] = 'M';
+  grid[9][8] = '?';
+  grid[9][9] = 'M';
+
+  enemies.push({ type: 'robot', x: 16 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 22 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 28 * 32,
+    y: 11 * 32,
+    w: 96,
+    h: 20,
+    minX: 27 * 32,
+    maxX: 33 * 32,
+    vx: 1.5,
+    vy: 0,
+    style: 'cloud'
+  });
+
+  fillRect(grid, 40, 9, 6, 1, 'B');
+  fillRect(grid, 50, 7, 6, 1, 'B');
+  for (let c = 50; c <= 55; c++) {
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  enemies.push({ type: 'cloud', x: 45 * 32, y: 6 * 32, baseY: 6 * 32 });
+  enemies.push({ type: 'robot', x: 54 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 62 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 22,
+    minX: 61 * 32,
+    maxX: 67 * 32,
+    vx: 1.6,
+    vy: 0,
+    style: 'train'
+  });
+
+  const checkpointCol = 72;
+
+  grid[9][76] = 'M';
+  grid[9][78] = '?';
+  grid[9][80] = 'M';
+  grid[12][86] = 'J';
+
+  for (let c = 96; c <= 113; c++) {
+    grid[12][c] = '=';
+  }
+  fillRect(grid, 99, 8, 3, 1, 'H');
+  fillRect(grid, 106, 8, 3, 1, 'H');
+
+  grid[11][113] = 'A';
+
+  enemies.push({
+    type: 'boss',
+    x: 107 * 32,
+    y: 9 * 32,
+    w: 64,
+    h: 60,
+    hp: 4,
+    maxHp: 4,
+    minX: 97 * 32,
+    maxX: 111 * 32
+  });
+
+  return {
+    id: 3,
+    name: 'MUNDO 1-3: CASTILLO DEL GUARDIÁN',
+    subtitle: '¡Cruza el puente de lava y vence al Guardián para seguir tu aventura!',
+    theme: 3,
+    bgm: 'level3',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 126 * 32,
+    castleX: 130 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-4: PASEO COSTERO EN BICICLETA (¡ÁMBAR RECORRE EL NIVEL EN SU BICI!)
+// Designed specifically for high-speed bicycle riding:
+// - Turbo Speed Pads ('T') on the road before stunt ramps
+// - Long paved bike lanes, wooden stunt ramps, suspension bridges, and coin arcs!
+// ============================================================================
+function buildLevel4Bike() {
+  const cols = 195;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Long paved bicycle track sections with scenic ramp jumps!
+  fillRect(grid, 0, 13, 38, 2, '#');
+  fillRect(grid, 42, 13, 38, 2, '#');
+  fillRect(grid, 85, 13, 42, 2, '#');
+  fillRect(grid, 132, 13, 63, 2, '#');
+
+  // Opening Power-Up & Speed Boost Pad
+  grid[9][9] = 'M';
+  grid[9][10] = '?';
+  grid[9][11] = 'S';
+
+  // Coin line along initial flat bike sprint
+  for (let c = 12; c <= 20; c++) {
+    coins.push({ x: c * 32 + 4, y: 11 * 32 + 4 });
+  }
+
+  enemies.push({ type: 'goomba', x: 23 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 27 * 32, y: 12 * 32 });
+
+  // STUNT RAMP 1 (cols 31..37) with Turbo Boost Pads ('T') leading up to it!
+  grid[13][29] = 'T';
+  grid[13][30] = 'T';
+  grid[13][31] = 'T';
+  addStairs(grid, 33, 4, 1);
+  grid[9][37] = 'H';
+
+  // High coin arc over the gap (cols 38..42) matching bike ramp trajectory!
+  const arcCols1 = [38, 39, 40, 41, 42, 43];
+  const arcRows1 = [7,  6,  5,  5,  6,  7];
+  for (let i = 0; i < arcCols1.length; i++) {
+    coins.push({ x: arcCols1[i] * 32 + 4, y: arcRows1[i] * 32 });
+  }
+
+  // Landing deck & upper bike boardwalk (cols 44..58)
+  fillRect(grid, 45, 9, 14, 1, '=');
+  for (let c = 46; c <= 57; c += 2) {
+    coins.push({ x: c * 32 + 4, y: 7 * 32 });
+  }
+
+  // Lower bike lane under the boardwalk with Turbo Pads & Enemies
+  grid[13][47] = 'T';
+  grid[13][48] = 'T';
+  enemies.push({ type: 'robot', x: 52 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 56 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 63 * 32, y: 12 * 32 });
+
+  // Double Rolling Bike Hills (cols 65..74)
+  fillRect(grid, 65, 12, 6, 1, 'H');
+  fillRect(grid, 67, 11, 2, 1, 'H');
+
+  // STUNT RAMP 2 (cols 75..79) launching over Gap 2 (cols 80..84)
+  grid[13][72] = 'T';
+  grid[13][73] = 'T';
+  addStairs(grid, 75, 4, 1);
+  grid[9][79] = 'H';
+  // Safety bridge in case player cruises low
+  for (let c = 80; c <= 84; c++) {
+    grid[12][c] = '=';
+  }
+  for (let c = 80; c <= 84; c++) {
+    coins.push({ x: c * 32 + 4, y: 6 * 32 });
+  }
+
+  // CHECKPOINT at col 88!
+  const checkpointCol = 88;
+  grid[9][90] = 'M';
+  grid[9][92] = 'L'; // 1-UP Green Mushroom!
+
+  // High-Speed Slalom & Wooden Suspension Bridge (cols 95..125)
+  grid[13][94] = 'T';
+  grid[13][95] = 'T';
+  enemies.push({ type: 'koopa', x: 99 * 32, y: 12 * 32 });
+  enemies.push({ type: 'robot', x: 105 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 111 * 32, y: 12 * 32 });
+
+  // Elevated Bike Track + Star Power-up!
+  fillRect(grid, 102, 8, 16, 1, '=');
+  grid[5][109] = 'S'; // Super Star!
+  for (let c = 103; c <= 116; c++) {
+    coins.push({ x: c * 32 + 4, y: 6 * 32 });
+  }
+
+  // MEGA RAMP 3 (cols 121..126) over the canyon gap (cols 127..131)
+  grid[13][119] = 'T';
+  grid[13][120] = 'T';
+  addStairs(grid, 122, 5, 1);
+  for (let c = 127; c <= 131; c++) {
+    grid[12][c] = '=';
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  // Final Turbo Straightaway to the Goal Flag!
+  grid[13][136] = 'T';
+  grid[13][137] = 'T';
+  grid[13][146] = 'T';
+  grid[13][147] = 'T';
+  for (let c = 138; c <= 162; c += 2) {
+    coins.push({ x: c * 32 + 4, y: 11 * 32 });
+  }
+  enemies.push({ type: 'goomba', x: 144 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 152 * 32, y: 12 * 32 });
+  enemies.push({ type: 'robot', x: 158 * 32, y: 12 * 32 });
+
+  // Final Victory Bike Ramp to the Flagpole!
+  grid[13][166] = 'T';
+  grid[13][167] = 'T';
+  addStairs(grid, 169, 6, 1);
+  grid[12][175] = 'H';
+
+  return {
+    id: 4,
+    name: 'MUNDO 1-4: CICLOVÍA TURBO EN BICICLETA',
+    subtitle: '¡Ámbar recorre la ciclovía en su Bicicleta! Pisa las flechas TURBO y salta las rampas',
+    theme: 4,
+    isBikeLevel: true,
+    bgm: 'level1',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 181 * 32,
+    castleX: 185 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-5: CUEVA DE CRISTAL SUBTERRÁNEA
+// ============================================================================
+function buildLevel5Crystal() {
+  const cols = 160;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Underground cavern roof and floors
+  fillRect(grid, 0, 0, 138, 1, '#');
+  fillRect(grid, 0, 13, 45, 2, '#');
+  fillRect(grid, 53, 13, 42, 2, '#');
+  fillRect(grid, 103, 13, 57, 2, '#');
+
+  // Cavern Stalactite Pillars & Power-up blocks
+  grid[9][8] = '?';
+  grid[9][9] = 'M';
+  grid[9][10] = '?';
+
+  addPipe(grid, 18, 10);
+  enemies.push({ type: 'goomba', x: 15 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 24 * 32, y: 12 * 32 });
+
+  // Multi-level crystal ledges
+  fillRect(grid, 26, 9, 10, 1, 'B');
+  fillRect(grid, 29, 5, 6, 1, 'B');
+  grid[5][31] = 'L'; // 1-UP Green Mushroom!
+  for (let c = 27; c <= 34; c++) {
+    coins.push({ x: c * 32 + 4, y: 7 * 32 });
+  }
+
+  enemies.push({ type: 'robot', x: 38 * 32, y: 12 * 32 });
+
+  // Moving platform over crystal chasm 1 (cols 45..52)
+  platforms.push({
+    x: 45 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 20,
+    minX: 44 * 32,
+    maxX: 52 * 32,
+    vx: 1.5,
+    vy: 0,
+    style: 'cloud'
+  });
+
+  // Mid cavern with Koopa shell bowling alley!
+  grid[9][57] = 'M';
+  grid[9][58] = 'B';
+  grid[9][59] = '?';
+  enemies.push({ type: 'koopa', x: 62 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 67 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 70 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 73 * 32, y: 12 * 32 });
+
+  addPipe(grid, 77, 10);
+  const checkpointCol = 82;
+
+  grid[12][86] = 'J'; // Spring to upper crystal gallery
+  fillRect(grid, 88, 7, 12, 1, 'H');
+  for (let c = 89; c <= 98; c++) {
+    coins.push({ x: c * 32 + 4, y: 5 * 32 });
+  }
+
+  // Moving Train over chasm 2 (cols 95..102)
+  platforms.push({
+    x: 95 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 22,
+    minX: 94 * 32,
+    maxX: 102 * 32,
+    vx: 1.6,
+    vy: 0,
+    style: 'train'
+  });
+
+  grid[9][107] = 'S'; // Super Star!
+  enemies.push({ type: 'robot', x: 112 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 117 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 122 * 32, y: 12 * 32 });
+
+  addStairs(grid, 132, 7, 1);
+  grid[12][139] = 'H';
+
+  return {
+    id: 5,
+    name: 'MUNDO 1-5: CUEVA DE CRISTAL SUBTERRÁNEA',
+    subtitle: '¡Patea el Caparazón de Tortuga para derribar filas de enemigos!',
+    theme: 5,
+    bgm: 'level2',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 146 * 32,
+    castleX: 150 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-6: CIELO DE NUBES Y PUENTES ARCOÍRIS
+// ============================================================================
+function buildLevel6Sky() {
+  const cols = 160;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Starting sky island
+  fillRect(grid, 0, 13, 24, 2, '#');
+  grid[9][7] = 'M';
+  grid[9][8] = '?';
+  grid[9][9] = 'L';
+
+  // Rainbow Bridges & Cloud Islands in the sky!
+  fillRect(grid, 26, 11, 16, 1, '=');
+  for (let c = 28; c <= 39; c += 2) {
+    coins.push({ x: c * 32 + 4, y: 9 * 32 });
+  }
+  enemies.push({ type: 'koopa', x: 34 * 32, y: 10 * 32 });
+  enemies.push({ type: 'cloud', x: 40 * 32, y: 6 * 32, baseY: 6 * 32 });
+
+  // Sky Island 2
+  fillRect(grid, 44, 13, 28, 2, '#');
+  grid[12][49] = 'J';
+  fillRect(grid, 52, 7, 14, 1, 'B');
+  addAmbarCoinBanner(coins, 48, 2);
+
+  enemies.push({ type: 'goomba', x: 55 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 62 * 32, y: 12 * 32 });
+
+  // Moving Cloud Platforms across the sky gap (cols 72..84)
+  platforms.push({
+    x: 73 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 20,
+    minX: 72 * 32,
+    maxX: 83 * 32,
+    vx: 1.6,
+    vy: 0,
+    style: 'cloud'
+  });
+
+  // Sky Island 3 + Checkpoint
+  fillRect(grid, 84, 13, 30, 2, '#');
+  const checkpointCol = 87;
+  grid[9][90] = 'M';
+  grid[9][91] = 'S';
+
+  enemies.push({ type: 'cloud', x: 96 * 32, y: 7 * 32, baseY: 7 * 32 });
+  enemies.push({ type: 'robot', x: 101 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 107 * 32, y: 12 * 32 });
+
+  // High Rainbow Bridge + Moving Cloud
+  fillRect(grid, 115, 10, 12, 1, '=');
+  for (let c = 116; c <= 125; c++) {
+    coins.push({ x: c * 32 + 4, y: 8 * 32 });
+  }
+
+  // Final Sky Sanctuary Island
+  fillRect(grid, 128, 13, 32, 2, '#');
+  addStairs(grid, 133, 7, 1);
+  grid[12][140] = 'H';
+
+  return {
+    id: 6,
+    name: 'MUNDO 1-6: CIELO DE NUBES Y ARCOÍRIS',
+    subtitle: '¡Salta entre las islas flotantes y los puentes del cielo!',
+    theme: 6,
+    bgm: 'level1',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 146 * 32,
+    castleX: 150 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-7: GRAN FORTALEZA FINAL DEL REY TORMENTA
+// ============================================================================
+function buildLevel7FinalCastle() {
+  const cols = 155;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  fillRect(grid, 0, 0, 120, 1, '#');
+  fillRect(grid, 0, 13, 30, 2, '#');
+  fillRect(grid, 38, 13, 30, 2, '#');
+  fillRect(grid, 76, 13, 30, 2, '#');
+  fillRect(grid, 126, 13, 29, 2, '#');
+
+  // Royal Armory Supply at Start
+  grid[9][7] = 'M';
+  grid[9][8] = 'L';
+  grid[9][9] = 'M';
+
+  enemies.push({ type: 'robot', x: 16 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 23 * 32, y: 12 * 32 });
+
+  platforms.push({
+    x: 30 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 22,
+    minX: 29 * 32,
+    maxX: 37 * 32,
+    vx: 1.7,
+    vy: 0,
+    style: 'train'
+  });
+
+  fillRect(grid, 43, 9, 8, 1, 'B');
+  grid[9][47] = 'S'; // Invincibility Star!
+  enemies.push({ type: 'robot', x: 48 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 54 * 32, y: 12 * 32 });
+  enemies.push({ type: 'cloud', x: 60 * 32, y: 6 * 32, baseY: 6 * 32 });
+
+  platforms.push({
+    x: 68 * 32,
+    y: 11 * 32,
+    w: 104,
+    h: 20,
+    minX: 67 * 32,
+    maxX: 75 * 32,
+    vx: 1.7,
+    vy: 0,
+    style: 'cloud'
+  });
+
+  const checkpointCol = 80;
+  grid[9][84] = 'M';
+  grid[9][86] = '?';
+  grid[9][88] = 'M';
+  grid[12][96] = 'J';
+
+  // GRAND FINAL BOSS ARENA (cols 106..125, row 12)
+  for (let c = 106; c <= 125; c++) {
+    grid[12][c] = '=';
+  }
+  fillRect(grid, 109, 8, 3, 1, 'H');
+  fillRect(grid, 118, 8, 3, 1, 'H');
+
+  grid[11][125] = 'A';
+
+  enemies.push({
+    type: 'boss',
+    x: 119 * 32,
+    y: 8 * 32,
+    w: 68,
+    h: 64,
+    hp: 6,
+    maxHp: 6,
+    minX: 107 * 32,
+    maxX: 123 * 32
+  });
+
+  return {
+    id: 7,
+    name: 'MUNDO 1-7: GRAN FORTALEZA FINAL',
+    subtitle: '¡Batalla Final contra el Rey Tormenta! Salva el Reino de Ámbar',
+    theme: 3,
+    bgm: 'level3',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 138 * 32,
+    castleX: 142 * 32
+  };
+}
+
+window.LEVEL_BUILDERS = [
+  buildLevel1,
+  buildLevel2,
+  buildLevel3,
+  buildLevel4Bike,
+  buildLevel5Crystal,
+  buildLevel6Sky,
+  buildLevel7FinalCastle
+];
