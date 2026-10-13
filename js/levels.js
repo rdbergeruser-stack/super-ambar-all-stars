@@ -1051,6 +1051,463 @@ function buildLevelSecret() {
   };
 }
 
+// ============================================================================
+// MUNDO 2-1: PARQUE COSTERO EN PATINES (ÁMBAR EN PATINES & BARANDAS)
+// ============================================================================
+function buildLevel2_1Skate() {
+  const cols = 175;
+  const grid = createEmptyGrid(cols);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Ground boardwalk segments with pit ramps
+  fillRect(grid, 0, 13, 44, 2, '#');
+  fillRect(grid, 48, 13, 44, 2, '#');
+  fillRect(grid, 96, 13, 40, 2, '#');
+  fillRect(grid, 140, 13, 35, 2, '#');
+
+  // Question blocks & Power-ups
+  grid[9][12] = '?';
+  grid[9][16] = 'M'; // Super Hongo
+  grid[9][20] = '?';
+
+  // Section 1: First Skate Half-Pipe & Grind Rail
+  addStairs(grid, 18, 4, 1);
+  fillRect(grid, 24, 9, 14, 1, '='); // Iron Grind Rail!
+  addStairs(grid, 40, 4, -1);
+
+  // Coins along grind rail
+  for (let c = 24; c <= 37; c += 2) {
+    coins.push({ x: c * 32 + 8, y: 7 * 32 + 8 });
+  }
+
+  // Turbo boost pad before pit jump
+  grid[12][42] = 'T';
+
+  // Floating trick platform over first pit
+  platforms.push({
+    x: 44 * 32,
+    y: 11 * 32,
+    w: 96,
+    h: 18,
+    minX: 44 * 32,
+    maxX: 47 * 32,
+    vx: 1.2,
+    vy: 0,
+    style: 'beach'
+  });
+
+  // Section 2: Boardwalk Pier with Enemies & Overhead Rail
+  enemies.push({ type: 'goomba', x: 54 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 62 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 70 * 32, y: 12 * 32 });
+
+  // Double-decker rails & speed pad
+  grid[12][56] = 'T';
+  fillRect(grid, 62, 8, 18, 1, '=');
+  grid[5][70] = 'S'; // Star!
+
+  for (let c = 63; c <= 78; c += 2) {
+    coins.push({ x: c * 32 + 8, y: 6 * 32 + 8 });
+  }
+
+  // Checkpoint at col 88
+  const checkpointCol = 88;
+  addPipe(grid, 82, 10);
+
+  // Section 3: High Aerial Grind & Moving Rail Platform
+  grid[12][98] = 'T';
+  fillRect(grid, 102, 10, 14, 1, '=');
+  fillRect(grid, 118, 7, 16, 1, '=');
+
+  for (let c = 119; c <= 133; c += 2) {
+    coins.push({ x: c * 32 + 8, y: 5 * 32 + 8 });
+  }
+
+  enemies.push({ type: 'koopa', x: 106 * 32, y: 9 * 32 });
+  enemies.push({ type: 'goomba', x: 124 * 32, y: 6 * 32 });
+
+  // Section 4: Grand Finale Half-Pipe & Golden Stairs
+  addStairs(grid, 142, 6, 1);
+  fillRect(grid, 148, 7, 12, 1, '=');
+  addStairs(grid, 158, 6, -1);
+
+  return {
+    id: 10,
+    name: 'MUNDO 2-1: PARQUE COSTERO EN PATINES',
+    subtitle: '¡Pistas Costeras, Barandas de Skate y Giros Turbo!',
+    theme: 10,
+    bgm: 'ice',
+    isSkateLevel: true,
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 164 * 32,
+    castleX: 168 * 32
+  };
+}
+
+// ============================================================================
+// MUNDO 2-2: ARRECIFE DE CORAL DE LA SIRENA (ÁMBAR SIRENA ACUÁTICA)
+// ============================================================================
+function buildLevel2_2Mermaid() {
+  const cols = 175;
+  const grid = createEmptyGrid(cols);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Deep coral ocean floor
+  fillRect(grid, 0, 13, cols, 2, '#');
+
+  // Sunken coral reef caverns & arches
+  fillRect(grid, 22, 6, 12, 2, '#');
+  fillRect(grid, 22, 8, 3, 5, 'B');
+  fillRect(grid, 31, 8, 3, 5, 'B');
+
+  // Giant living sea anemone pipes
+  addPipe(grid, 42, 9);
+  addPipe(grid, 74, 8);
+  addPipe(grid, 118, 9);
+
+  // Pearl Clams (Question & Mushroom blocks)
+  grid[9][14] = '?';
+  grid[9][18] = 'M';
+  grid[5][26] = '?';
+  grid[5][28] = 'S'; // Star!
+
+  // Underwater marine life
+  enemies.push({ type: 'fish', x: 30 * 32, y: 4 * 32, vx: -1.0 });
+  enemies.push({ type: 'fish', x: 50 * 32, y: 7 * 32, vx: -1.2 });
+  enemies.push({ type: 'jellyfish', x: 60 * 32, y: 5 * 32 });
+  enemies.push({ type: 'fish', x: 68 * 32, y: 9 * 32, vx: 1.1 });
+  enemies.push({ type: 'jellyfish', x: 84 * 32, y: 6 * 32 });
+
+  // Coral grotto in the middle
+  fillRect(grid, 54, 3, 16, 2, '#');
+  fillRect(grid, 54, 5, 2, 8, 'B');
+  fillRect(grid, 68, 5, 2, 8, 'B');
+
+  // AMBAR Coin constellation in deep coral waters
+  addAmbarCoinBanner(coins, 86, 3);
+
+  // Checkpoint at col 92
+  const checkpointCol = 92;
+
+  // Second half: Deep reef swimming challenge
+  enemies.push({ type: 'jellyfish', x: 104 * 32, y: 4 * 32 });
+  enemies.push({ type: 'fish', x: 110 * 32, y: 6 * 32, vx: -1.3 });
+  enemies.push({ type: 'fish', x: 126 * 32, y: 8 * 32, vx: 1.2 });
+  enemies.push({ type: 'jellyfish', x: 136 * 32, y: 5 * 32 });
+
+  // Floating pearl platforms
+  platforms.push({
+    x: 100 * 32,
+    y: 8 * 32,
+    w: 96,
+    h: 18,
+    minY: 4 * 32,
+    maxY: 10 * 32,
+    vx: 0,
+    vy: 1.2,
+    style: 'ice'
+  });
+
+  // Sunken Atlantis stone steps before flagpole
+  addStairs(grid, 144, 5, 1);
+  addStairs(grid, 154, 5, -1);
+
+  return {
+    id: 11,
+    name: 'MUNDO 2-2: ARRECIFE DE CORAL DE LA SIRENA',
+    subtitle: '¡Nada Libremente como Sirena en el Océano de Cristal!',
+    theme: 11,
+    bgm: 'water',
+    isMermaidLevel: true,
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 162 * 32,
+    castleX: 166 * 32
+  };
+}
+
+// ============================================================================
+// MUNDO 2-3: VALLE GLACIAL Y BOSQUE NEVADO (HIELO & PINGÜINOS)
+// ============================================================================
+function buildLevel2_3Glacier() {
+  const cols = 170;
+  const grid = createEmptyGrid(cols);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Slippery ice surface on top of bedrock
+  for (let c = 0; c < cols; c++) {
+    grid[13][c] = 'I'; // Slippery Ice tile!
+    grid[14][c] = '#';
+  }
+
+  // Pit gaps in the glacier
+  for (let c = 40; c <= 43; c++) { grid[13][c] = '.'; grid[14][c] = '.'; }
+  for (let c = 86; c <= 89; c++) { grid[13][c] = '.'; grid[14][c] = '.'; }
+  for (let c = 126; c <= 129; c++) { grid[13][c] = '.'; grid[14][c] = '.'; }
+
+  // Ice crystal question blocks
+  grid[9][14] = '?';
+  grid[9][18] = 'M';
+  grid[9][22] = '?';
+
+  // Sliding penguins on ice
+  enemies.push({ type: 'penguin', x: 26 * 32, y: 12 * 32, sliding: false });
+  enemies.push({ type: 'penguin', x: 34 * 32, y: 12 * 32, sliding: true, vx: -2.2 });
+  enemies.push({ type: 'penguin', x: 54 * 32, y: 12 * 32, sliding: true, vx: 2.0 });
+
+  // Icicle trap columns
+  addPipe(grid, 30, 9);
+  addPipe(grid, 68, 8);
+  addPipe(grid, 114, 9);
+
+  // Ice crystal steps
+  addStairs(grid, 46, 4, 1);
+  addStairs(grid, 58, 4, -1);
+
+  // Moving ice crystal platform over first chasm
+  platforms.push({
+    x: 40 * 32,
+    y: 10 * 32,
+    w: 96,
+    h: 18,
+    minY: 6 * 32,
+    maxY: 11 * 32,
+    vx: 0,
+    vy: 1.4,
+    style: 'ice'
+  });
+
+  // Checkpoint at col 84
+  const checkpointCol = 84;
+
+  // Second half: Fast penguin slides & icicle jumps
+  enemies.push({ type: 'penguin', x: 94 * 32, y: 12 * 32, sliding: true, vx: -2.4 });
+  enemies.push({ type: 'penguin', x: 104 * 32, y: 12 * 32, sliding: false });
+  enemies.push({ type: 'penguin', x: 118 * 32, y: 12 * 32, sliding: true, vx: -2.5 });
+
+  // Floating crystal blocks with Star!
+  grid[6][100] = 'B';
+  grid[6][102] = 'S';
+  grid[6][104] = 'B';
+
+  // High ice stairs
+  addStairs(grid, 138, 6, 1);
+  addStairs(grid, 148, 6, -1);
+
+  return {
+    id: 12,
+    name: 'MUNDO 2-3: VALLE GLACIAL Y BOSQUE NEVADO',
+    subtitle: '¡Hielo Resbaladizo, Pingüinos Deslizantes y Carámbanos!',
+    theme: 12,
+    bgm: 'ice',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 158 * 32,
+    castleX: 162 * 32
+  };
+}
+
+// ============================================================================
+// MUNDO 2-4: LA MANSIÓN ENCANTADA DE LOS BOOS (CASA DE FANTASMAS)
+// ============================================================================
+function buildLevel2_4GhostHouse() {
+  const cols = 165;
+  const grid = createEmptyGrid(cols);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Haunted floor & ceiling roof
+  fillRect(grid, 0, 13, cols, 2, '#');
+  fillRect(grid, 0, 0, cols, 2, 'B'); // Enclosed haunted mansion ceiling
+
+  // Spooky Boos in rooms
+  enemies.push({ type: 'boo', x: 28 * 32, y: 6 * 32 });
+  enemies.push({ type: 'boo', x: 50 * 32, y: 5 * 32 });
+  enemies.push({ type: 'boo', x: 74 * 32, y: 7 * 32 });
+
+  // Question blocks
+  grid[9][12] = '?';
+  grid[9][16] = 'M';
+  grid[9][20] = '?';
+
+  // Haunted room dividing walls
+  fillRect(grid, 34, 4, 3, 9, 'B');
+  grid[11][34] = '.'; // Doorway
+  grid[12][34] = '.';
+
+  fillRect(grid, 62, 2, 3, 8, 'B'); // Hanging wall
+  fillRect(grid, 88, 5, 3, 8, 'B');
+
+  // Phantom floating platforms
+  platforms.push({
+    x: 40 * 32,
+    y: 8 * 32,
+    w: 96,
+    h: 18,
+    minX: 38 * 32,
+    maxX: 46 * 32,
+    vx: 1.0,
+    vy: 0,
+    style: 'ice'
+  });
+
+  // Checkpoint at col 82
+  const checkpointCol = 82;
+
+  // Second half: More Boos & secret high passage
+  enemies.push({ type: 'boo', x: 96 * 32, y: 5 * 32 });
+  enemies.push({ type: 'boo', x: 114 * 32, y: 7 * 32 });
+  enemies.push({ type: 'boo', x: 130 * 32, y: 4 * 32 });
+
+  // Secret upper crawlspace filled with coins
+  fillRect(grid, 100, 4, 20, 1, 'B');
+  for (let c = 102; c <= 118; c += 2) {
+    coins.push({ x: c * 32 + 8, y: 2 * 32 + 8 });
+  }
+  grid[3][110] = 'S'; // Hidden Star!
+
+  // Haunted grand exit staircase
+  addStairs(grid, 136, 5, 1);
+
+  return {
+    id: 13,
+    name: 'MUNDO 2-4: LA MANSIÓN ENCANTADA DE LOS BOOS',
+    subtitle: '¡Fantasmas Tímidos Boos y Plataformas Espectrales!',
+    theme: 13,
+    bgm: 'ghost',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 152 * 32,
+    castleX: 156 * 32
+  };
+}
+
+// ============================================================================
+// MUNDO 2-5: FORTALEZA GLACIAL DEL REY ESCARCHA (CASTILLO JEFE)
+// ============================================================================
+function buildLevel2_5FrostCastle() {
+  const cols = 180;
+  const grid = createEmptyGrid(cols);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Obsidian frost castle bedrock
+  fillRect(grid, 0, 13, 50, 2, '#');
+  fillRect(grid, 56, 13, 40, 2, '#');
+  fillRect(grid, 102, 13, 38, 2, '#');
+  fillRect(grid, 144, 13, 36, 2, '#'); // Boss Arena floor!
+
+  // Castle ceiling
+  fillRect(grid, 0, 0, cols, 2, 'B');
+
+  // Question blocks
+  grid[9][12] = '?';
+  grid[9][16] = 'M';
+  grid[9][20] = '?';
+
+  // Spikes & ice traps in chasms
+  enemies.push({ type: 'koopa', x: 26 * 32, y: 12 * 32 });
+  enemies.push({ type: 'goomba', x: 34 * 32, y: 12 * 32 });
+  enemies.push({ type: 'robot', x: 68 * 32, y: 12 * 32 });
+  enemies.push({ type: 'koopa', x: 78 * 32, y: 12 * 32 });
+
+  // Floating platforms over chasms
+  platforms.push({
+    x: 50 * 32,
+    y: 10 * 32,
+    w: 96,
+    h: 18,
+    minY: 6 * 32,
+    maxY: 11 * 32,
+    vx: 0,
+    vy: 1.3,
+    style: 'ice'
+  });
+
+  platforms.push({
+    x: 96 * 32,
+    y: 9 * 32,
+    w: 96,
+    h: 18,
+    minX: 96 * 32,
+    maxX: 101 * 32,
+    vx: 1.5,
+    vy: 0,
+    style: 'ice'
+  });
+
+  // Checkpoint at col 94
+  const checkpointCol = 94;
+
+  // Boss Arena Entrance Gates
+  fillRect(grid, 142, 2, 2, 7, 'B'); // Gate archway
+
+  // THE BOSS: REY ESCARCHA (KING FROST)!
+  enemies.push({
+    type: 'frost_boss',
+    x: 158 * 32,
+    y: 11 * 32,
+    w: 80,
+    h: 90,
+    hp: 8,
+    maxHp: 8,
+    baseX: 158 * 32,
+    vx: -1.2,
+    vy: 0,
+    shootTimer: 0
+  });
+
+  // Victory Bridge & Golden Axe behind Boss
+  fillRect(grid, 168, 12, 4, 1, 'H');
+  grid[11][171] = 'A'; // Golden Victory Axe!
+
+  return {
+    id: 14,
+    name: 'MUNDO 2-5: FORTALEZA GLACIAL DEL REY ESCARCHA',
+    subtitle: '¡El Castillo Helado Supremo y la Batalla con el Rey Escarcha!',
+    theme: 14,
+    bgm: 'level3',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 172 * 32,
+    castleX: 176 * 32
+  };
+}
+
 window.LEVEL_BUILDERS = [
   buildLevel1,
   buildLevel2,
@@ -1060,5 +1517,10 @@ window.LEVEL_BUILDERS = [
   buildLevel6Sky,
   buildLevel7Flying,
   buildLevel8FinalCastle,
-  buildLevelSecret
+  buildLevelSecret,
+  buildLevel2_1Skate,
+  buildLevel2_2Mermaid,
+  buildLevel2_3Glacier,
+  buildLevel2_4GhostHouse,
+  buildLevel2_5FrostCastle
 ];

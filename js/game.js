@@ -15,7 +15,12 @@ const STAR_COINS_DATA = {
   6: [{ col: 32, row: 5 }, { col: 72, row: 4 }, { col: 116, row: 4 }],
   7: [{ col: 35, row: 4 }, { col: 82, row: 10 }, { col: 128, row: 2 }],
   8: [{ col: 28, row: 5 }, { col: 70, row: 4 }, { col: 112, row: 5 }],
-  9: [{ col: 38, row: 4 }, { col: 84, row: 6 }, { col: 136, row: 4 }]
+  9: [{ col: 38, row: 4 }, { col: 84, row: 6 }, { col: 136, row: 4 }],
+  10: [{ col: 34, row: 5 }, { col: 112, row: 4 }, { col: 148, row: 6 }],
+  11: [{ col: 36, row: 4 }, { col: 88, row: 9 }, { col: 132, row: 3 }],
+  12: [{ col: 32, row: 6 }, { col: 78, row: 5 }, { col: 124, row: 4 }],
+  13: [{ col: 35, row: 7 }, { col: 80, row: 5 }, { col: 110, row: 2 }],
+  14: [{ col: 38, row: 5 }, { col: 82, row: 6 }, { col: 128, row: 4 }]
 };
 
 class SuperAmbarGame {
@@ -66,8 +71,9 @@ class SuperAmbarGame {
     this.ghosts = [];
     this.ghostTimer = 0;
 
-    // Super Mario World 16-Bit Overworld Map System
-    this.mapNodes = [
+    // Super Mario World 16-Bit Overworld Map System (Mundo 1 & Mundo 2!)
+    this.currentWorld = 1;
+    this.world1Nodes = [
       { id: 0, levelIdx: 0, x: 130, y: 340, name: '1-1 Pradera', subtitle: 'Pradera Arcoíris', icon: 'level', paths: { right: 1 }, unlocked: true, cleared: false },
       { id: 1, levelIdx: 1, x: 240, y: 310, name: '1-2 Taller', subtitle: 'Fábrica de Juguetes', icon: 'level', paths: { left: 0, right: 2 }, secretPath: { up: 8 }, hasSecretExit: true, unlocked: false, cleared: false },
       { id: 2, levelIdx: 2, x: 350, y: 270, name: '1-3 Castillo', subtitle: 'Fortaleza de Dulces', icon: 'fortress', paths: { left: 1, down: 3 }, unlocked: false, cleared: false },
@@ -78,6 +84,15 @@ class SuperAmbarGame {
       { id: 7, levelIdx: 7, x: 370, y: 120, name: '1-8 Fortaleza', subtitle: 'Castillo Bowser Supremo', icon: 'castle', paths: { right: 6 }, unlocked: false, cleared: false },
       { id: 8, levelIdx: 8, x: 240, y: 170, name: '1-S Isla Secreta', subtitle: 'Vía Láctea Estelar', icon: 'secret_star', paths: { down: 1, right: 6 }, isSecret: true, unlocked: false, cleared: false }
     ];
+
+    this.world2Nodes = [
+      { id: 0, levelIdx: 9, x: 140, y: 350, name: '2-1 Patines', subtitle: 'Parque Costero en Patines', icon: 'skate', paths: { right: 1 }, unlocked: true, cleared: false },
+      { id: 1, levelIdx: 10, x: 280, y: 310, name: '2-2 Sirena', subtitle: 'Arrecife Coral de la Sirena', icon: 'mermaid', paths: { left: 0, right: 2 }, unlocked: false, cleared: false },
+      { id: 2, levelIdx: 11, x: 440, y: 260, name: '2-3 Glacial', subtitle: 'Valle Glacial y Nieve', icon: 'glacier', paths: { left: 1, right: 3 }, unlocked: false, cleared: false },
+      { id: 3, levelIdx: 12, x: 590, y: 220, name: '2-4 Mansión', subtitle: 'Mansión Encantada Boos', icon: 'ghost', paths: { left: 2, right: 4 }, unlocked: false, cleared: false },
+      { id: 4, levelIdx: 13, x: 730, y: 140, name: '2-5 Castillo', subtitle: 'Fortaleza Rey Escarcha', icon: 'ice_castle', paths: { left: 3 }, unlocked: false, cleared: false }
+    ];
+
     this.currentMapNodeId = 0;
     this.mapAmbar = {
       x: 130,
@@ -101,6 +116,27 @@ class SuperAmbarGame {
 
     this.lastFrameTime = performance.now();
     requestAnimationFrame((ts) => this.loop(ts));
+  }
+
+  get mapNodes() {
+    return this.currentWorld === 2 ? this.world2Nodes : this.world1Nodes;
+  }
+
+  toggleWorld(targetWorld) {
+    if (targetWorld !== undefined) {
+      this.currentWorld = targetWorld;
+    } else {
+      this.currentWorld = this.currentWorld === 1 ? 2 : 1;
+    }
+    this.currentMapNodeId = 0;
+    const node = this.mapNodes[0];
+    if (node) {
+      this.mapAmbar.x = node.x;
+      this.mapAmbar.y = node.y;
+    }
+    this.mapAmbar.isMoving = false;
+    window.retroAudio.playSfx('mapMove');
+    this.updateLevelButtonsUI();
   }
 
   createDefaultPlayer(keepPower = false) {
@@ -132,6 +168,13 @@ class SuperAmbarGame {
       wheelieTimer: 0,
       isFlying: false,
       diveBombing: false,
+      isMermaid: false,
+      swimStrokeTimer: 0,
+      swamThisUp: false,
+      onSkates: false,
+      isGrinding: false,
+      grindTimer: 0,
+      standingOnIce: false,
       turboTimer: 0,
       invulnerableTimer: 0,
       starTimer: 0,
@@ -172,8 +215,14 @@ class SuperAmbarGame {
           this.lives = 5;
           this.enterMapScreen();
         } else if (this.state === 'VICTORY') {
-          this.currentLevelIdx = 0;
-          this.enterMapScreen();
+          if (this.currentLevelIdx === 7) {
+            this.world2Nodes[0].unlocked = true;
+            this.toggleWorld(2);
+            this.enterMapScreen();
+          } else {
+            this.currentLevelIdx = 0;
+            this.enterMapScreen();
+          }
         }
       }
 
@@ -205,8 +254,14 @@ class SuperAmbarGame {
         this.lives = 5;
         this.enterMapScreen();
       } else if (this.state === 'VICTORY') {
-        this.currentLevelIdx = 0;
-        this.enterMapScreen();
+        if (this.currentLevelIdx === 7) {
+          this.world2Nodes[0].unlocked = true;
+          this.toggleWorld(2);
+          this.enterMapScreen();
+        } else {
+          this.currentLevelIdx = 0;
+          this.enterMapScreen();
+        }
       }
     });
 
@@ -367,6 +422,7 @@ class SuperAmbarGame {
     const builder = window.LEVEL_BUILDERS[idx] || window.LEVEL_BUILDERS[0];
     this.level = builder();
     this.player = this.createDefaultPlayer(keepPower);
+    this.currentWorld = idx < 9 ? 1 : 2;
 
     if (this.level.isBikeLevel) {
       this.player.onBike = true;
@@ -378,6 +434,15 @@ class SuperAmbarGame {
       this.player.w = 56;
       this.player.h = 38;
       this.player.y = 6 * TILE_SIZE;
+    } else if (this.level.isMermaidLevel) {
+      this.player.isMermaid = true;
+      this.player.w = 34;
+      this.player.h = 50;
+      this.player.y = 7 * TILE_SIZE;
+    } else if (this.level.isSkateLevel) {
+      this.player.onSkates = true;
+      this.player.w = 32;
+      this.player.h = 52;
     }
 
     if (this.checkpointReached && this.level.checkpointX) {
@@ -504,7 +569,7 @@ class SuperAmbarGame {
       }
 
       if (this.stateTimer <= 0) {
-        if (this.currentLevelIdx === 7 && !this.isSecretExit) {
+        if ((this.currentLevelIdx === 7 || this.currentLevelIdx === 13) && !this.isSecretExit) {
           this.state = 'VICTORY';
           window.retroAudio.stopBgm();
           window.retroAudio.playSfx('stageClear');
@@ -593,15 +658,19 @@ class SuperAmbarGame {
       }
     }
 
-    // Horizontal Movement (with Bicycle Mode in 1-4 & Superman Flight Mode in 1-7!)
+    // Horizontal Movement (with Bicycle, Mermaid, Skate and Flight modes!)
     const baseMax = p.isFlying
       ? (p.turboTimer > 0 ? 7.8 : (this.keys.action ? 6.0 : 4.9))
       : p.onBike
         ? (p.turboTimer > 0 ? 8.2 : (this.keys.action ? 6.5 : 5.3))
-        : (this.keys.action ? 5.4 : 4.2);
+        : p.onSkates
+          ? (p.turboTimer > 0 ? 7.8 : (this.keys.action ? 6.4 : 5.2))
+          : p.isMermaid
+            ? (this.keys.action ? 4.8 : 3.8)
+            : (this.keys.action ? 5.4 : 4.2);
     const maxSpeed = baseMax * (p.starTimer > 0 ? 1.2 : 1.0);
-    const accel = p.isFlying ? 0.50 : p.onBike ? (p.onGround ? 0.56 : 0.42) : (p.onGround ? 0.48 : 0.36);
-    const friction = p.isFlying ? 0.90 : p.onBike ? (p.onGround ? 0.90 : 0.96) : (p.onGround ? 0.82 : 0.94);
+    const accel = p.isFlying ? 0.50 : p.onBike ? (p.onGround ? 0.56 : 0.42) : p.onSkates ? 0.52 : p.isMermaid ? 0.42 : (p.onGround ? 0.48 : 0.36);
+    const friction = p.isFlying ? 0.90 : p.onBike ? (p.onGround ? 0.90 : 0.96) : p.isMermaid ? 0.96 : p.standingOnIce ? 0.985 : p.onSkates ? (p.onGround ? 0.94 : 0.97) : (p.onGround ? 0.82 : 0.94);
 
     if (this.keys.left) {
       p.vx = Math.max(-maxSpeed, p.vx - accel);
@@ -623,7 +692,34 @@ class SuperAmbarGame {
       }
     }
 
-    if (p.isFlying) {
+    if (p.isMermaid) {
+      // MERMAID SWIMMING CONTROLS (MUNDO 2-2):
+      // Swim stroke on Jump or Up!
+      if (this.keys.jumpJustPressed || (this.keys.up && !p.swamThisUp)) {
+        p.vy = -4.8;
+        p.swimStrokeTimer = 0.35;
+        p.swamThisUp = true;
+        window.retroAudio.playSfx('swim');
+        this.spawnBubble(p.x + p.w / 2, p.y + p.h - 4);
+        this.spawnBubble(p.x + p.w / 2 - 6, p.y + p.h);
+      }
+      if (!this.keys.up && !this.keys.jump) {
+        p.swamThisUp = false;
+      }
+      if (this.keys.down) {
+        p.vy = Math.min(3.8, p.vy + 0.4);
+      }
+      p.vy = Math.min(2.4, p.vy + 0.16);
+
+      if (p.swimStrokeTimer > 0) p.swimStrokeTimer -= dt;
+      if (Math.random() < 0.28) {
+        this.spawnBubble(p.x + (p.facing < 0 ? p.w + 2 : -2), p.y + p.h * 0.7);
+      }
+
+      if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
+        this.shootRainbowStar();
+      }
+    } else if (p.isFlying) {
       // SUPERMAN FLIGHT CONTROLS:
       // Hold Up / W / Space (or ▲ SALTO on Mobile!) to fly up; Down / S to dive; release to hover/glide!
       if (this.keys.up || this.keys.jump) {
@@ -801,6 +897,30 @@ class SuperAmbarGame {
         }
       }
 
+      // Skate Rail Grinding Physics (Mundo 2-1)
+      if (p.onSkates && p.isGrinding) {
+        if (Math.abs(p.vx) < 5.2) {
+          p.vx = (p.facing || 1) * 6.2;
+        }
+        p.grindTimer = (p.grindTimer || 0) + dt;
+        if (p.grindTimer >= 0.14) {
+          p.grindTimer = 0;
+          this.addScore(10, p.x, p.y);
+          window.retroAudio.playSfx('grind');
+        }
+        if (Math.random() < 0.65) {
+          this.spawnGrindSpark(p.x + p.w / 2, p.y + p.h);
+        }
+        if (this.keys.jumpJustPressed) {
+          p.vy = -12.4;
+          p.isGrinding = false;
+          p.isJumping = true;
+          this.addScore(300, p.x, p.y - 12);
+          this.addFloatingText(p.x, p.y - 14, '¡GRIND COMBO! +300', '#facc15');
+          window.retroAudio.playSfx('trick');
+        }
+      }
+
       if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
         this.shootRainbowStar();
       }
@@ -821,7 +941,12 @@ class SuperAmbarGame {
     const prevBottom = p.y + p.h - p.vy;
     p.prevVy = p.vy;
     p.y += p.vy;
-    if (p.isFlying) {
+    if (p.isMermaid) {
+      if (p.y < 16) {
+        p.y = 16;
+        p.vy = Math.max(0, p.vy);
+      }
+    } else if (p.isFlying) {
       if (p.y < 14) {
         p.y = 14;
         p.vy = Math.max(0, p.vy);
@@ -922,7 +1047,7 @@ class SuperAmbarGame {
   }
 
   isSolidTile(ch) {
-    return ['B', '?', 'M', 'S', 'L', 'E', 'H', 'P', 'p', '#', '=', 'J', 'T', 'C'].includes(ch);
+    return ['B', '?', 'M', 'S', 'L', 'E', 'H', 'P', 'p', '#', '=', 'J', 'T', 'C', 'I'].includes(ch);
   }
 
   resolvePlayerTileCollisionsX(p) {
@@ -1002,14 +1127,20 @@ class SuperAmbarGame {
               p.airJumpsLeft = 1;
               p.isJumping = false;
               if (ch === 'T') {
-                // TURBO BOOST PAD ON THE BICYCLE TRACK!
+                // TURBO BOOST PAD ON THE BICYCLE / SKATE TRACK!
                 if (p.turboTimer <= 0.2) {
                   window.retroAudio.playSfx('powerupAppear');
-                  this.addFloatingText(p.x, p.y - 16, '¡TURBO BICI!', '#fde047');
+                  this.addFloatingText(p.x, p.y - 16, '¡TURBO!', '#fde047');
                 }
                 p.turboTimer = 0.85;
                 p.facing = p.vx < -0.5 ? -1 : 1;
                 p.vx = p.facing * 8.0;
+              } else if (ch === '=') {
+                if (p.onSkates) {
+                  p.isGrinding = true;
+                }
+              } else if (ch === 'I') {
+                p.standingOnIce = true;
               }
             }
             return;
@@ -1327,7 +1458,78 @@ class SuperAmbarGame {
 
       if (en.hurtTimer > 0) en.hurtTimer -= dt;
 
-      if (en.type === 'cloud') {
+      if (en.type === 'fish') {
+        if (en.baseY === undefined) en.baseY = en.y;
+        en.x += (en.vx || -1.2);
+        en.y = en.baseY + Math.sin(this.time * 4 + en.x * 0.05) * 14;
+        if (en.x < -60) en.x = this.level.cols * TILE_SIZE + 20;
+        if (en.x > this.level.cols * TILE_SIZE + 60) en.x = -20;
+      } else if (en.type === 'jellyfish') {
+        if (en.baseY === undefined) en.baseY = en.y;
+        en.y = en.baseY + Math.sin(this.time * 2.5 + en.x * 0.04) * 26;
+      } else if (en.type === 'boo') {
+        const dx = (p.x + p.w / 2) - (en.x + en.w / 2);
+        const dy = (p.y + p.h / 2) - (en.y + en.h / 2);
+        const ambarFacingRight = p.facing > 0;
+        const booIsToRight = dx > 0;
+        const isLookingAtBoo = (booIsToRight && ambarFacingRight) || (!booIsToRight && !ambarFacingRight);
+        en.isShy = isLookingAtBoo;
+        if (!en.isShy) {
+          const dist = Math.max(1, Math.hypot(dx, dy));
+          en.x += (dx / dist) * 1.35;
+          en.y += (dy / dist) * 1.0;
+          en.facing = dx > 0 ? 1 : -1;
+        }
+      } else if (en.type === 'frost_boss') {
+        en.x += en.vx;
+        const arenaMinX = 144 * TILE_SIZE;
+        const arenaMaxX = 168 * TILE_SIZE;
+        if (en.x <= arenaMinX) {
+          en.x = arenaMinX;
+          en.vx = Math.abs(en.vx);
+        } else if (en.x + en.w >= arenaMaxX) {
+          en.x = arenaMaxX - en.w;
+          en.vx = -Math.abs(en.vx);
+        }
+
+        en.vy = Math.min(10, en.vy + 0.35);
+        en.y += en.vy;
+
+        const bRow = Math.floor((en.y + en.h) / TILE_SIZE);
+        const bCol = Math.floor((en.x + en.w / 2) / TILE_SIZE);
+        if (en.vy > 0 && this.isSolidTile(this.getTile(bRow, bCol))) {
+          en.y = bRow * TILE_SIZE - en.h;
+          en.vy = 0;
+          if (Math.random() < 0.02) {
+            en.vy = -8.2;
+          }
+        }
+
+        en.attackTimer = (en.attackTimer || 2.4) - dt;
+        if (en.attackTimer <= 0 && Math.abs(en.x - p.x) < 460) {
+          en.attackTimer = 2.4;
+          const dx = p.x - en.x;
+          const dy = p.y - en.y;
+          const dist = Math.max(1, Math.hypot(dx, dy));
+          this.enemyProjectiles.push({
+            x: en.x + en.w / 2,
+            y: en.y + en.h / 2,
+            w: 16,
+            h: 16,
+            vx: (dx / dist) * 4.6,
+            vy: (dy / dist) * 4.6,
+            isIceShard: true
+          });
+          window.retroAudio.playSfx('bump');
+        }
+
+        if (en.y > LOGICAL_HEIGHT + 40) {
+          en.dead = true;
+          window.retroAudio.playSfx('bossDefeat');
+          this.addScore(5000, en.x, LOGICAL_HEIGHT - 80);
+          this.addFloatingText(p.x, p.y - 30, '¡REY ESCARCHA DERROTADO!', '#38bdf8');
+        }
+      } else if (en.type === 'cloud') {
         en.y = en.baseY + Math.sin(this.time * 2.8 + en.x * 0.02) * 38;
         en.x += en.vx * 0.6;
         if (Math.sin(this.time * 0.8) > 0.98) en.vx = -en.vx;
@@ -1407,7 +1609,7 @@ class SuperAmbarGame {
         if (en.inShell && Math.abs(en.vx) > 3) {
           this.enemies.forEach(other => {
             if (other !== en && !other.dead && !other.squished && this.rectsOverlap(en, other)) {
-              if (other.type === 'boss') {
+              if (other.type === 'boss' || other.type === 'frost_boss') {
                 this.damageBoss(other);
               } else {
                 other.squished = true;
@@ -1422,7 +1624,7 @@ class SuperAmbarGame {
 
       if (!p.dead && this.rectsOverlap(p, en)) {
         if (p.starTimer > 0 || (p.isFlying && p.diveBombing && p.vy > 3.0)) {
-          if (en.type === 'boss') {
+          if (en.type === 'boss' || en.type === 'frost_boss') {
             this.damageBoss(en);
           } else {
             en.squished = true;
@@ -1447,7 +1649,7 @@ class SuperAmbarGame {
           this.triggerHitStop(0.04);
           this.triggerScreenShake(0.12, 3.2);
           this.spawnDust(p.x + p.w / 2, p.y + p.h, 4, 0, -0.6);
-          if (en.type === 'boss') {
+          if (en.type === 'boss' || en.type === 'frost_boss') {
             this.damageBoss(en);
           } else if (en.type === 'koopa') {
             if (!en.inShell) {
@@ -1496,7 +1698,8 @@ class SuperAmbarGame {
       window.retroAudio.playSfx('bossDefeat');
       this.triggerScreenShake(0.6, 9.0);
       this.addScore(5000, boss.x, boss.y);
-      this.addFloatingText(boss.x, boss.y - 20, '¡REY NUBARRÓN DERROTADO!', '#ffe58f');
+      const title = boss.type === 'frost_boss' ? '¡REY ESCARCHA DERROTADO!' : '¡REY NUBARRÓN DERROTADO!';
+      this.addFloatingText(boss.x, boss.y - 20, title, '#ffe58f');
       for (let i = 0; i < 25; i++) {
         this.spawnSparkle(boss.x + Math.random() * boss.w, boss.y + Math.random() * boss.h);
       }
@@ -1601,32 +1804,53 @@ class SuperAmbarGame {
       node.cleared = true;
     }
 
-    if (this.isSecretExit) {
-      // Unlocks secret level node (Node 8: 1-S) and triggers secret path animation!
-      const secretNode = this.mapNodes.find(n => n.id === 8);
-      if (secretNode) {
-        secretNode.unlocked = true;
+    if (this.currentWorld === 1) {
+      // If clearing 1-8 (node 7) or 1-S (node 8), unlock World 2!
+      if (curId === 7 || curId === 8) {
+        this.world2Nodes[0].unlocked = true;
       }
-      this.secretPathUnlockedAnim = 2.8;
-      this.currentMapNodeId = 8;
-    } else {
-      // Normal exit: unlock next connected nodes
-      if (node && node.paths) {
-        for (const dir in node.paths) {
-          const nextId = node.paths[dir];
-          if (this.mapNodes[nextId]) {
-            this.mapNodes[nextId].unlocked = true;
+
+      if (this.isSecretExit) {
+        // Unlocks secret level node (Node 8: 1-S) and triggers secret path animation!
+        const secretNode = this.world1Nodes.find(n => n.id === 8);
+        if (secretNode) {
+          secretNode.unlocked = true;
+        }
+        this.secretPathUnlockedAnim = 2.8;
+        this.currentMapNodeId = 8;
+      } else {
+        // Normal exit: unlock next connected nodes
+        if (node && node.paths) {
+          for (const dir in node.paths) {
+            const nextId = node.paths[dir];
+            if (this.world1Nodes[nextId]) {
+              this.world1Nodes[nextId].unlocked = true;
+            }
+          }
+        }
+        // If clearing 1-S (secret level), unlock the shortcut path to node 6 (1-7 Vuelo)!
+        if (curId === 8) {
+          if (this.world1Nodes[6]) this.world1Nodes[6].unlocked = true;
+        }
+        // Advance Ámbar to next connected unlocked node if available
+        if (node && node.paths) {
+          const primaryNext = node.paths.right !== undefined ? node.paths.right : (node.paths.down !== undefined ? node.paths.down : Object.values(node.paths)[0]);
+          if (primaryNext !== undefined && this.world1Nodes[primaryNext]) {
+            this.currentMapNodeId = primaryNext;
           }
         }
       }
-      // If clearing 1-S (secret level), unlock the shortcut path to node 6 (1-7 Vuelo)!
-      if (curId === 8) {
-        if (this.mapNodes[6]) this.mapNodes[6].unlocked = true;
-      }
-      // Advance Ámbar to next connected unlocked node if available
+    } else {
+      // In World 2: unlock next connected nodes
       if (node && node.paths) {
-        const primaryNext = node.paths.right !== undefined ? node.paths.right : (node.paths.down !== undefined ? node.paths.down : Object.values(node.paths)[0]);
-        if (primaryNext !== undefined && this.mapNodes[primaryNext]) {
+        for (const dir in node.paths) {
+          const nextId = node.paths[dir];
+          if (this.world2Nodes[nextId]) {
+            this.world2Nodes[nextId].unlocked = true;
+          }
+        }
+        const primaryNext = node.paths.right !== undefined ? node.paths.right : Object.values(node.paths)[0];
+        if (primaryNext !== undefined && this.world2Nodes[primaryNext]) {
           this.currentMapNodeId = primaryNext;
         }
       }
@@ -1744,6 +1968,18 @@ class SuperAmbarGame {
     const mx = (e.clientX - rect.left) * scaleX;
     const my = (e.clientY - rect.top) * scaleY;
 
+    // Check header World toggle buttons
+    if (my >= 14 && my <= 52) {
+      if (mx >= 250 && mx <= 322) {
+        if (this.currentWorld !== 1) this.toggleWorld(1);
+        return;
+      }
+      if (mx >= 326 && mx <= 398) {
+        if (this.currentWorld !== 2) this.toggleWorld(2);
+        return;
+      }
+    }
+
     // Check if clicked the bottom level action card
     if (my > 410) {
       this.launchCurrentMapLevel();
@@ -1842,6 +2078,34 @@ class SuperAmbarGame {
       color: colors[Math.floor(Math.random() * colors.length)],
       life: 0.45 + Math.random() * 0.3
     });
+  }
+
+  spawnBubble(x, y) {
+    this.particles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: -1.2 - Math.random() * 1.6,
+      size: 3 + Math.random() * 4,
+      color: 'rgba(224, 242, 254, 0.75)',
+      isBubble: true,
+      life: 0.8 + Math.random() * 0.5
+    });
+  }
+
+  spawnGrindSpark(x, y) {
+    const colors = ['#fde047', '#fbbf24', '#f59e0b', '#38bdf8', '#ffffff'];
+    for (let i = 0; i < 2; i++) {
+      this.particles.push({
+        x,
+        y,
+        vx: (Math.random() - 0.8 * (this.player.facing || 1)) * 5,
+        vy: -2 - Math.random() * 3,
+        size: 2.5 + Math.random() * 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 0.25 + Math.random() * 0.2
+      });
+    }
   }
 
   updateParticles(dt) {
@@ -2011,13 +2275,31 @@ class SuperAmbarGame {
     });
 
     this.enemyProjectiles.forEach(ep => {
-      ctx.fillStyle = '#ffeb3b';
-      ctx.beginPath();
-      ctx.arc(ep.x + 7, ep.y + 7, 6.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#d50000';
-      ctx.stroke();
+      if (ep.isIceShard) {
+        ctx.save();
+        ctx.fillStyle = '#bae6fd';
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ep.x + 8, ep.y);
+        ctx.lineTo(ep.x + 16, ep.y + 8);
+        ctx.lineTo(ep.x + 8, ep.y + 16);
+        ctx.lineTo(ep.x, ep.y + 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(ep.x + 6, ep.y + 6, 4, 4);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#ffeb3b';
+        ctx.beginPath();
+        ctx.arc(ep.x + 7, ep.y + 7, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#d50000';
+        ctx.stroke();
+      }
     });
 
     // Draw Speed Trail Ghosts
@@ -2034,7 +2316,19 @@ class SuperAmbarGame {
     window.spriteRenderer.drawAmbar(ctx, this.player, this.time);
 
     this.particles.forEach(pt => {
-      if (pt.type === 'dust') {
+      if (pt.isBubble) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.fillStyle = pt.color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, Math.max(1.5, pt.size / 2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(pt.x - 1, pt.y - pt.size / 3, 1.5, 1.5);
+        ctx.restore();
+      } else if (pt.type === 'dust') {
         ctx.save();
         const alpha = Math.max(0, Math.min(1, pt.life / (pt.maxLife || 0.35)));
         ctx.globalAlpha = alpha;
@@ -2740,7 +3034,7 @@ class SuperAmbarGame {
         ctx.fillRect(ex, ey, 2.5, 2.5);
       }
 
-    } else {
+    } else if (theme === 9) {
       // MUNDO 1-S: LA VÍA LÁCTEA ESTELAR (NIVEL SECRETO)
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
       grad.addColorStop(0, '#030014');
@@ -2808,6 +3102,285 @@ class SuperAmbarGame {
         ctx.lineTo(stX, stY);
         ctx.stroke();
       }
+
+    } else if (theme === 10) {
+      // MUNDO 2-1: PARQUE COSTERO EN PATINES (Tropical Sunset Boulevard & Palm Silhouettes)
+      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      grad.addColorStop(0, '#311042');
+      grad.addColorStop(0.3, '#701a75');
+      grad.addColorStop(0.6, '#db2777');
+      grad.addColorStop(0.85, '#f97316');
+      grad.addColorStop(1, '#fde047');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Distant Ocean Horizon & Island Silhouettes
+      ctx.fillStyle = '#4a044e';
+      for (let i = 0; i < 4; i++) {
+        const mx = ((i * 280 - this.cameraX * 0.08) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 100;
+        ctx.beginPath();
+        ctx.ellipse(mx + 80, 240, 90, 26, 0, Math.PI, 0);
+        ctx.fill();
+      }
+
+      // Giant Radiant Sunset Sun
+      const sunX = ((540 - this.cameraX * 0.05) % (LOGICAL_WIDTH + 260) + LOGICAL_WIDTH + 260) % (LOGICAL_WIDTH + 260) - 130;
+      const sGrad = ctx.createRadialGradient(sunX, 210, 10, sunX, 210, 60);
+      sGrad.addColorStop(0, '#fef08a');
+      sGrad.addColorStop(0.6, '#fb923c');
+      sGrad.addColorStop(1, 'rgba(251, 146, 60, 0)');
+      ctx.fillStyle = sGrad;
+      ctx.beginPath();
+      ctx.arc(sunX, 210, 60, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Parallax Tropical Palm Trees & Boardwalk Lampposts
+      for (let i = 0; i < 7; i++) {
+        const px = ((i * 180 - this.cameraX * 0.32) % (LOGICAL_WIDTH + 200) + LOGICAL_WIDTH + 200) % (LOGICAL_WIDTH + 200) - 80;
+        const py = 13 * TILE_SIZE;
+
+        // Palm trunk
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.quadraticCurveTo(px + 8, py - 60, px + 14, py - 110);
+        ctx.lineTo(px + 18, py - 110);
+        ctx.quadraticCurveTo(px + 12, py - 60, px + 5, py);
+        ctx.closePath();
+        ctx.fill();
+
+        // Palm fronds
+        const topX = px + 16;
+        const topY = py - 110;
+        ctx.strokeStyle = '#3b0764';
+        ctx.lineWidth = 4;
+        for (let a = 0; a < 6; a++) {
+          const ang = (a / 6) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(topX, topY);
+          ctx.quadraticCurveTo(topX + Math.cos(ang) * 28, topY + Math.sin(ang) * 20 - 8, topX + Math.cos(ang) * 38, topY + Math.sin(ang) * 28 + 6);
+          ctx.stroke();
+        }
+      }
+
+    } else if (theme === 11) {
+      // MUNDO 2-2: ARRECIFE DE CORAL DE LA SIRENA (Crystal Underwater Ocean & Sunrays)
+      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      grad.addColorStop(0, '#06b6d4');
+      grad.addColorStop(0.3, '#0891b2');
+      grad.addColorStop(0.65, '#0e7490');
+      grad.addColorStop(1, '#083344');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Shimmering Godrays filtering from water surface
+      for (let r = 0; r < 6; r++) {
+        const rx = ((r * 160 + Math.sin(this.time * 0.8 + r) * 30 - this.cameraX * 0.12) % (LOGICAL_WIDTH + 180) + LOGICAL_WIDTH + 180) % (LOGICAL_WIDTH + 180) - 90;
+        const rGrad = ctx.createLinearGradient(rx, 0, rx + 60, LOGICAL_HEIGHT);
+        rGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+        rGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.15)');
+        rGrad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        ctx.fillStyle = rGrad;
+        ctx.beginPath();
+        ctx.moveTo(rx - 10, 0);
+        ctx.lineTo(rx + 40, 0);
+        ctx.lineTo(rx + 90, LOGICAL_HEIGHT);
+        ctx.lineTo(rx + 20, LOGICAL_HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Distant Sunken Coral Spires in background
+      for (let c = 0; c < 6; c++) {
+        const cx = ((c * 210 - this.cameraX * 0.22) % (LOGICAL_WIDTH + 220) + LOGICAL_WIDTH + 220) % (LOGICAL_WIDTH + 220) - 90;
+        const ch = 110 + (c % 3) * 35;
+        ctx.fillStyle = '#0f766e';
+        ctx.beginPath();
+        ctx.moveTo(cx, 13 * TILE_SIZE);
+        ctx.quadraticCurveTo(cx + 25, 13 * TILE_SIZE - ch, cx + 35, 13 * TILE_SIZE - ch - 20);
+        ctx.quadraticCurveTo(cx + 45, 13 * TILE_SIZE - ch, cx + 70, 13 * TILE_SIZE);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Rising luminous ocean bubbles in background
+      for (let b = 0; b < 18; b++) {
+        const bx = ((b * 55 - this.cameraX * 0.25) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+        const by = (LOGICAL_HEIGHT - (this.time * 35 + b * 28) % LOGICAL_HEIGHT);
+        ctx.strokeStyle = 'rgba(224, 242, 254, 0.65)';
+        ctx.fillStyle = 'rgba(224, 242, 254, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(bx, by, 3 + (b % 4), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+    } else if (theme === 12) {
+      // MUNDO 2-3: VALLE GLACIAL Y BOSQUE NEVADO (Polar Aurora Borealis & Snowy Pines)
+      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      grad.addColorStop(0, '#020617');
+      grad.addColorStop(0.4, '#0f172a');
+      grad.addColorStop(0.75, '#1e293b');
+      grad.addColorStop(1, '#082f49');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Shimmering Aurora Borealis green & violet curtains
+      for (let a = 0; a < 3; a++) {
+        const aWave = Math.sin(this.time * 1.2 + a) * 20;
+        const aGrad = ctx.createLinearGradient(0, 40 + a * 35, 0, 160 + a * 35);
+        aGrad.addColorStop(0, 'rgba(52, 211, 153, 0)');
+        aGrad.addColorStop(0.5, a === 1 ? 'rgba(168, 85, 247, 0.35)' : 'rgba(45, 212, 191, 0.38)');
+        aGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = aGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, 70 + aWave);
+        ctx.bezierCurveTo(LOGICAL_WIDTH * 0.3, 30 - aWave, LOGICAL_WIDTH * 0.7, 110 + aWave, LOGICAL_WIDTH, 60 - aWave);
+        ctx.lineTo(LOGICAL_WIDTH, 170);
+        ctx.lineTo(0, 170);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Parallax Distant Jagged Snow Glaciers
+      for (let i = 0; i < 5; i++) {
+        const gx = ((i * 260 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 280) + LOGICAL_WIDTH + 280) % (LOGICAL_WIDTH + 280) - 100;
+        const gh = 150 + (i % 2) * 40;
+        ctx.fillStyle = '#0c4a6e';
+        ctx.beginPath();
+        ctx.moveTo(gx, 13 * TILE_SIZE);
+        ctx.lineTo(gx + 80, 13 * TILE_SIZE - gh);
+        ctx.lineTo(gx + 130, 13 * TILE_SIZE - gh * 0.8);
+        ctx.lineTo(gx + 190, 13 * TILE_SIZE);
+        ctx.closePath();
+        ctx.fill();
+        // White snow cap
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.moveTo(gx + 50, 13 * TILE_SIZE - gh * 0.65);
+        ctx.lineTo(gx + 80, 13 * TILE_SIZE - gh);
+        ctx.lineTo(gx + 110, 13 * TILE_SIZE - gh * 0.75);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Parallax Snow-Covered Fir Trees
+      for (let t = 0; t < 8; t++) {
+        const tx = ((t * 150 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 180) + LOGICAL_WIDTH + 180) % (LOGICAL_WIDTH + 180) - 70;
+        const ty = 13 * TILE_SIZE;
+        ctx.fillStyle = '#064e3b';
+        for (let tier = 0; tier < 3; tier++) {
+          const tw = 28 - tier * 6;
+          const th = 24;
+          const topTierY = ty - 40 - tier * 20;
+          ctx.beginPath();
+          ctx.moveTo(tx - tw, topTierY + th);
+          ctx.lineTo(tx, topTierY);
+          ctx.lineTo(tx + tw, topTierY + th);
+          ctx.closePath();
+          ctx.fill();
+          // Snow on branches
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(tx - tw + 3, topTierY + th - 3, tw * 2 - 6, 3);
+          ctx.fillStyle = '#064e3b';
+        }
+      }
+
+    } else if (theme === 13) {
+      // MUNDO 2-4: LA MANSIÓN ENCANTADA DE LOS BOOS (Haunted Victorian Manor Interior)
+      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      grad.addColorStop(0, '#090514');
+      grad.addColorStop(0.5, '#170c2e');
+      grad.addColorStop(1, '#05020a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Gothic Arched Windows with Full Moon & Eerie Night Sky
+      for (let w = 0; w < 4; w++) {
+        const wx = ((w * 270 - this.cameraX * 0.25) % (LOGICAL_WIDTH + 260) + LOGICAL_WIDTH + 260) % (LOGICAL_WIDTH + 260) - 80;
+        const wy = 80;
+        ctx.fillStyle = '#2e1065';
+        ctx.fillRect(wx, wy, 58, 120);
+        ctx.beginPath();
+        ctx.arc(wx + 29, wy, 29, Math.PI, 0);
+        ctx.fill();
+
+        // Moonlight glow inside window
+        ctx.fillStyle = '#818cf8';
+        ctx.fillRect(wx + 4, wy + 4, 50, 112);
+        ctx.beginPath();
+        ctx.arc(wx + 29, wy, 25, Math.PI, 0);
+        ctx.fill();
+
+        // Pale full moon visible through window
+        if (w === 1) {
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(wx + 29, wy + 20, 16, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Spooky Purple Ghost Mist crawling on floor
+      const mistY = 13 * TILE_SIZE - 20;
+      for (let m = 0; m < 5; m++) {
+        const mx = ((m * 200 + Math.sin(this.time * 2 + m) * 25 - this.cameraX * 0.4) % (LOGICAL_WIDTH + 220) + LOGICAL_WIDTH + 220) % (LOGICAL_WIDTH + 220) - 90;
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
+        ctx.beginPath();
+        ctx.ellipse(mx + 60, mistY, 80, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+    } else if (theme === 14) {
+      // MUNDO 2-5: FORTALEZA GLACIAL DEL REY ESCARCHA (Frost Fortress Obsidian Throne Room)
+      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+      grad.addColorStop(0, '#020617');
+      grad.addColorStop(0.4, '#0f172a');
+      grad.addColorStop(0.8, '#082f49');
+      grad.addColorStop(1, '#0c4a6e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Huge Ice Stalactites hanging from fortress ceiling
+      for (let i = 0; i < 12; i++) {
+        const sx = ((i * 100 - this.cameraX * 0.18) % (LOGICAL_WIDTH + 140) + LOGICAL_WIDTH + 140) % (LOGICAL_WIDTH + 140) - 50;
+        const sh = 45 + (i % 3) * 35;
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(sx, 0);
+        ctx.lineTo(sx + 15, sh);
+        ctx.lineTo(sx + 30, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(sx + 13, 2, 4, sh - 8);
+      }
+
+      // Glowing Cyan Frost Fortress Pillars
+      for (let p = 0; p < 5; p++) {
+        const px = ((p * 240 - this.cameraX * 0.3) % (LOGICAL_WIDTH + 240) + LOGICAL_WIDTH + 240) % (LOGICAL_WIDTH + 240) - 70;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(px, 40, 52, 13 * TILE_SIZE);
+        // Frost Rune glowing band
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 4, 120, 44, 8);
+        ctx.fillStyle = '#e0f2fe';
+        ctx.fillRect(px + 10, 122, 32, 4);
+      }
+
+      // Frost Blizzard Wind particles drifting across hall
+      for (let f = 0; f < 25; f++) {
+        const fx = ((f * 45 - this.time * 80 - this.cameraX * 0.45) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+        const fy = (f * 19 + Math.sin(this.time * 4 + f) * 15) % LOGICAL_HEIGHT;
+        ctx.fillStyle = '#bae6fd';
+        ctx.fillRect(fx, fy, 2.5, 2.5);
+      }
+
+    } else {
+      // Fallback
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     }
   }
 
@@ -3261,31 +3834,43 @@ class SuperAmbarGame {
 
   renderVictoryOverlay(ctx) {
     ctx.save();
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-    window.spriteRenderer.roundRect(ctx, 90, 65, LOGICAL_WIDTH - 180, 350, 12);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+    window.spriteRenderer.roundRect(ctx, 80, 60, LOGICAL_WIDTH - 160, 360, 14);
     ctx.fill();
-    ctx.strokeStyle = '#fbbf24';
+    ctx.strokeStyle = this.currentLevelIdx === 13 ? '#38bdf8' : '#fbbf24';
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    window.spriteRenderer.drawAmbarPortrait(ctx, LOGICAL_WIDTH / 2 - 44, 80, 88);
+    window.spriteRenderer.drawAmbarPortrait(ctx, LOGICAL_WIDTH / 2 - 44, 75, 88);
 
     ctx.textAlign = 'center';
-    ctx.font = '20px "Press Start 2P", monospace';
+    ctx.font = '18px "Press Start 2P", monospace';
     ctx.fillStyle = '#fde047';
-    ctx.fillText('¡FELICITACIONES ÁMBAR!', LOGICAL_WIDTH / 2, 198);
+    if (this.currentLevelIdx === 13) {
+      ctx.fillText('¡REINA DEL REINO ESCARCHA!', LOGICAL_WIDTH / 2, 192);
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.fillStyle = '#7dd3fc';
+      ctx.fillText('¡Derrotaste al Rey Escarcha y salvaste el Océano!', LOGICAL_WIDTH / 2, 226);
+      ctx.fillStyle = '#e0f2fe';
+      ctx.fillText('¡Ámbar dominó los Patines, el Océano y el Hielo!', LOGICAL_WIDTH / 2, 248);
+    } else {
+      ctx.fillText('¡FELICITACIONES ÁMBAR!', LOGICAL_WIDTH / 2, 192);
+      ctx.font = '10px "Press Start 2P", monospace';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('¡Completaste la Isla Ámbar del Mundo 1!', LOGICAL_WIDTH / 2, 226);
+      ctx.fillStyle = '#a7f3d0';
+      ctx.fillText('¡Ahora se ha abierto el MUNDO 2 GLACIAL Y OCEÁNICO!', LOGICAL_WIDTH / 2, 248);
+    }
 
     ctx.font = '11px "Press Start 2P", monospace';
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText('¡Completaste todos los mundos de Super Ámbar All-Stars!', LOGICAL_WIDTH / 2, 235);
-
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`PUNTAJE FINAL: ${this.score}   •   MONEDAS: ${this.coinsCount}`, LOGICAL_WIDTH / 2, 280);
+    ctx.fillText(`PUNTAJE FINAL: ${this.score}   •   MONEDAS: ${this.coinsCount}`, LOGICAL_WIDTH / 2, 290);
 
     if (Math.floor(this.time * 2.5) % 2 === 0) {
       ctx.fillStyle = '#4ade80';
-      ctx.font = '12px "Press Start 2P", monospace';
-      ctx.fillText('PRESIONA ENTER O CLIC PARA JUGAR DE NUEVO', LOGICAL_WIDTH / 2, 350);
+      ctx.font = '11px "Press Start 2P", monospace';
+      const promptText = this.currentLevelIdx === 7 ? '► PRESIONA ENTER PARA IR AL MUNDO 2 ◄' : '► PRESIONA ENTER O CLIC PARA CONTINUAR ◄';
+      ctx.fillText(promptText, LOGICAL_WIDTH / 2, 355);
     }
     ctx.restore();
   }
@@ -3319,6 +3904,40 @@ class SuperAmbarGame {
   renderOverworldMap(ctx) {
     const t = this.time;
 
+    if (this.currentWorld === 2) {
+      this.renderWorld2Map(ctx, t);
+    } else {
+      this.renderWorld1Map(ctx, t);
+    }
+
+    // Render All Map Nodes
+    this.mapNodes.forEach((node, i) => {
+      this.renderMapNode(ctx, node, i === this.currentMapNodeId, t);
+    });
+
+    // Mini Ámbar Avatar on Map
+    window.spriteRenderer.drawMiniAmbarMap(
+      ctx,
+      this.mapAmbar.x,
+      this.mapAmbar.y - 6,
+      this.mapAmbar.facing,
+      this.mapAmbar.walkFrame
+    );
+
+    // Particles on map (secret path sparkles / ambient)
+    this.particles.forEach(pt => {
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+    });
+
+    // Top SNES HUD Banner
+    this.renderMapTopHeader(ctx);
+
+    // Bottom Level Info & Action Card
+    this.renderMapBottomCard(ctx);
+  }
+
+  renderWorld1Map(ctx, t) {
     // 1. Animated Deep Ocean with wave foam
     const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
     oceanGrad.addColorStop(0, '#0284c7');
@@ -3452,11 +4071,11 @@ class SuperAmbarGame {
     }
 
     // 3. Roads / Paths connecting nodes
-    this.mapNodes.forEach(node => {
+    this.world1Nodes.forEach(node => {
       if (node.paths) {
         for (const dir in node.paths) {
           const targetId = node.paths[dir];
-          const target = this.mapNodes[targetId];
+          const target = this.world1Nodes[targetId];
           if (!target || targetId < node.id) continue;
 
           const isUnlocked = node.unlocked && target.unlocked;
@@ -3483,8 +4102,8 @@ class SuperAmbarGame {
     });
 
     // Secret Rainbow Path (Node 1 -> Node 8)
-    const secretNode = this.mapNodes[8];
-    const n1 = this.mapNodes[1];
+    const secretNode = this.world1Nodes[8];
+    const n1 = this.world1Nodes[1];
     if (secretNode && n1) {
       const secretUnlocked = secretNode.unlocked;
       if (secretUnlocked) {
@@ -3521,7 +4140,7 @@ class SuperAmbarGame {
     }
 
     // Shortcut Path (Node 8 -> Node 6)
-    const n6 = this.mapNodes[6];
+    const n6 = this.world1Nodes[6];
     if (secretNode && secretNode.cleared && n6) {
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 3;
@@ -3532,32 +4151,338 @@ class SuperAmbarGame {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+  }
 
-    // 4. Render All Map Nodes
-    this.mapNodes.forEach((node, i) => {
-      this.renderMapNode(ctx, node, i === this.currentMapNodeId, t);
+  renderWorld2Map(ctx, t) {
+    // 1. Deep Arctic Ocean Gradient
+    const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+    oceanGrad.addColorStop(0, '#031b34');
+    oceanGrad.addColorStop(0.5, '#023059');
+    oceanGrad.addColorStop(1, '#075985');
+    ctx.fillStyle = oceanGrad;
+    ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+    // Glowing cyan arctic wave ripples
+    ctx.fillStyle = 'rgba(125, 211, 252, 0.22)';
+    for (let row = 0; row < 16; row++) {
+      const wy = row * 30 + 10;
+      const speed = (row % 2 === 0 ? 1 : -1) * 16;
+      const offX = ((t * speed) % 90 + 90) % 90;
+      for (let wx = -40 + offX; wx < LOGICAL_WIDTH + 40; wx += 90) {
+        ctx.fillRect(wx, wy, 18, 2);
+        ctx.fillRect(wx + 5, wy + 2, 8, 1);
+      }
+    }
+
+    // Drifting geometric ice floes in ocean
+    const iceFloes = [
+      { x: 70, y: 190, r: 24 },
+      { x: 220, y: 160, r: 18 },
+      { x: 380, y: 140, r: 28 },
+      { x: 520, y: 130, r: 22 },
+      { x: 670, y: 340, r: 26 },
+      { x: 340, y: 400, r: 20 },
+      { x: 190, y: 420, r: 25 }
+    ];
+    iceFloes.forEach((floe, idx) => {
+      const fx = floe.x + Math.sin(t * 0.8 + idx) * 8;
+      const fy = floe.y + Math.cos(t * 0.6 + idx) * 4;
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.ellipse(fx, fy + 3, floe.r, floe.r * 0.55, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f0f9ff';
+      ctx.beginPath();
+      ctx.ellipse(fx, fy, floe.r * 0.9, floe.r * 0.48, 0, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    // 5. Mini Ámbar Avatar on Map
-    window.spriteRenderer.drawMiniAmbarMap(
-      ctx,
-      this.mapAmbar.x,
-      this.mapAmbar.y - 6,
-      this.mapAmbar.facing,
-      this.mapAmbar.walkFrame
-    );
+    // Aurora Borealis shimmer in upper sky
+    ctx.save();
+    for (let ai = 0; ai < 3; ai++) {
+      ctx.beginPath();
+      const aColor = ai === 0 ? 'rgba(52, 211, 153, 0.22)' : (ai === 1 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(192, 132, 252, 0.18)');
+      ctx.strokeStyle = aColor;
+      ctx.lineWidth = 18;
+      ctx.moveTo(0, 50 + ai * 14);
+      for (let ax = 0; ax <= LOGICAL_WIDTH; ax += 40) {
+        const ay = 50 + ai * 14 + Math.sin(ax * 0.008 + t * 0.9 + ai * 1.5) * 16;
+        ctx.lineTo(ax, ay);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    // 6. Particles on map (secret path sparkles)
-    this.particles.forEach(pt => {
-      ctx.fillStyle = pt.color;
-      ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+    // ==========================================
+    // LANDMASSES OF WORLD 2
+    // ==========================================
+
+    // 1. Coastal Skate Promenade Island (Node 0: 2-1 Patines, x: 140, y: 350)
+    // Golden Beach Shore
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.ellipse(140, 350, 75, 48, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ca8a04';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Paved Boardwalk Promenade
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.ellipse(140, 350, 60, 36, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#cbd5e1';
+    ctx.beginPath();
+    ctx.ellipse(140, 348, 50, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mini neon skate rail ring on promenade
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(140, 348, 42, 20, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    // Rail sparks
+    const spX = 140 + Math.cos(t * 3.5) * 42;
+    const spY = 348 + Math.sin(t * 3.5) * 20;
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(spX - 2, spY - 2, 4, 4);
+
+    // Cute mini palm tree on the beach
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(85, 335, 4, 14);
+    ctx.fillStyle = '#16a34a';
+    ctx.beginPath();
+    ctx.arc(87, 332, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Coral Reef Lagoon of the Mermaid (Node 1: 2-2 Sirena, x: 280, y: 310)
+    // Lagoon sandy reef ring
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.ellipse(280, 310, 80, 52, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Translucent Turquoise Water Interior
+    const lagoonGrad = ctx.createRadialGradient(280, 310, 10, 280, 310, 65);
+    lagoonGrad.addColorStop(0, '#06b6d4');
+    lagoonGrad.addColorStop(0.7, '#0891b2');
+    lagoonGrad.addColorStop(1, '#0e7490');
+    ctx.fillStyle = lagoonGrad;
+    ctx.beginPath();
+    ctx.ellipse(280, 310, 68, 42, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Colorful coral branches & anemones around lagoon
+    const corals = [
+      { x: 235, y: 300, col: '#f43f5e', r: 8 },
+      { x: 325, y: 320, col: '#c084fc', r: 9 },
+      { x: 295, y: 280, col: '#fbbf24', r: 7 },
+      { x: 250, y: 335, col: '#ec4899', r: 8 }
+    ];
+    corals.forEach(c => {
+      ctx.fillStyle = c.col;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(c.x - 1, c.y - 1, 2, 2);
     });
 
-    // 7. Top SNES HUD Banner
-    this.renderMapTopHeader(ctx);
+    // Gentle bubbles rising in the lagoon
+    for (let bi = 0; bi < 3; bi++) {
+      const bx = 265 + bi * 16;
+      const by = 320 - ((t * 18 + bi * 14) % 36);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.arc(bx, by, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // 8. Bottom Level Info & Action Card
-    this.renderMapBottomCard(ctx);
+    // 3. Glacial Snow Valley (Node 2: 2-3 Glacial, x: 440, y: 260)
+    // Mountain snow landmass
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.ellipse(440, 260, 85, 54, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Pure White Snow Cover
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.ellipse(440, 258, 74, 44, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Slippery Ice Lake
+    ctx.fillStyle = '#7dd3fc';
+    ctx.beginPath();
+    ctx.ellipse(440, 266, 44, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Snow pine trees
+    const pineTrees = [
+      { x: 395, y: 245 },
+      { x: 480, y: 235 },
+      { x: 410, y: 280 }
+    ];
+    pineTrees.forEach(pt => {
+      ctx.fillStyle = '#0f766e';
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y - 12);
+      ctx.lineTo(pt.x - 7, pt.y);
+      ctx.lineTo(pt.x + 7, pt.y);
+      ctx.closePath();
+      ctx.fill();
+      // White snow cap
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y - 12);
+      ctx.lineTo(pt.x - 4, pt.y - 6);
+      ctx.lineTo(pt.x + 4, pt.y - 6);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    // 4. Haunted Boo Gothic Mansion Hill (Node 3: 2-4 Mansión, x: 590, y: 220)
+    // Dark Twilight Violet Cliff
+    ctx.fillStyle = '#1e1b4b';
+    ctx.beginPath();
+    ctx.ellipse(590, 220, 80, 50, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#312e81';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#2e1065';
+    ctx.beginPath();
+    ctx.ellipse(590, 218, 68, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eerie purple fog aura
+    const fogGrad = ctx.createRadialGradient(590, 215, 10, 590, 215, 60);
+    fogGrad.addColorStop(0, 'rgba(192, 132, 252, 0.35)');
+    fogGrad.addColorStop(1, 'rgba(46, 16, 101, 0)');
+    ctx.fillStyle = fogGrad;
+    ctx.beginPath();
+    ctx.arc(590, 215, 60, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Spooky dead silhouette trees
+    const drawSpookyTree = (tx, ty) => {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(tx - 2, ty - 14, 4, 14);
+      ctx.fillRect(tx - 7, ty - 10, 6, 2);
+      ctx.fillRect(tx + 2, ty - 12, 6, 2);
+      ctx.fillRect(tx - 6, ty - 16, 2, 6);
+    };
+    drawSpookyTree(545, 210);
+    drawSpookyTree(635, 205);
+
+    // Cute mini Boo floating near mansion
+    const booBob = Math.sin(t * 3) * 4;
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.arc(620, 185 + booBob, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#f472b6';
+    ctx.fillRect(618, 186 + booBob, 2, 2); // Blush
+
+    // 5. Glacial Castle Peak of Rey Escarcha (Node 4: 2-5 Castillo, x: 730, y: 140)
+    // Massive Ice Mountain Peak
+    ctx.fillStyle = '#082f49';
+    ctx.beginPath();
+    ctx.ellipse(730, 145, 65, 42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Frost King Crystalline Spires & Shimmer
+    ctx.fillStyle = '#bae6fd';
+    ctx.beginPath();
+    ctx.moveTo(705, 145);
+    ctx.lineTo(715, 95);
+    ctx.lineTo(725, 145);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#e0f2fe';
+    ctx.beginPath();
+    ctx.moveTo(725, 145);
+    ctx.lineTo(735, 85);
+    ctx.lineTo(745, 145);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#7dd3fc';
+    ctx.beginPath();
+    ctx.moveTo(745, 145);
+    ctx.lineTo(755, 102);
+    ctx.lineTo(765, 145);
+    ctx.closePath();
+    ctx.fill();
+
+    // Pulsing Crystal Aura around Frost King Mountain
+    const frostAura = ctx.createRadialGradient(730, 115, 10, 730, 115, 55);
+    frostAura.addColorStop(0, 'rgba(125, 211, 252, 0.45)');
+    frostAura.addColorStop(1, 'rgba(8, 47, 73, 0)');
+    ctx.fillStyle = frostAura;
+    ctx.beginPath();
+    ctx.arc(730, 115, 55, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ==========================================
+    // CRYSTALLINE ICE BRIDGES CONNECTING NODES
+    // ==========================================
+    this.world2Nodes.forEach(node => {
+      if (node.paths) {
+        for (const dir in node.paths) {
+          const targetId = node.paths[dir];
+          const target = this.world2Nodes[targetId];
+          if (!target || targetId < node.id) continue;
+
+          const isUnlocked = node.unlocked && target.unlocked;
+
+          // Ice bridge base
+          ctx.strokeStyle = isUnlocked ? '#0284c7' : 'rgba(2, 132, 199, 0.25)';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(target.x, target.y);
+          ctx.stroke();
+
+          // Crystalline frost top
+          ctx.strokeStyle = isUnlocked ? '#e0f2fe' : 'rgba(224, 242, 254, 0.35)';
+          ctx.lineWidth = 4;
+          if (!isUnlocked) ctx.setLineDash([6, 6]);
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(target.x, target.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Ice sparkle diamonds along unlocked bridges
+          if (isUnlocked) {
+            for (let sp = 1; sp <= 3; sp++) {
+              const spt = (sp / 4 + t * 0.25) % 1.0;
+              const sx = node.x + (target.x - node.x) * spt;
+              const sy = node.y + (target.y - node.y) * spt;
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(sx - 1.5, sy - 1.5, 3, 3);
+            }
+          }
+        }
+      }
+    });
   }
 
   renderMapNode(ctx, node, isSelected, time) {
@@ -3586,7 +4511,7 @@ class SuperAmbarGame {
     // Active Selection Pulsing Ring
     if (isSelected) {
       const pulse = 1.0 + Math.sin(time * 8) * 0.18;
-      ctx.strokeStyle = '#fde047';
+      ctx.strokeStyle = this.currentWorld === 2 ? '#38bdf8' : '#fde047';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(x, y, 20 * pulse, 0, Math.PI * 2);
@@ -3621,21 +4546,118 @@ class SuperAmbarGame {
       ctx.stroke();
 
       ctx.restore();
-    } else if (node.icon === 'castle' || node.icon === 'fortress') {
-      // 16-Bit Castle Fortress Icon
+    } else if (node.icon === 'skate') {
+      // Roller Skate Mode Node
+      ctx.fillStyle = '#0891b2';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Quad skate boot
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(x - 8, y - 6, 12, 10);
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillRect(x - 8, y + 2, 16, 3);
+      // Wheels
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.arc(x - 5, y + 8, 3, 0, Math.PI * 2);
+      ctx.arc(x + 5, y + 8, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (node.icon === 'mermaid') {
+      // Mermaid Coral Mode Node
+      ctx.fillStyle = '#0f766e';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mermaid tail fin silhouette
+      ctx.fillStyle = '#2dd4bf';
+      ctx.beginPath();
+      ctx.moveTo(x - 8, y + 6);
+      ctx.quadraticCurveTo(x, y - 2, x + 8, y + 6);
+      ctx.quadraticCurveTo(x, y - 8, x - 8, y + 6);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - 1, y - 1, 2, 2);
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (node.icon === 'glacier') {
+      // Glacier Snowflake Node
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Snowflake
+      ctx.strokeStyle = '#e0f2fe';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - 8, y);
+      ctx.lineTo(x + 8, y);
+      ctx.moveTo(x, y - 8);
+      ctx.lineTo(x, y + 8);
+      ctx.moveTo(x - 5, y - 5);
+      ctx.lineTo(x + 5, y + 5);
+      ctx.moveTo(x + 5, y - 5);
+      ctx.lineTo(x - 5, y + 5);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (node.icon === 'ghost') {
+      // Boo Haunted House Node
+      ctx.fillStyle = '#312e81';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cute Boo silhouette
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y - 1, 7, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x - 3, y - 2, 2, 2);
+      ctx.fillRect(x + 2, y - 2, 2, 2);
+      ctx.fillStyle = '#f472b6';
+      ctx.fillRect(x - 5, y + 1, 2, 2);
+      ctx.fillRect(x + 4, y + 1, 2, 2);
+
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (node.icon === 'ice_castle' || node.icon === 'castle' || node.icon === 'fortress') {
+      // 16-Bit Castle Fortress Icon
+      const isIce = node.icon === 'ice_castle';
+      ctx.fillStyle = isIce ? '#082f49' : '#0f172a';
       ctx.beginPath();
       ctx.arc(x, y, 18, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = node.icon === 'castle' ? '#475569' : '#64748b';
+      ctx.fillStyle = isIce ? '#7dd3fc' : (node.icon === 'castle' ? '#475569' : '#64748b');
       ctx.fillRect(x - 14, y - 8, 28, 18);
       ctx.fillRect(x - 14, y - 14, 8, 8);
       ctx.fillRect(x - 4, y - 12, 8, 6);
       ctx.fillRect(x + 6, y - 14, 8, 8);
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = isIce ? '#0f172a' : '#1e293b';
       ctx.fillRect(x - 4, y + 2, 8, 8);
-      ctx.fillStyle = '#ef4444';
+      ctx.fillStyle = isIce ? '#38bdf8' : '#ef4444';
       ctx.beginPath();
       ctx.moveTo(x + 10, y - 14);
       ctx.lineTo(x + 18, y - 11);
@@ -3643,7 +4665,7 @@ class SuperAmbarGame {
       ctx.closePath();
       ctx.fill();
 
-      ctx.strokeStyle = '#facc15';
+      ctx.strokeStyle = isIce ? '#bae6fd' : '#facc15';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(x, y, 18, 0, Math.PI * 2);
@@ -3740,27 +4762,56 @@ class SuperAmbarGame {
 
   renderMapTopHeader(ctx) {
     ctx.save();
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
     window.spriteRenderer.roundRect(ctx, 24, 12, LOGICAL_WIDTH - 48, 44, 10);
     ctx.fill();
-    ctx.strokeStyle = '#f59e0b';
+    ctx.strokeStyle = this.currentWorld === 2 ? '#38bdf8' : '#f59e0b';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    ctx.font = '11px "Press Start 2P", monospace';
+    ctx.font = '10px "Press Start 2P", monospace';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#fde047';
-    ctx.fillText('★ SUPER ÁMBAR ALL-STARS ★ ISLA ÁMBAR', 42, 38);
+    ctx.fillStyle = this.currentWorld === 2 ? '#7dd3fc' : '#fde047';
+    ctx.fillText(this.currentWorld === 2 ? '❄️ M2: GLACIAL' : '🌍 M1: ISLA ÁMBAR', 38, 38);
 
+    // Interactive World Switcher Buttons
+    const w1Active = this.currentWorld === 1;
+    const w2Active = this.currentWorld === 2;
+
+    // Button M1
+    ctx.fillStyle = w1Active ? 'rgba(245, 158, 11, 0.45)' : 'rgba(30, 41, 59, 0.75)';
+    window.spriteRenderer.roundRect(ctx, 252, 18, 68, 32, 6);
+    ctx.fill();
+    ctx.strokeStyle = w1Active ? '#facc15' : '#475569';
+    ctx.lineWidth = w1Active ? 2.5 : 1;
+    ctx.stroke();
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = w1Active ? '#fef08a' : '#94a3b8';
+    ctx.fillText('🌍 M1', 286, 38);
+
+    // Button M2
+    ctx.fillStyle = w2Active ? 'rgba(56, 189, 248, 0.45)' : 'rgba(30, 41, 59, 0.75)';
+    window.spriteRenderer.roundRect(ctx, 326, 18, 68, 32, 6);
+    ctx.fill();
+    ctx.strokeStyle = w2Active ? '#38bdf8' : '#475569';
+    ctx.lineWidth = w2Active ? 2.5 : 1;
+    ctx.stroke();
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = w2Active ? '#e0f2fe' : '#94a3b8';
+    ctx.fillText('❄️ M2', 360, 38);
+
+    // Right-aligned stats
     ctx.textAlign = 'right';
     ctx.fillStyle = '#f472b6';
-    ctx.fillText(`♥ x${this.lives}`, LOGICAL_WIDTH - 260, 38);
+    ctx.fillText(`♥ x${this.lives}`, LOGICAL_WIDTH - 245, 38);
 
     ctx.fillStyle = '#fde047';
-    ctx.fillText(`🪙 ${this.coinsCount}`, LOGICAL_WIDTH - 170, 38);
+    ctx.fillText(`🪙 ${this.coinsCount}`, LOGICAL_WIDTH - 155, 38);
 
     ctx.fillStyle = '#38bdf8';
-    ctx.fillText(`PTS ${String(this.score).padStart(6, '0')}`, LOGICAL_WIDTH - 42, 38);
+    ctx.fillText(`PTS ${String(this.score).padStart(6, '0')}`, LOGICAL_WIDTH - 38, 38);
     ctx.restore();
   }
 

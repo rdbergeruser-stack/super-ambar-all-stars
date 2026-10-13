@@ -196,6 +196,210 @@ class SpriteRenderer {
     }
 
     // ------------------------------------------------------------------------
+    // MERMAID MODE (MUNDO 2-2: ÁMBAR SIRENA EN EL ARRECIFE DE CORAL)
+    // ------------------------------------------------------------------------
+    if (player.isMermaid) {
+      const swimPitch = Math.max(-0.45, Math.min(0.48, (player.vy || 0) * 0.08));
+      const strokeWave = player.swimStrokeTimer > 0 ? Math.sin(time * 26) * 1.5 : Math.sin(time * 8);
+      const targetH = player.displayHeight || 64;
+      const targetW = targetH;
+
+      ctx.translate(0, -targetH * 0.45);
+      ctx.rotate(swimPitch);
+
+      // Draw Ámbar Upper Body (Face, Ponytail, Smile, Top)
+      const frames = (this.images.hoodie && this.images.hoodie[0]) ? this.images.hoodie : this.images.jeans;
+      if (frames && frames[0] && frames[0].complete && frames[0].naturalWidth > 0) {
+        const img = frames[0];
+        const srcW = img.naturalWidth;
+        const srcH = Math.floor(img.naturalHeight * 0.52);
+        const topH = Math.round(targetH * 0.55);
+        const topW = Math.round(targetW * 0.95);
+        ctx.drawImage(img, 0, 0, srcW, srcH, Math.round(-topW / 2), Math.round(-topH), topW, topH);
+      }
+
+      // Draw Undulating Iridescent Mermaid Tail
+      ctx.save();
+      const tailX = 0;
+      const tailY = 2;
+      const tailCurl = strokeWave * 0.22;
+
+      // Hip / Waist Scales Belt
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillRect(-12, tailY - 2, 24, 4);
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(-8, tailY - 1, 16, 2);
+
+      // Articulated Mermaid Tail Segments
+      const segs = [
+        { w: 20, h: 10, y: tailY + 2, c: '#0d9488', hi: '#2dd4bf' },
+        { w: 16, h: 10, y: tailY + 12, c: '#0891b2', hi: '#38bdf8' },
+        { w: 12, h: 10, y: tailY + 22, c: '#0284c7', hi: '#7dd3fc' },
+        { w: 8, h: 8, y: tailY + 32, c: '#0369a1', hi: '#38bdf8' }
+      ];
+
+      let curX = tailX;
+      segs.forEach((sg, idx) => {
+        curX += Math.sin(time * 9 + idx * 0.8) * (2.0 + idx * 0.6);
+        ctx.fillStyle = sg.c;
+        ctx.beginPath();
+        ctx.ellipse(curX, sg.y + sg.h / 2, sg.w / 2, sg.h / 2, tailCurl * (idx * 0.2), 0, Math.PI * 2);
+        ctx.fill();
+
+        // Shimmering scale highlights
+        ctx.fillStyle = sg.hi;
+        ctx.beginPath();
+        ctx.ellipse(curX, sg.y + sg.h / 2 - 2, sg.w / 3, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Flowing Caudal Fluke (Tail Fin) at the tip
+      const finX = curX + Math.sin(time * 9 + 3.2) * 4;
+      const finY = tailY + 40;
+      const finWave = Math.sin(time * 10) * 0.3;
+
+      ctx.save();
+      ctx.translate(finX, finY);
+      ctx.rotate(finWave);
+
+      // Dual-lobed iridescent tail fin
+      const finGrad = ctx.createLinearGradient(0, 0, 0, 20);
+      finGrad.addColorStop(0, 'rgba(45, 212, 191, 0.95)');
+      finGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.85)');
+      finGrad.addColorStop(1, 'rgba(250, 204, 21, 0.9)');
+      ctx.fillStyle = finGrad;
+
+      // Left lobe
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-18, 6, -22, 18);
+      ctx.quadraticCurveTo(-12, 22, 0, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      // Right lobe
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(18, 6, 22, 18);
+      ctx.quadraticCurveTo(12, 22, 0, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      // Fin spine lines
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-18, 16);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(18, 16);
+      ctx.stroke();
+
+      ctx.restore();
+      ctx.restore();
+
+      // Cute pearl / starfish hair accessory
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(8, -targetH * 0.52, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(7, -targetH * 0.52 - 1, 2, 2);
+
+      ctx.restore();
+      return;
+    }
+
+    // ------------------------------------------------------------------------
+    // ROLLER SKATE MODE (MUNDO 2-1: PARQUE COSTERO EN PATINES)
+    // ------------------------------------------------------------------------
+    if (player.onSkates) {
+      let useSuperSprite = isSuper;
+      if (player.growAnimTimer > 0) {
+        useSuperSprite = Math.floor(time * 18) % 2 === 0;
+      }
+      const frames = useSuperSprite ? this.images.hoodie : this.images.jeans;
+      if (frames && frames.length > 0 && frames[0].complete && frames[0].naturalWidth > 0) {
+        const speed = Math.abs(player.vx || 0);
+        const skateCycle = speed > 0.2 ? Math.floor(time * (speed * 3.2 + 6)) % frames.length : 0;
+        const img = frames[skateCycle] || frames[0];
+        const targetH = player.displayHeight || (useSuperSprite ? 86 : 56);
+        const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
+        const targetW = Math.round(targetH * aspect);
+
+        // Aerodynamic skating lean
+        const skateTilt = player.isGrinding ? Math.sin(time * 16) * 0.05 : (speed > 0.5 ? 0.09 : 0);
+        ctx.rotate(skateTilt);
+
+        ctx.drawImage(
+          img,
+          Math.round(-targetW / 2),
+          Math.round(-targetH + 3),
+          targetW,
+          targetH
+        );
+
+        // Draw Quad Roller Skates on Ámbar's feet!
+        const skateW = 20;
+        const feetPositions = [
+          { x: -10, y: -2 },
+          { x: 4, y: -2 }
+        ];
+
+        feetPositions.forEach((pos) => {
+          // Retro pink skating boot base
+          ctx.fillStyle = '#ec4899';
+          ctx.fillRect(pos.x, pos.y - 7, skateW, 6);
+          ctx.fillStyle = '#f472b6';
+          ctx.fillRect(pos.x + 2, pos.y - 6, skateW - 4, 2);
+
+          // Golden laces & white toe stop
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(pos.x + 4, pos.y - 8, 4, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(pos.x + skateW - 2, pos.y - 4, 3, 3);
+
+          // Aluminum truck chassis
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(pos.x + 1, pos.y - 1, skateW - 2, 2);
+
+          // Spinning cyan & yellow quad wheels
+          const drawWheel = (wx, wy) => {
+            ctx.fillStyle = '#0891b2';
+            ctx.beginPath();
+            ctx.arc(wx, wy, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(wx, wy, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(wx, wy, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          };
+          drawWheel(pos.x + 3, pos.y + 3);
+          drawWheel(pos.x + skateW - 3, pos.y + 3);
+        });
+
+        // Shower of bright grinding sparks when sliding on iron rails!
+        if (player.isGrinding) {
+          ctx.save();
+          for (let s = 0; s < 6; s++) {
+            const sparkX = -8 - Math.random() * 18;
+            const sparkY = 2 + (Math.random() - 0.5) * 8;
+            ctx.fillStyle = Math.random() > 0.5 ? '#fde047' : '#38bdf8';
+            ctx.fillRect(sparkX, sparkY, 2.5, 2.5);
+          }
+          ctx.restore();
+        }
+
+        ctx.restore();
+        return;
+      }
+    }
+
+    // ------------------------------------------------------------------------
     // STANDARD / SUPER ÁMBAR MODE
     // Clearly smaller when she hasn't grabbed the Super Mushroom (56px vs 86px)!
     // ------------------------------------------------------------------------
@@ -522,7 +726,7 @@ class SpriteRenderer {
             g.fillStyle = '#f87171';
             g.fillRect(15, 15, 2, 2);
 
-          } else {
+          } else if (levelTheme === 9) {
             // THEME 9: LA VÍA LÁCTEA ESTELAR (Cosmic Neon Highway)
             g.fillStyle = '#030712';
             g.fillRect(0, 0, 32, 32);
@@ -546,6 +750,147 @@ class SpriteRenderer {
             g.fillStyle = '#38bdf8';
             g.fillRect(6, 15, 4, 2);
             g.fillRect(22, 15, 4, 2);
+
+          } else if (levelTheme === 10) {
+            // THEME 10: PARQUE COSTERO EN PATINES (Tropical Boardwalk Timber Planks)
+            g.fillStyle = '#271004';
+            g.fillRect(0, 0, 32, 32);
+
+            // Boardwalk horizontal wooden planks
+            [0, 11, 22].forEach((py, idx) => {
+              const ph = 10;
+              g.fillStyle = '#78350f';
+              g.fillRect(0, py, 32, ph);
+              g.fillStyle = '#92400e';
+              g.fillRect(0, py + 1, 32, ph - 2);
+              g.fillStyle = '#d97706';
+              g.fillRect(0, py + 1, 32, 2);
+              // Brass nail heads
+              g.fillStyle = '#fde047';
+              g.fillRect(3, py + 2, 2, 2);
+              g.fillRect(27, py + 2, 2, 2);
+            });
+            // Turquoise skate-edge safety bumper
+            g.fillStyle = '#06b6d4';
+            g.fillRect(0, 0, 32, 2);
+
+          } else if (levelTheme === 11) {
+            // THEME 11: ARRECIFE DE CORAL DE LA SIRENA (Living Coral Bedrock & Sea Pearls)
+            g.fillStyle = '#083344';
+            g.fillRect(0, 0, 32, 32);
+
+            // Deep turquoise sea floor
+            g.fillStyle = '#0e7490';
+            g.fillRect(1, 8, 30, 23);
+
+            // Living coral polyps & sea fan patches
+            g.fillStyle = '#db2777';
+            g.beginPath();
+            g.arc(8, 14, 6, 0, Math.PI * 2);
+            g.arc(22, 18, 7, 0, Math.PI * 2);
+            g.fill();
+            g.fillStyle = '#f472b6';
+            g.beginPath();
+            g.arc(8, 14, 3, 0, Math.PI * 2);
+            g.arc(22, 18, 4, 0, Math.PI * 2);
+            g.fill();
+
+            // Glowing sea pearl
+            g.fillStyle = '#fef08a';
+            g.beginPath();
+            g.arc(15, 24, 3, 0, Math.PI * 2);
+            g.fill();
+            g.fillStyle = '#ffffff';
+            g.fillRect(14, 23, 1, 1);
+
+            // Soft aquatic moss crest on top
+            g.fillStyle = '#2dd4bf';
+            g.fillRect(0, 0, 32, 7);
+            g.fillStyle = '#99f6e4';
+            g.fillRect(0, 1, 32, 3);
+
+          } else if (levelTheme === 12) {
+            // THEME 12: VALLE GLACIAL Y BOSQUE NEVADO (Crystalline Ice & Snow Drifts)
+            g.fillStyle = '#082f49';
+            g.fillRect(0, 0, 32, 32);
+
+            // Crystalline blue glacial core
+            g.fillStyle = '#0284c7';
+            g.fillRect(1, 10, 30, 21);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(3, 12, 12, 8);
+            g.fillRect(17, 18, 12, 9);
+            g.fillStyle = '#7dd3fc';
+            g.fillRect(4, 13, 10, 2);
+            g.fillRect(18, 19, 10, 2);
+
+            // Powder snow blanket on top
+            g.fillStyle = '#bae6fd';
+            g.fillRect(0, 0, 32, 10);
+            g.fillStyle = '#ffffff';
+            g.fillRect(0, 0, 32, 8);
+            // Drooping snow scallops
+            [3, 11, 19, 27].forEach(sx => {
+              g.fillRect(sx, 7, 3, 3);
+            });
+
+          } else if (levelTheme === 13) {
+            // THEME 13: LA MANSIÓN ENCANTADA DE LOS BOOS (Haunted Victorian Mahogany)
+            g.fillStyle = '#090514';
+            g.fillRect(0, 0, 32, 32);
+
+            // Dark haunted floorboard slats
+            g.fillStyle = '#1e1b4b';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#312e81';
+            [0, 10, 21].forEach(py => {
+              g.fillRect(0, py, 32, 1);
+              g.fillRect(2, py + 2, 28, 2);
+            });
+
+            // Spooky cobweb corner
+            g.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            g.lineWidth = 1;
+            g.beginPath();
+            g.moveTo(0, 0);
+            g.lineTo(10, 0);
+            g.moveTo(0, 0);
+            g.lineTo(0, 10);
+            g.moveTo(0, 0);
+            g.lineTo(8, 8);
+            g.stroke();
+
+          } else if (levelTheme === 14) {
+            // THEME 14: FORTALEZA GLACIAL DEL REY ESCARCHA (Frost Fortress Obsidian)
+            g.fillStyle = '#020617';
+            g.fillRect(0, 0, 32, 32);
+
+            // Deep obsidian glacial blocks
+            g.fillStyle = '#0f172a';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#1e293b';
+            g.fillRect(3, 3, 26, 26);
+
+            // Glowing cyan frost runes & icy fissure cracks
+            g.fillStyle = '#0369a1';
+            g.fillRect(0, 15, 32, 2);
+            g.fillRect(15, 0, 2, 32);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(2, 15, 28, 1);
+            g.fillRect(15, 2, 1, 28);
+            g.fillStyle = '#e0f2fe';
+            g.fillRect(14, 14, 4, 4);
+
+          } else {
+            // Classic Terracotta (Theme 1 & fallback)
+            g.fillStyle = '#3d1e10';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0f3818';
+            g.fillRect(0, 0, 32, 11);
+            g.fillStyle = '#38a845';
+            g.fillRect(0, 1, 32, 6);
+            g.fillStyle = '#7be07d';
+            g.fillRect(0, 1, 32, 2);
           }
           this.cache[key] = cnv;
         }
@@ -728,6 +1073,93 @@ class SpriteRenderer {
             g.fillRect(12, 12, 8, 8);
             g.fillStyle = '#ffffff';
             g.fillRect(14, 14, 4, 4);
+
+          } else if (levelTheme === 10) {
+            // THEME 10: Retro Synthwave Skate Blocks
+            g.fillStyle = '#1e1b4b';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#db2777';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#06b6d4';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#fde047';
+            g.fillRect(5, 5, 22, 2);
+            g.fillRect(5, 5, 2, 22);
+            g.fillStyle = '#ec4899';
+            g.fillRect(12, 12, 8, 8);
+
+          } else if (levelTheme === 11) {
+            // THEME 11: Sunken Atlantis Coral Blocks with Sea Stars
+            g.fillStyle = '#042f2e';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0f766e';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#14b8a6';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#5eead4';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+            // Cute pink starfish on the block
+            g.fillStyle = '#f43f5e';
+            g.fillRect(14, 10, 4, 12);
+            g.fillRect(10, 14, 12, 4);
+            g.fillRect(12, 12, 8, 8);
+            g.fillStyle = '#fef08a';
+            g.fillRect(15, 15, 2, 2);
+
+          } else if (levelTheme === 12) {
+            // THEME 12: Translucent Ice Crystal Blocks
+            g.fillStyle = '#082f49';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0284c7';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#38bdf8';
+            g.fillRect(3, 3, 26, 26);
+            // Crystal diamond bevels
+            g.fillStyle = '#bae6fd';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+            g.fillStyle = '#ffffff';
+            g.fillRect(5, 5, 4, 4);
+            // Frozen bubbles
+            g.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            g.fillRect(14, 18, 3, 3);
+            g.fillRect(22, 12, 2, 2);
+
+          } else if (levelTheme === 13) {
+            // THEME 13: Victorian Gothic Haunted Stone Blocks
+            g.fillStyle = '#17052e';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#3b0764';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#581c87';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#a855f7';
+            g.fillRect(3, 3, 26, 2);
+            g.fillRect(3, 3, 2, 26);
+            // Spooky eye silhouette in stone center
+            g.fillStyle = '#facc15';
+            g.fillRect(12, 14, 8, 4);
+            g.fillStyle = '#17052e';
+            g.fillRect(15, 14, 2, 4);
+
+          } else if (levelTheme === 14) {
+            // THEME 14: Spiked Frost Fortress Iron Bricks
+            g.fillStyle = '#020617';
+            g.fillRect(0, 0, 32, 32);
+            g.fillStyle = '#0f172a';
+            g.fillRect(1, 1, 30, 30);
+            g.fillStyle = '#1e293b';
+            g.fillRect(3, 3, 26, 26);
+            g.fillStyle = '#0ea5e9';
+            g.fillRect(3, 3, 26, 3);
+            g.fillRect(3, 3, 3, 26);
+            // Icy rivet studs
+            g.fillStyle = '#38bdf8';
+            g.fillRect(5, 5, 3, 3);
+            g.fillRect(24, 5, 3, 3);
+            g.fillRect(5, 24, 3, 3);
+            g.fillRect(24, 24, 3, 3);
 
           } else {
             // Classic Terracotta Bricks (Theme 1 & fallback)
@@ -990,6 +1422,76 @@ class SpriteRenderer {
               { x: 25, w: 4, c: '#f43f5e' },
               { x: 29, w: 2, c: '#0f172a' }
             ];
+          } else if (levelTheme === 10) {
+            // THEME 10: Neon Skate Park Turquoise Pipe with Hazard Stripes
+            bgCol = '#083344';
+            rimCol = '#facc15';
+            bands = [
+              { x: 1, w: 3, c: '#0e7490' },
+              { x: 4, w: 4, c: '#06b6d4' },
+              { x: 8, w: 5, c: '#22d3ee' },
+              { x: 13, w: 5, c: '#fde047' },
+              { x: 18, w: 3, c: '#ffffff' },
+              { x: 21, w: 4, c: '#06b6d4' },
+              { x: 25, w: 4, c: '#db2777' },
+              { x: 29, w: 2, c: '#083344' }
+            ];
+          } else if (levelTheme === 11) {
+            // THEME 11: Glowing Sea Anemone Marine Pipe
+            bgCol = '#042f2e';
+            rimCol = '#f472b6';
+            bands = [
+              { x: 1, w: 3, c: '#0f766e' },
+              { x: 4, w: 4, c: '#14b8a6' },
+              { x: 8, w: 5, c: '#2dd4bf' },
+              { x: 13, w: 5, c: '#5eead4' },
+              { x: 18, w: 3, c: '#fbcfe8' },
+              { x: 21, w: 4, c: '#ec4899' },
+              { x: 25, w: 4, c: '#0f766e' },
+              { x: 29, w: 2, c: '#042f2e' }
+            ];
+          } else if (levelTheme === 12) {
+            // THEME 12: Hollow Crystalline Glacial Icicle Pipe
+            bgCol = '#082f49';
+            rimCol = '#ffffff';
+            bands = [
+              { x: 1, w: 3, c: '#0369a1' },
+              { x: 4, w: 4, c: '#0284c7' },
+              { x: 8, w: 5, c: '#38bdf8' },
+              { x: 13, w: 5, c: '#7dd3fc' },
+              { x: 18, w: 3, c: '#ffffff' },
+              { x: 21, w: 4, c: '#38bdf8' },
+              { x: 25, w: 4, c: '#0c4a6e' },
+              { x: 29, w: 2, c: '#082f49' }
+            ];
+          } else if (levelTheme === 13) {
+            // THEME 13: Haunted Victorian Gargoyle Pedestal Pipe
+            bgCol = '#090514';
+            rimCol = '#facc15';
+            bands = [
+              { x: 1, w: 3, c: '#1e1b4b' },
+              { x: 4, w: 4, c: '#312e81' },
+              { x: 8, w: 5, c: '#4f46e5' },
+              { x: 13, w: 5, c: '#818cf8' },
+              { x: 18, w: 3, c: '#c7d2fe' },
+              { x: 21, w: 4, c: '#4f46e5' },
+              { x: 25, w: 4, c: '#2e1065' },
+              { x: 29, w: 2, c: '#090514' }
+            ];
+          } else if (levelTheme === 14) {
+            // THEME 14: Frost Castle Spire Pillar
+            bgCol = '#020617';
+            rimCol = '#e0f2fe';
+            bands = [
+              { x: 1, w: 3, c: '#0f172a' },
+              { x: 4, w: 4, c: '#1e293b' },
+              { x: 8, w: 5, c: '#0284c7' },
+              { x: 13, w: 5, c: '#38bdf8' },
+              { x: 18, w: 3, c: '#e0f2fe' },
+              { x: 21, w: 4, c: '#0369a1' },
+              { x: 25, w: 4, c: '#1e293b' },
+              { x: 29, w: 2, c: '#020617' }
+            ];
           } else {
             // Classic Mario Green (Theme 1 & fallback)
             bgCol = '#061a0a';
@@ -1059,14 +1561,55 @@ class SpriteRenderer {
       }
 
       case '=': {
-        ctx.fillStyle = '#451a03';
-        this.roundRect(ctx, x + 1, y + 1, size - 2, 16, 4);
-        ctx.fill();
-        ctx.fillStyle = '#92400e';
-        this.roundRect(ctx, x + 3, y + 2, size - 6, 12, 3);
-        ctx.fill();
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(x + 5, y + 3, size - 10, 3);
+        // 16-BIT METALLIC SKATE GRIND RAIL & WOODEN BEAM
+        if (levelTheme === 10 || levelTheme === 4) {
+          // Yellow and Chrome Tubular Skate Grind Rail
+          // Steel vertical support stanchion
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(x + 13, y + 10, 6, 22);
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(x + 14, y + 11, 4, 21);
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(x + 14, y + 11, 2, 21);
+
+          // Tubular horizontal steel rail bar
+          ctx.fillStyle = '#1e293b';
+          this.roundRect(ctx, x, y + 4, size, 8, 3);
+          ctx.fill();
+          ctx.fillStyle = '#94a3b8';
+          this.roundRect(ctx, x, y + 5, size, 6, 2);
+          ctx.fill();
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(x, y + 5, size, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y + 5, size, 1);
+        } else {
+          ctx.fillStyle = '#451a03';
+          this.roundRect(ctx, x + 1, y + 1, size - 2, 16, 4);
+          ctx.fill();
+          ctx.fillStyle = '#92400e';
+          this.roundRect(ctx, x + 3, y + 2, size - 6, 12, 3);
+          ctx.fill();
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(x + 5, y + 3, size - 10, 3);
+        }
+        break;
+      }
+
+      case 'I': {
+        // 16-BIT SLIPPERY GLACIAL ICE TILE
+        ctx.fillStyle = '#0c4a6e';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+        ctx.fillStyle = '#bae6fd';
+        ctx.fillRect(x + 2, y + 2, size - 4, 3);
+        ctx.fillRect(x + 2, y + 2, 3, size - 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + 4, y + 4, 4, 2);
+        ctx.fillRect(x + 18, y + 16, 6, 2);
         break;
       }
 
@@ -1716,6 +2259,359 @@ class SpriteRenderer {
       ctx.fillStyle = '#090d16';
       ctx.fillRect(barX - 2, barY - 2, barW + 4, 10);
       ctx.fillStyle = '#ef4444';
+      ctx.fillRect(barX, barY, (barW * Math.max(0, enemy.hp)) / maxHp, 6);
+    } else if (enemy.type === 'fish') {
+      // 16-BIT CHEEP-CHEEP TROPICAL CORAL REEF FISH
+      ctx.translate(cx, bottomY);
+      if (enemy.vx > 0) ctx.scale(-1, 1);
+      const finFlap = Math.sin(time * 14) * 3;
+      const swimBob = Math.sin(time * 6 + enemy.x * 0.05) * 2.5;
+
+      // Tail fin
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.moveTo(-12, -18 + swimBob);
+      ctx.lineTo(-24 + finFlap, -28 + swimBob);
+      ctx.lineTo(-20 + finFlap, -18 + swimBob);
+      ctx.lineTo(-24 + finFlap, -8 + swimBob);
+      ctx.closePath();
+      ctx.fill();
+
+      // Main round fish body
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath();
+      ctx.ellipse(0, -18 + swimBob, 14, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White underbelly
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(0, -13 + swimBob, 12, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dorsal fin on back
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.moveTo(-6, -29 + swimBob);
+      ctx.quadraticCurveTo(0, -36 + swimBob, 6, -29 + swimBob);
+      ctx.fill();
+
+      // Eye & big pouty lips
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(6, -20 + swimBob, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(7.5, -20 + swimBob, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pouty lips
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(14, -18 + swimBob, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pectoral wing fin
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(-2, -16 + swimBob, 5, 3, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+    } else if (enemy.type === 'jellyfish') {
+      // 16-BIT BIOLUMINESCENT SEA JELLYFISH
+      ctx.translate(cx, bottomY);
+      const pulse = 1.0 + Math.sin(time * 6) * 0.16;
+      const bob = Math.sin(time * 4) * 4;
+
+      // Glow halo
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.beginPath();
+      ctx.arc(0, -22 + bob, 18 * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Umbrella Bell
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+      ctx.beginPath();
+      ctx.ellipse(0, -24 + bob, 14 * pulse, 12 / pulse, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.ellipse(0, -27 + bob, 10 * pulse, 6 / pulse, 0, Math.PI, 0);
+      ctx.fill();
+
+      // Glowing inner nucleus
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.arc(0, -23 + bob, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Trailing wavy tentacles
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.8;
+      for (let tIdx = -2; tIdx <= 2; tIdx++) {
+        const tx = tIdx * 5;
+        const wave = Math.sin(time * 8 + tIdx * 1.2) * 4;
+        ctx.beginPath();
+        ctx.moveTo(tx, -14 + bob);
+        ctx.quadraticCurveTo(tx + wave, -7 + bob, tx - wave * 0.5, 0 + bob);
+        ctx.stroke();
+      }
+
+    } else if (enemy.type === 'boo') {
+      // 16-BIT SHY BOO GHOST
+      ctx.translate(cx, bottomY);
+      if (enemy.vx < 0 || (enemy.facing && enemy.facing < 0)) ctx.scale(-1, 1);
+      const bob = Math.sin(time * 4 + enemy.x * 0.04) * 3;
+
+      // Ghost aura
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.beginPath();
+      ctx.arc(0, -20 + bob, 19, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Main ghostly round body
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(0, -20 + bob, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Little floating ghost tail behind
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.moveTo(-12, -22 + bob);
+      ctx.quadraticCurveTo(-22, -18 + bob, -16, -12 + bob);
+      ctx.closePath();
+      ctx.fill();
+
+      if (enemy.isShy) {
+        // SHY BOO: Ámbar is looking at him! Hiding face with paws and blushing!
+        // Cute pink blush circles
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.arc(-6, -16 + bob, 3.5, 0, Math.PI * 2);
+        ctx.arc(6, -16 + bob, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Closed shy eyes
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(-5, -23 + bob, 2.5, Math.PI, 0);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(5, -23 + bob, 2.5, Math.PI, 0);
+        ctx.stroke();
+
+        // Little white ghost paws covering face
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(-4, -20 + bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(4, -20 + bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        // ACTIVE BOO: Sneaking up with a cheeky smile and fangs!
+        // Big mischievous eyes
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(5, -23 + bob, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(4, -25 + bob, 1.5, 1.5);
+
+        // Mischievous mouth with sharp fangs
+        ctx.fillStyle = '#991b1b';
+        ctx.beginPath();
+        ctx.arc(5, -16 + bob, 5.5, 0, Math.PI);
+        ctx.fill();
+        // White fangs
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(2, -16 + bob);
+        ctx.lineTo(4, -13 + bob);
+        ctx.lineTo(6, -16 + bob);
+        ctx.fill();
+
+        // Little ghost arm outstretched
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(14, -18 + bob, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+    } else if (enemy.type === 'penguin') {
+      // 16-BIT GLACIER SLIDING PENGUIN
+      ctx.translate(cx, bottomY);
+      if (enemy.vx > 0) ctx.scale(-1, 1);
+
+      if (enemy.sliding) {
+        // Belly sliding across ice!
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.ellipse(0, -10, 16, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // White chest
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(2, -7, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Beak
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.moveTo(14, -12);
+        ctx.lineTo(20, -10);
+        ctx.lineTo(14, -8);
+        ctx.closePath();
+        ctx.fill();
+        // Eye
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(10, -14, 2, 2);
+        // Little flipper
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(-4, -14, 8, 3);
+      } else {
+        // Waddling penguin
+        const waddle = Math.sin(time * 12) * 0.12;
+        ctx.rotate(waddle);
+
+        // Body
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.ellipse(0, -18, 12, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White belly
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(2, -16, 8, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Beak
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.moveTo(10, -22);
+        ctx.lineTo(16, -20);
+        ctx.lineTo(10, -18);
+        ctx.closePath();
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(6, -24, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(7, -24, 1.5, 1.5);
+
+        // Flippers
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.ellipse(-8, -18, 4, 8, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Orange feet
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(-6, -3, 6, 3);
+        ctx.fillRect(2, -3, 6, 3);
+      }
+
+    } else if (enemy.type === 'frost_boss') {
+      // 16-BIT REY ESCARCHA (KING FROST BOSS)
+      ctx.translate(cx, bottomY);
+      if (enemy.vx > 0) ctx.scale(-1, 1);
+      if (enemy.hurtTimer > 0 && Math.floor(time * 20) % 2 === 0) {
+        ctx.filter = 'brightness(2.0) saturate(2)';
+      }
+
+      const breath = Math.sin(time * 4) * 2;
+
+      // Aura of cold blizzard frost
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.beginPath();
+      ctx.arc(0, -42, 46, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Giant Frost Cloak & Body
+      ctx.fillStyle = '#0c4a6e';
+      ctx.beginPath();
+      ctx.ellipse(0, -36 + breath, 28, 34, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White fluffy snow fur trim
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.ellipse(0, -56 + breath, 24, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Face with glowing cyan eyes
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.ellipse(0, -52 + breath, 16, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Piercing glowing cyan eyes
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(-6, -54 + breath, 3.5, 0, Math.PI * 2);
+      ctx.arc(6, -54 + breath, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-5, -55 + breath, 1.5, 1.5);
+      ctx.fillRect(7, -55 + breath, 1.5, 1.5);
+
+      // Icicle Beard hanging down
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.moveTo(-12, -44 + breath);
+      ctx.lineTo(0, -22 + breath);
+      ctx.lineTo(12, -44 + breath);
+      ctx.closePath();
+      ctx.fill();
+
+      // Majestic Sharp Ice Crown
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.moveTo(-16, -64 + breath);
+      ctx.lineTo(-20, -82 + breath);
+      ctx.lineTo(-8, -70 + breath);
+      ctx.lineTo(0, -90 + breath);
+      ctx.lineTo(8, -70 + breath);
+      ctx.lineTo(20, -82 + breath);
+      ctx.lineTo(16, -64 + breath);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#e0f2fe';
+      ctx.fillRect(-2, -88 + breath, 4, 6);
+
+      // Spiked ice shoulder pauldrons
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(-28, -50 + breath);
+      ctx.lineTo(-40, -60 + breath);
+      ctx.lineTo(-24, -38 + breath);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(28, -50 + breath);
+      ctx.lineTo(40, -60 + breath);
+      ctx.lineTo(24, -38 + breath);
+      ctx.closePath();
+      ctx.fill();
+
+      // HP Bar above boss head
+      const maxHp = enemy.maxHp || 8;
+      const barW = 80;
+      const barX = -barW / 2;
+      const barY = -106;
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(barX - 2, barY - 2, barW + 4, 10);
+      ctx.fillStyle = '#38bdf8';
       ctx.fillRect(barX, barY, (barW * Math.max(0, enemy.hp)) / maxHp, 6);
     }
     ctx.restore();
