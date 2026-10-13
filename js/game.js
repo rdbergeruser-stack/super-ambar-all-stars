@@ -3937,8 +3937,43 @@ class SuperAmbarGame {
     this.renderMapBottomCard(ctx);
   }
 
+  drawMapSteppingStones(ctx, x1, y1, x2, y2, isUnlocked, style = 'world1', t = 0) {
+    const dist = Math.hypot(x2 - x1, y2 - y1);
+    const count = Math.max(5, Math.floor(dist / 14));
+    for (let i = 1; i < count; i++) {
+      const frac = i / count;
+      const sx = x1 + (x2 - x1) * frac;
+      const sy = y1 + (y2 - y1) * frac;
+
+      if (!isUnlocked) {
+        // Locked / unrevealed dashed silhouette
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+        ctx.fillRect(Math.round(sx - 3), Math.round(sy - 3), 6, 6);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(Math.round(sx - 3), Math.round(sy - 3), 6, 6);
+      } else if (style === 'world2') {
+        // Crystalline ice stepping stones with 16-bit shine
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(Math.round(sx - 4), Math.round(sy - 3), 8, 8);
+        ctx.fillStyle = '#bae6fd';
+        ctx.fillRect(Math.round(sx - 3), Math.round(sy - 4), 6, 6);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(Math.round(sx - 2), Math.round(sy - 3), 2, 2);
+      } else {
+        // Authentic SMW Golden Cobblestone Stepping Stones
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(Math.round(sx - 4), Math.round(sy - 3), 8, 8);
+        ctx.fillStyle = '#fde68a';
+        ctx.fillRect(Math.round(sx - 3), Math.round(sy - 4), 6, 6);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(Math.round(sx - 2), Math.round(sy - 3), 2, 2);
+      }
+    }
+  }
+
   renderWorld1Map(ctx, t) {
-    // 1. Animated Deep Ocean with wave foam
+    // 1. Layered 16-Bit Super Mario World Ocean
     const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
     oceanGrad.addColorStop(0, '#0284c7');
     oceanGrad.addColorStop(0.5, '#0369a1');
@@ -3946,11 +3981,11 @@ class SuperAmbarGame {
     ctx.fillStyle = oceanGrad;
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-    // Gentle wave ripples across ocean
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    // Animated wave crests across ocean
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
     for (let row = 0; row < 16; row++) {
       const wy = row * 30 + 10;
-      const speed = (row % 2 === 0 ? 1 : -1) * 18;
+      const speed = (row % 2 === 0 ? 1 : -1) * 16;
       const offX = ((t * speed) % 80 + 80) % 80;
       for (let wx = -40 + offX; wx < LOGICAL_WIDTH + 40; wx += 80) {
         ctx.fillRect(wx, wy, 16, 2);
@@ -3958,32 +3993,154 @@ class SuperAmbarGame {
       }
     }
 
-    // 2. The Main Overworld Island ("Isla Reino Ámbar")
+    // Ocean Wildlife: Animated Leaping Cheep-Cheep
+    const leapCycle = (t * 0.65) % 4.0;
+    if (leapCycle < 1.3) {
+      const p = leapCycle / 1.3;
+      const kx = 105 + p * 40;
+      const ky = 430 - Math.sin(p * Math.PI) * 45;
+      const ang = (p - 0.5) * 1.2;
+      ctx.save();
+      ctx.translate(kx, ky);
+      ctx.rotate(ang);
+      // Cheep-cheep body
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(0, 0, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(-8, -3, 3, 6); // Tail
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(3, -2, 3, 0, Math.PI * 2); // Eye
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(4, -3, 2, 2);
+      ctx.restore();
+      // Water splash rings
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(105, 430, 8 * p, 3 * p, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Mini Swimming Cheep-Cheep in southeast waters
+    const swimX = 640 + Math.sin(t * 1.2) * 15;
+    const swimY = 390 + Math.cos(t * 1.5) * 4;
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(swimX, swimY, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(swimX - 7, swimY - 2, 3, 4);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(swimX + 2, swimY - 2, 2, 2);
+
+    // Cute Super Mario World Mini Wooden Sailboat
+    const boatX = 190 + Math.sin(t * 0.8) * 6;
+    const boatY = 422 + Math.cos(t * 1.1) * 3;
+    const boatTilt = Math.sin(t * 1.5) * 0.08;
+    ctx.save();
+    ctx.translate(boatX, boatY);
+    ctx.rotate(boatTilt);
+    // Wooden hull
+    ctx.fillStyle = '#78350f';
+    ctx.beginPath();
+    ctx.moveTo(-12, 0);
+    ctx.lineTo(12, 0);
+    ctx.lineTo(8, 7);
+    ctx.lineTo(-8, 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(-10, 1, 20, 2);
+    // Mast
+    ctx.fillStyle = '#451a03';
+    ctx.fillRect(-1, -14, 2, 14);
+    // White Sail
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(1, -13);
+    ctx.lineTo(10, -2);
+    ctx.lineTo(1, -2);
+    ctx.closePath();
+    ctx.fill();
+    // Tiny red pennant flag
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(-4, -14, 4, 3);
+    ctx.restore();
+
+    // =========================================================================
+    // 2. THE MAIN OVERWORLD ISLAND ("ISLA REINO ÁMBAR") - 3D STEPPED CLIFFS
+    // =========================================================================
+    // Coastal Shore Foam Fringe (animated lapping surf)
+    const foamPulse = Math.sin(t * 2.5) * 3;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
+    ctx.beginPath();
+    ctx.ellipse(390, 268 + foamPulse * 0.3, 332 + foamPulse, 168 + foamPulse * 0.6, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 3D Cliff Escarpment (Stepped drop beneath the island)
+    ctx.fillStyle = '#451a03';
+    ctx.beginPath();
+    ctx.ellipse(390, 276, 320, 160, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+    // Layered sedimentary cliff face
+    ctx.fillStyle = '#78350f';
+    ctx.beginPath();
+    ctx.ellipse(390, 270, 316, 156, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+    // Vertical rock striations on cliff drop
+    ctx.fillStyle = '#5c2c08';
+    for (let cx = 140; cx <= 640; cx += 16) {
+      const cy = 260 + Math.sin((cx - 390) / 320 * Math.PI) * 140;
+      if (cy > 240) {
+        ctx.fillRect(cx, cy, 3, 16);
+      }
+    }
+
     // Golden Beach Shoreline
     ctx.fillStyle = '#fde047';
     ctx.beginPath();
-    ctx.ellipse(390, 260, 320, 160, -0.05, 0, Math.PI * 2);
+    ctx.ellipse(390, 260, 312, 152, -0.05, 0, Math.PI * 2);
     ctx.fill();
-
     ctx.strokeStyle = '#ca8a04';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Lush Green Island Interior
-    ctx.fillStyle = '#22c55e';
-    ctx.beginPath();
-    ctx.ellipse(390, 260, 290, 138, -0.05, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Darker green grass contours
+    // Primary Grassy Mesa Plateau (Lush SMW Green)
     ctx.fillStyle = '#16a34a';
     ctx.beginPath();
-    ctx.ellipse(390, 260, 250, 115, -0.05, 0, Math.PI * 2);
+    ctx.ellipse(390, 258, 286, 134, -0.05, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cartoon Smiling Hills with eyes (Super Mario World style!)
-    const drawCartoonHill = (hx, hy, hr, hCol) => {
-      ctx.fillStyle = hCol;
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.ellipse(390, 256, 274, 126, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Secondary Elevated Grassy Ridge (North-Central Plateau)
+    ctx.fillStyle = '#15803d';
+    ctx.beginPath();
+    ctx.ellipse(400, 215, 175, 75, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.ellipse(400, 211, 168, 70, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Sunlit Lime Border Highlight along grass rims
+    ctx.strokeStyle = '#86efac';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(390, 254, 270, 122, -0.05, Math.PI * 0.9, Math.PI * 2.1);
+    ctx.stroke();
+
+    // Animated Cartoon Smiling Hills with Blinking Eyes (Super Mario World signature!)
+    const drawSmilingHill = (hx, hy, hr, hCol, eyeBlinkOffset) => {
+      // Hill base with 16-bit left highlight & right shadow
+      ctx.fillStyle = '#15803d';
       ctx.beginPath();
       ctx.arc(hx, hy, hr, Math.PI, Math.PI * 2);
       ctx.fill();
@@ -3991,78 +4148,233 @@ class SuperAmbarGame {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Cute SMW eyes
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(hx - 5, hy - hr * 0.5, 3, 7);
-      ctx.fillRect(hx + 2, hy - hr * 0.5, 3, 7);
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(hx - 4, hy - hr * 0.45, 2, 4);
-      ctx.fillRect(hx + 3, hy - hr * 0.45, 2, 4);
+      ctx.fillStyle = hCol;
+      ctx.beginPath();
+      ctx.arc(hx - 2, hy - 1, hr - 2, Math.PI * 0.95, Math.PI * 1.9);
+      ctx.fill();
+
+      // Blinking Cartoon Eyes (SMW dinosaur land hills blink every ~3.5s!)
+      const blinkTimer = (Math.floor(t * 10) + eyeBlinkOffset) % 36;
+      const isBlinking = blinkTimer >= 33;
+
+      if (isBlinking) {
+        // Closed horizontal eyelid slits
+        ctx.fillStyle = '#14532d';
+        ctx.fillRect(hx - 6, hy - hr * 0.5, 4, 2);
+        ctx.fillRect(hx + 2, hy - hr * 0.5, 4, 2);
+      } else {
+        // Big cute open SMW pill eyes
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(hx - 6, hy - hr * 0.55, 4, 8);
+        ctx.fillRect(hx + 2, hy - hr * 0.55, 4, 8);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(hx - 5, hy - hr * 0.5, 2, 5);
+        ctx.fillRect(hx + 3, hy - hr * 0.5, 2, 5);
+        // Specular eye shine
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(hx - 6, hy - hr * 0.55, 1, 2);
+        ctx.fillRect(hx + 2, hy - hr * 0.55, 1, 2);
+      }
     };
 
-    drawCartoonHill(180, 310, 26, '#4ade80');
-    drawCartoonHill(300, 270, 32, '#86efac');
-    drawCartoonHill(480, 240, 28, '#4ade80');
+    drawSmilingHill(180, 310, 26, '#4ade80', 0);
+    drawSmilingHill(300, 265, 34, '#86efac', 12);
+    drawSmilingHill(480, 235, 28, '#4ade80', 24);
 
-    // Themed Island Regions:
-    // - Desert Sand Beach around 1-4 (south-center)
+    // Mini 16-Bit SMW Round Trees on Meadows
+    const drawSmwTree = (tx, ty) => {
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(tx - 2, ty - 8, 4, 8); // Trunk
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(tx, ty - 12, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(tx - 1, ty - 13, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#86efac';
+      ctx.fillRect(tx - 4, ty - 16, 4, 2);
+    };
+    drawSmwTree(150, 325);
+    drawSmwTree(210, 290);
+    drawSmwTree(330, 245);
+    drawSmwTree(450, 220);
+    drawSmwTree(510, 210);
+
+    // =========================================================================
+    // THEMED ISLAND REGIONS & LANDMARKS
+    // =========================================================================
+    // 1-4 Tropical Beach (South-Center, Node 3: x: 440, y: 360)
     ctx.fillStyle = '#fde047';
     ctx.beginPath();
-    ctx.ellipse(440, 360, 65, 30, 0, 0, Math.PI * 2);
+    ctx.ellipse(440, 360, 72, 34, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Curved Coconut Palm Trees on South Beach
+    const drawPalmTree = (px, py, lean) => {
+      ctx.save();
+      ctx.translate(px, py);
+      // Trunk
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(lean * 8, -12, lean * 14, -22);
+      ctx.stroke();
+      // Trunk segments
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(lean * 4, -6);
+      ctx.lineTo(lean * 5, -8);
+      ctx.moveTo(lean * 8, -12);
+      ctx.lineTo(lean * 9, -14);
+      ctx.stroke();
+      // Fronds
+      const tx = lean * 14;
+      const ty = -22;
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(tx - 10, ty + 2, 7, 0, Math.PI * 2);
+      ctx.arc(tx + 10, ty + 2, 7, 0, Math.PI * 2);
+      ctx.arc(tx, ty - 8, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(tx - 7, ty, 6, 0, Math.PI * 2);
+      ctx.arc(tx + 7, ty, 6, 0, Math.PI * 2);
+      ctx.arc(tx, ty - 6, 6, 0, Math.PI * 2);
+      ctx.fill();
+      // Coconuts
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(tx - 3, ty - 2, 3, 3);
+      ctx.fillRect(tx + 1, ty - 2, 3, 3);
+      ctx.restore();
+    };
+    drawPalmTree(400, 365, -1);
+    drawPalmTree(485, 360, 1);
+
+    // 1-5 Purple Amethyst Cavern Mountain (East, Node 4: x: 550, y: 320)
+    ctx.fillStyle = '#3b0764';
+    ctx.beginPath();
+    ctx.ellipse(550, 320, 62, 36, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#581c87';
+    ctx.beginPath();
+    ctx.ellipse(550, 318, 50, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Faceted amethyst crystal clusters
+    const drawCrystal = (cx, cy, ch, col) => {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - 5, cy - ch * 0.7);
+      ctx.lineTo(cx, cy - ch);
+      ctx.lineTo(cx + 5, cy - ch * 0.7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fae8ff';
+      ctx.fillRect(cx - 1, cy - ch + 2, 2, 4);
+    };
+    drawCrystal(525, 315, 16, '#c084fc');
+    drawCrystal(575, 312, 18, '#a855f7');
+    drawCrystal(550, 305, 14, '#e9d5ff');
+    // Dark Cavern entrance arch
+    ctx.fillStyle = '#0f051d';
+    ctx.beginPath();
+    ctx.arc(550, 332, 10, Math.PI, 0);
     ctx.fill();
 
-    // - Purple Amethyst Cavern Mountain around 1-5 (east)
-    ctx.fillStyle = '#475569';
+    // 1-8 Bowser's Volcanic Basalt Caldera (North, Node 7: x: 370, y: 120)
+    ctx.fillStyle = '#0f172a';
     ctx.beginPath();
-    ctx.ellipse(550, 315, 55, 32, 0, 0, Math.PI * 2);
+    ctx.ellipse(370, 128, 105, 52, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#a855f7';
-    ctx.beginPath();
-    ctx.ellipse(550, 318, 42, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // - Dark Volcanic Mountain & Crags around 1-8 Bowser Castle (north)
     ctx.fillStyle = '#1e293b';
     ctx.beginPath();
-    ctx.ellipse(370, 130, 95, 45, 0, 0, Math.PI * 2);
+    ctx.ellipse(370, 124, 90, 42, 0, 0, Math.PI * 2);
     ctx.fill();
+    // Molten lava pool & bubbling fissures
+    const lavaPulse = Math.sin(t * 4) * 2;
     ctx.fillStyle = '#dc2626';
-    ctx.fillRect(362, 126, 16, 4); // Lava fissure
+    ctx.beginPath();
+    ctx.ellipse(370, 126, 38 + lavaPulse, 16 + lavaPulse * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.ellipse(370, 126, 28, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(366, 124, 8, 4);
+    // Smoke puffs rising from volcano
+    for (let sm = 0; sm < 3; sm++) {
+      const smT = (t * 0.8 + sm * 0.9) % 2.5;
+      const smX = 370 + Math.sin(smT * 2 + sm) * 8;
+      const smY = 115 - smT * 18;
+      ctx.fillStyle = `rgba(148, 163, 184, ${Math.max(0, 0.45 - smT * 0.16)})`;
+      ctx.beginPath();
+      ctx.arc(smX, smY, 4 + smT * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // - Floating Celestial Star Island (Node 8: 1-S) in upper left
-    const starIslandPulse = Math.sin(t * 3) * 3;
+    // Floating Celestial Star Island (Node 8: 1-S, x: 240, y: 170)
+    const starIslandPulse = Math.sin(t * 2.5) * 3;
     const sIslandX = 240;
     const sIslandY = 170 + starIslandPulse;
 
     // Cosmic purple nebula glow behind floating star island
-    const nebGrad = ctx.createRadialGradient(sIslandX, sIslandY, 5, sIslandX, sIslandY, 70);
+    const nebGrad = ctx.createRadialGradient(sIslandX, sIslandY, 5, sIslandX, sIslandY, 75);
     nebGrad.addColorStop(0, 'rgba(192, 132, 252, 0.45)');
     nebGrad.addColorStop(0.5, 'rgba(99, 102, 241, 0.25)');
     nebGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
     ctx.fillStyle = nebGrad;
     ctx.beginPath();
-    ctx.arc(sIslandX, sIslandY, 70, 0, Math.PI * 2);
+    ctx.arc(sIslandX, sIslandY, 75, 0, Math.PI * 2);
     ctx.fill();
 
-    // Floating Star Island Landmass
+    // 3D Craggy Rock Underbelly hanging in the sky
+    ctx.fillStyle = '#1e1b4b';
+    ctx.beginPath();
+    ctx.moveTo(sIslandX - 52, sIslandY + 6);
+    ctx.lineTo(sIslandX - 25, sIslandY + 28);
+    ctx.lineTo(sIslandX, sIslandY + 34); // Stalactite peak
+    ctx.lineTo(sIslandX + 22, sIslandY + 26);
+    ctx.lineTo(sIslandX + 52, sIslandY + 6);
+    ctx.closePath();
+    ctx.fill();
+
+    // Floating Star Island Landmass Surface
     ctx.fillStyle = '#312e81';
     ctx.beginPath();
-    ctx.ellipse(sIslandX, sIslandY + 6, 60, 28, 0, 0, Math.PI * 2);
+    ctx.ellipse(sIslandX, sIslandY + 4, 58, 26, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#818cf8';
     ctx.beginPath();
-    ctx.ellipse(sIslandX, sIslandY, 56, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(sIslandX, sIslandY, 52, 22, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#c084fc';
     ctx.beginPath();
-    ctx.ellipse(sIslandX, sIslandY - 3, 48, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(sIslandX, sIslandY - 3, 44, 16, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Floating fluffy clouds drifting over the islands
+    // Twinkling Star Crystals on the floating island
+    for (let st = 0; st < 4; st++) {
+      const stX = sIslandX - 28 + st * 18;
+      const stY = sIslandY - 4 + (st % 2) * 5;
+      const stShine = Math.sin(t * 5 + st) > 0;
+      ctx.fillStyle = stShine ? '#fde047' : '#ffffff';
+      ctx.fillRect(stX - 1, stY - 1, 3, 3);
+    }
+
+    // Drifting fluffy SNES clouds over the islands
     for (let ci = 0; ci < 4; ci++) {
-      const cx = ((ci * 230 + t * 14) % (LOGICAL_WIDTH + 140)) - 70;
-      const cy = 60 + ci * 70;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      const cx = ((ci * 240 + t * 14) % (LOGICAL_WIDTH + 140)) - 70;
+      const cy = 55 + ci * 65;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
       ctx.beginPath();
       ctx.arc(cx, cy, 22, 0, Math.PI * 2);
       ctx.arc(cx + 18, cy - 6, 16, 0, Math.PI * 2);
@@ -4070,7 +4382,9 @@ class SuperAmbarGame {
       ctx.fill();
     }
 
-    // 3. Roads / Paths connecting nodes
+    // =========================================================================
+    // 3. ROADS / PATHS CONNECTING NODES (AUTHENTIC SMW STEPPING STONES)
+    // =========================================================================
     this.world1Nodes.forEach(node => {
       if (node.paths) {
         for (const dir in node.paths) {
@@ -4080,23 +4394,16 @@ class SuperAmbarGame {
 
           const isUnlocked = node.unlocked && target.unlocked;
 
-          // Road shadow / outline
-          ctx.strokeStyle = isUnlocked ? '#78350f' : 'rgba(120, 53, 15, 0.25)';
+          // Packed dirt road base outline
+          ctx.strokeStyle = isUnlocked ? '#78350f' : 'rgba(120, 53, 15, 0.22)';
           ctx.lineWidth = 8;
           ctx.beginPath();
           ctx.moveTo(node.x, node.y);
           ctx.lineTo(target.x, target.y);
           ctx.stroke();
 
-          // Cobblestone / path surface
-          ctx.strokeStyle = isUnlocked ? '#fde68a' : 'rgba(254, 243, 199, 0.35)';
-          ctx.lineWidth = 4;
-          if (!isUnlocked) ctx.setLineDash([6, 6]);
-          ctx.beginPath();
-          ctx.moveTo(node.x, node.y);
-          ctx.lineTo(target.x, target.y);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          // Authentic SMW Cobblestone Stepping Stones
+          this.drawMapSteppingStones(ctx, node.x, node.y, target.x, target.y, isUnlocked, 'world1', t);
         }
       }
     });
@@ -4119,8 +4426,8 @@ class SuperAmbarGame {
         });
 
         // Pulsing sparkling stars along the rainbow bridge
-        for (let s = 1; s <= 4; s++) {
-          const st = (s / 5 + t * 0.4) % 1.0;
+        for (let s = 1; s <= 5; s++) {
+          const st = (s / 6 + t * 0.4) % 1.0;
           const sx = n1.x + (secretNode.x - n1.x) * st;
           const sy = n1.y + (secretNode.y - n1.y) * st;
           ctx.fillStyle = '#ffffff';
@@ -4156,7 +4463,7 @@ class SuperAmbarGame {
   renderWorld2Map(ctx, t) {
     // 1. Deep Arctic Ocean Gradient
     const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-    oceanGrad.addColorStop(0, '#031b34');
+    oceanGrad.addColorStop(0, '#021226');
     oceanGrad.addColorStop(0.5, '#023059');
     oceanGrad.addColorStop(1, '#075985');
     ctx.fillStyle = oceanGrad;
@@ -4174,115 +4481,164 @@ class SuperAmbarGame {
       }
     }
 
-    // Drifting geometric ice floes in ocean
-    const iceFloes = [
-      { x: 70, y: 190, r: 24 },
-      { x: 220, y: 160, r: 18 },
-      { x: 380, y: 140, r: 28 },
-      { x: 520, y: 130, r: 22 },
-      { x: 670, y: 340, r: 26 },
-      { x: 340, y: 400, r: 20 },
-      { x: 190, y: 420, r: 25 }
-    ];
-    iceFloes.forEach((floe, idx) => {
-      const fx = floe.x + Math.sin(t * 0.8 + idx) * 8;
-      const fy = floe.y + Math.cos(t * 0.6 + idx) * 4;
-      ctx.fillStyle = '#bae6fd';
-      ctx.beginPath();
-      ctx.ellipse(fx, fy + 3, floe.r, floe.r * 0.55, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#f0f9ff';
-      ctx.beginPath();
-      ctx.ellipse(fx, fy, floe.r * 0.9, floe.r * 0.48, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Aurora Borealis shimmer in upper sky
+    // Spectacular Aurora Borealis Ribbons dancing in upper sky
     ctx.save();
     for (let ai = 0; ai < 3; ai++) {
       ctx.beginPath();
-      const aColor = ai === 0 ? 'rgba(52, 211, 153, 0.22)' : (ai === 1 ? 'rgba(56, 189, 248, 0.25)' : 'rgba(192, 132, 252, 0.18)');
+      const aColor = ai === 0 ? 'rgba(16, 185, 129, 0.25)' : (ai === 1 ? 'rgba(6, 182, 212, 0.28)' : 'rgba(168, 85, 247, 0.22)');
       ctx.strokeStyle = aColor;
       ctx.lineWidth = 18;
-      ctx.moveTo(0, 50 + ai * 14);
-      for (let ax = 0; ax <= LOGICAL_WIDTH; ax += 40) {
-        const ay = 50 + ai * 14 + Math.sin(ax * 0.008 + t * 0.9 + ai * 1.5) * 16;
+      ctx.moveTo(0, 45 + ai * 15);
+      for (let ax = 0; ax <= LOGICAL_WIDTH; ax += 30) {
+        const ay = 45 + ai * 15 + Math.sin(ax * 0.007 + t * 0.9 + ai * 1.6) * 16 + Math.cos(ax * 0.014 - t * 0.6) * 6;
         ctx.lineTo(ax, ay);
       }
       ctx.stroke();
     }
     ctx.restore();
 
-    // ==========================================
-    // LANDMASSES OF WORLD 2
-    // ==========================================
+    // 3D Faceted Drifting Icebergs in Ocean
+    const iceFloes = [
+      { x: 60, y: 190, r: 26 },
+      { x: 210, y: 155, r: 20 },
+      { x: 380, y: 135, r: 30 },
+      { x: 530, y: 125, r: 24 },
+      { x: 680, y: 350, r: 28 },
+      { x: 350, y: 410, r: 22 },
+      { x: 180, y: 430, r: 26 }
+    ];
+    iceFloes.forEach((floe, idx) => {
+      const fx = floe.x + Math.sin(t * 0.8 + idx) * 8;
+      const fy = floe.y + Math.cos(t * 0.6 + idx) * 4;
+      const r = floe.r;
 
-    // 1. Coastal Skate Promenade Island (Node 0: 2-1 Patines, x: 140, y: 350)
-    // Golden Beach Shore
+      // Submerged icy base
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(fx, fy + 8, r * 1.15, r * 0.65, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shadow facet (right side)
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.ellipse(fx + 2, fy + 4, r, r * 0.55, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sunny facet (left side)
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.ellipse(fx - 2, fy + 2, r * 0.95, r * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pure white snow cap on top
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(fx, fy, r * 0.8, r * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // =========================================================================
+    // THEMATIC 3D ISLANDS OF WORLD 2
+    // =========================================================================
+
+    // 1. Coastal Skate Pier on 3D Stilts (Node 0: 2-1 Patines, x: 140, y: 350)
+    // Timber Pier Stilts into the water
+    const pilings = [100, 130, 160, 190];
+    pilings.forEach(px => {
+      // Wood stilt pole
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(px - 3, 355, 6, 25);
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(px - 2, 355, 3, 25);
+      // Water ripple ring around piling
+      ctx.strokeStyle = 'rgba(125, 211, 252, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(px, 380, 7, 3, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    // Sandy Shoreline Base
     ctx.fillStyle = '#fde047';
     ctx.beginPath();
-    ctx.ellipse(140, 350, 75, 48, 0, 0, Math.PI * 2);
+    ctx.ellipse(140, 350, 80, 52, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#ca8a04';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Paved Boardwalk Promenade
-    ctx.fillStyle = '#94a3b8';
+    // Wooden Boardwalk Pier Deck
+    ctx.fillStyle = '#78350f';
     ctx.beginPath();
-    ctx.ellipse(140, 350, 60, 36, 0, 0, Math.PI * 2);
+    ctx.ellipse(140, 350, 66, 40, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
+    ctx.fillStyle = '#b45309';
     ctx.beginPath();
-    ctx.ellipse(140, 348, 50, 28, 0, 0, Math.PI * 2);
+    ctx.ellipse(140, 348, 56, 32, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mini neon skate rail ring on promenade
-    ctx.strokeStyle = '#f43f5e';
-    ctx.lineWidth = 2.5;
+    // Pier plank horizontal lines
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 1;
+    for (let py = 330; py <= 365; py += 7) {
+      ctx.beginPath();
+      ctx.moveTo(95, py);
+      ctx.lineTo(185, py);
+      ctx.stroke();
+    }
+
+    // Neon Yellow & Chrome Skate Grind Rail on the pier
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.ellipse(140, 348, 42, 20, 0, 0, Math.PI * 2);
     ctx.stroke();
-    // Rail sparks
+    // Continuous grinding sparks traveling around the rail
     const spX = 140 + Math.cos(t * 3.5) * 42;
     const spY = 348 + Math.sin(t * 3.5) * 20;
     ctx.fillStyle = '#fde047';
-    ctx.fillRect(spX - 2, spY - 2, 4, 4);
+    ctx.fillRect(spX - 2.5, spY - 2.5, 5, 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(spX - 1, spY - 1, 2, 2);
 
-    // Cute mini palm tree on the beach
+    // Beach palm tree on pier edge
     ctx.fillStyle = '#78350f';
-    ctx.fillRect(85, 335, 4, 14);
-    ctx.fillStyle = '#16a34a';
+    ctx.fillRect(80, 335, 4, 15);
+    ctx.fillStyle = '#15803d';
     ctx.beginPath();
-    ctx.arc(87, 332, 10, 0, Math.PI * 2);
+    ctx.arc(82, 332, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.arc(81, 330, 8, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Coral Reef Lagoon of the Mermaid (Node 1: 2-2 Sirena, x: 280, y: 310)
-    // Lagoon sandy reef ring
+    // 2. Coral Reef Atoll of the Mermaid (Node 1: 2-2 Sirena, x: 280, y: 310)
+    // Lagoon sandy coral ring
     ctx.fillStyle = '#fef08a';
     ctx.beginPath();
-    ctx.ellipse(280, 310, 80, 52, 0.1, 0, Math.PI * 2);
+    ctx.ellipse(280, 310, 84, 56, 0.1, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Translucent Turquoise Water Interior
-    const lagoonGrad = ctx.createRadialGradient(280, 310, 10, 280, 310, 65);
+    // Crystal Turquoise Water Interior Lagoon
+    const lagoonGrad = ctx.createRadialGradient(280, 310, 10, 280, 310, 70);
     lagoonGrad.addColorStop(0, '#06b6d4');
     lagoonGrad.addColorStop(0.7, '#0891b2');
     lagoonGrad.addColorStop(1, '#0e7490');
     ctx.fillStyle = lagoonGrad;
     ctx.beginPath();
-    ctx.ellipse(280, 310, 68, 42, 0.1, 0, Math.PI * 2);
+    ctx.ellipse(280, 310, 72, 45, 0.1, 0, Math.PI * 2);
     ctx.fill();
 
-    // Colorful coral branches & anemones around lagoon
+    // Living Coral Formations & Anemones
     const corals = [
-      { x: 235, y: 300, col: '#f43f5e', r: 8 },
-      { x: 325, y: 320, col: '#c084fc', r: 9 },
-      { x: 295, y: 280, col: '#fbbf24', r: 7 },
-      { x: 250, y: 335, col: '#ec4899', r: 8 }
+      { x: 232, y: 300, col: '#f43f5e', r: 9 },
+      { x: 328, y: 320, col: '#c084fc', r: 10 },
+      { x: 295, y: 275, col: '#fbbf24', r: 8 },
+      { x: 248, y: 335, col: '#ec4899', r: 9 }
     ];
     corals.forEach(c => {
       ctx.fillStyle = c.col;
@@ -4294,41 +4650,58 @@ class SuperAmbarGame {
     });
 
     // Gentle bubbles rising in the lagoon
-    for (let bi = 0; bi < 3; bi++) {
-      const bx = 265 + bi * 16;
-      const by = 320 - ((t * 18 + bi * 14) % 36);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+    for (let bi = 0; bi < 4; bi++) {
+      const bx = 260 + bi * 14;
+      const by = 325 - ((t * 18 + bi * 12) % 36);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
       ctx.beginPath();
       ctx.arc(bx, by, 3, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // 3. Glacial Snow Valley (Node 2: 2-3 Glacial, x: 440, y: 260)
-    // Mountain snow landmass
-    ctx.fillStyle = '#94a3b8';
-    ctx.beginPath();
-    ctx.ellipse(440, 260, 85, 54, -0.05, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#64748b';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // Mini sea creature silhouette in lagoon
+    const fishX = 280 + Math.sin(t * 1.8) * 12;
+    const fishY = 308 + Math.cos(t * 2.1) * 5;
+    ctx.fillStyle = '#2dd4bf';
+    ctx.fillRect(fishX - 4, fishY - 2, 8, 4);
+    ctx.fillRect(fishX - 6, fishY - 3, 2, 6);
 
-    // Pure White Snow Cover
+    // 3. Glacial Snow Valley (Node 2: 2-3 Glacial, x: 440, y: 260)
+    // 3D Stepped Glacial Ice Cliff Base
+    ctx.fillStyle = '#082f49';
+    ctx.beginPath();
+    ctx.ellipse(440, 268, 88, 56, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#0284c7';
+    ctx.beginPath();
+    ctx.ellipse(440, 264, 82, 50, -0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pure White Snow Cover Mesa
     ctx.fillStyle = '#f8fafc';
     ctx.beginPath();
-    ctx.ellipse(440, 258, 74, 44, -0.05, 0, Math.PI * 2);
+    ctx.ellipse(440, 258, 76, 44, -0.05, 0, Math.PI * 2);
     ctx.fill();
 
-    // Slippery Ice Lake
+    // Slippery Ice Lake (frozen reflective ice pond)
     ctx.fillStyle = '#7dd3fc';
     ctx.beginPath();
-    ctx.ellipse(440, 266, 44, 22, 0, 0, Math.PI * 2);
+    ctx.ellipse(440, 266, 46, 22, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2;
     ctx.stroke();
+    // Ice skate scratch marks on frozen lake
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(425, 264);
+    ctx.lineTo(445, 268);
+    ctx.moveTo(442, 262);
+    ctx.lineTo(458, 267);
+    ctx.stroke();
 
-    // Snow pine trees
+    // Snow-draped evergreen pine trees
     const pineTrees = [
       { x: 395, y: 245 },
       { x: 480, y: 235 },
@@ -4337,70 +4710,86 @@ class SuperAmbarGame {
     pineTrees.forEach(pt => {
       ctx.fillStyle = '#0f766e';
       ctx.beginPath();
-      ctx.moveTo(pt.x, pt.y - 12);
-      ctx.lineTo(pt.x - 7, pt.y);
-      ctx.lineTo(pt.x + 7, pt.y);
+      ctx.moveTo(pt.x, pt.y - 14);
+      ctx.lineTo(pt.x - 8, pt.y);
+      ctx.lineTo(pt.x + 8, pt.y);
       ctx.closePath();
       ctx.fill();
       // White snow cap
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.moveTo(pt.x, pt.y - 12);
-      ctx.lineTo(pt.x - 4, pt.y - 6);
-      ctx.lineTo(pt.x + 4, pt.y - 6);
+      ctx.moveTo(pt.x, pt.y - 14);
+      ctx.lineTo(pt.x - 4, pt.y - 7);
+      ctx.lineTo(pt.x + 4, pt.y - 7);
       ctx.closePath();
       ctx.fill();
     });
 
     // 4. Haunted Boo Gothic Mansion Hill (Node 3: 2-4 Mansión, x: 590, y: 220)
-    // Dark Twilight Violet Cliff
+    // Dark Twilight Violet Gothic Cliff
     ctx.fillStyle = '#1e1b4b';
     ctx.beginPath();
-    ctx.ellipse(590, 220, 80, 50, 0, 0, Math.PI * 2);
+    ctx.ellipse(590, 226, 84, 54, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#312e81';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
     ctx.fillStyle = '#2e1065';
     ctx.beginPath();
-    ctx.ellipse(590, 218, 68, 38, 0, 0, Math.PI * 2);
+    ctx.ellipse(590, 220, 74, 42, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Eerie purple fog aura
-    const fogGrad = ctx.createRadialGradient(590, 215, 10, 590, 215, 60);
-    fogGrad.addColorStop(0, 'rgba(192, 132, 252, 0.35)');
+    const fogGrad = ctx.createRadialGradient(590, 215, 10, 590, 215, 65);
+    fogGrad.addColorStop(0, 'rgba(192, 132, 252, 0.4)');
     fogGrad.addColorStop(1, 'rgba(46, 16, 101, 0)');
     ctx.fillStyle = fogGrad;
     ctx.beginPath();
-    ctx.arc(590, 215, 60, 0, Math.PI * 2);
+    ctx.arc(590, 215, 65, 0, Math.PI * 2);
     ctx.fill();
+
+    // Crooked stone tombstones on the hill
+    const drawTombstone = (tx, ty) => {
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.arc(tx, ty - 6, 4, Math.PI, 0);
+      ctx.lineTo(tx + 4, ty);
+      ctx.lineTo(tx - 4, ty);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(tx - 1, ty - 6, 2, 4);
+    };
+    drawTombstone(560, 225);
+    drawTombstone(618, 228);
 
     // Spooky dead silhouette trees
     const drawSpookyTree = (tx, ty) => {
       ctx.fillStyle = '#0f172a';
-      ctx.fillRect(tx - 2, ty - 14, 4, 14);
-      ctx.fillRect(tx - 7, ty - 10, 6, 2);
-      ctx.fillRect(tx + 2, ty - 12, 6, 2);
-      ctx.fillRect(tx - 6, ty - 16, 2, 6);
+      ctx.fillRect(tx - 2, ty - 16, 4, 16);
+      ctx.fillRect(tx - 8, ty - 12, 7, 2);
+      ctx.fillRect(tx + 2, ty - 14, 7, 2);
+      ctx.fillRect(tx - 7, ty - 18, 2, 7);
+      ctx.fillRect(tx + 6, ty - 20, 2, 7);
     };
-    drawSpookyTree(545, 210);
+    drawSpookyTree(545, 212);
     drawSpookyTree(635, 205);
 
-    // Cute mini Boo floating near mansion
-    const booBob = Math.sin(t * 3) * 4;
+    // Cute mini Boo floating near mansion with blush cheeks
+    const booBob = Math.sin(t * 3) * 5;
     ctx.fillStyle = '#f8fafc';
     ctx.beginPath();
-    ctx.arc(620, 185 + booBob, 6, 0, Math.PI * 2);
+    ctx.arc(620, 182 + booBob, 7, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(618, 180 + booBob, 2, 2);
+    ctx.fillRect(622, 180 + booBob, 2, 2);
     ctx.fillStyle = '#f472b6';
-    ctx.fillRect(618, 186 + booBob, 2, 2); // Blush
+    ctx.fillRect(616, 183 + booBob, 2, 2); // Rosy blush
+    ctx.fillRect(624, 183 + booBob, 2, 2);
 
     // 5. Glacial Castle Peak of Rey Escarcha (Node 4: 2-5 Castillo, x: 730, y: 140)
-    // Massive Ice Mountain Peak
+    // Massive Ice Mountain Peak Base
     ctx.fillStyle = '#082f49';
     ctx.beginPath();
-    ctx.ellipse(730, 145, 65, 42, 0, 0, Math.PI * 2);
+    ctx.ellipse(730, 148, 70, 46, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 3;
@@ -4409,40 +4798,40 @@ class SuperAmbarGame {
     // Frost King Crystalline Spires & Shimmer
     ctx.fillStyle = '#bae6fd';
     ctx.beginPath();
-    ctx.moveTo(705, 145);
-    ctx.lineTo(715, 95);
+    ctx.moveTo(700, 145);
+    ctx.lineTo(715, 90);
     ctx.lineTo(725, 145);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = '#e0f2fe';
     ctx.beginPath();
-    ctx.moveTo(725, 145);
-    ctx.lineTo(735, 85);
-    ctx.lineTo(745, 145);
+    ctx.moveTo(722, 145);
+    ctx.lineTo(735, 78);
+    ctx.lineTo(748, 145);
     ctx.closePath();
     ctx.fill();
 
     ctx.fillStyle = '#7dd3fc';
     ctx.beginPath();
     ctx.moveTo(745, 145);
-    ctx.lineTo(755, 102);
-    ctx.lineTo(765, 145);
+    ctx.lineTo(755, 96);
+    ctx.lineTo(768, 145);
     ctx.closePath();
     ctx.fill();
 
     // Pulsing Crystal Aura around Frost King Mountain
-    const frostAura = ctx.createRadialGradient(730, 115, 10, 730, 115, 55);
-    frostAura.addColorStop(0, 'rgba(125, 211, 252, 0.45)');
+    const frostAura = ctx.createRadialGradient(730, 115, 10, 730, 115, 60);
+    frostAura.addColorStop(0, 'rgba(125, 211, 252, 0.5)');
     frostAura.addColorStop(1, 'rgba(8, 47, 73, 0)');
     ctx.fillStyle = frostAura;
     ctx.beginPath();
-    ctx.arc(730, 115, 55, 0, Math.PI * 2);
+    ctx.arc(730, 115, 60, 0, Math.PI * 2);
     ctx.fill();
 
-    // ==========================================
-    // CRYSTALLINE ICE BRIDGES CONNECTING NODES
-    // ==========================================
+    // =========================================================================
+    // CRYSTALLINE ICE BRIDGES CONNECTING NODES (WORLD 2)
+    // =========================================================================
     this.world2Nodes.forEach(node => {
       if (node.paths) {
         for (const dir in node.paths) {
@@ -4460,15 +4849,8 @@ class SuperAmbarGame {
           ctx.lineTo(target.x, target.y);
           ctx.stroke();
 
-          // Crystalline frost top
-          ctx.strokeStyle = isUnlocked ? '#e0f2fe' : 'rgba(224, 242, 254, 0.35)';
-          ctx.lineWidth = 4;
-          if (!isUnlocked) ctx.setLineDash([6, 6]);
-          ctx.beginPath();
-          ctx.moveTo(node.x, node.y);
-          ctx.lineTo(target.x, target.y);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          // Crystalline frost stepping stones
+          this.drawMapSteppingStones(ctx, node.x, node.y, target.x, target.y, isUnlocked, 'world2', t);
 
           // Ice sparkle diamonds along unlocked bridges
           if (isUnlocked) {

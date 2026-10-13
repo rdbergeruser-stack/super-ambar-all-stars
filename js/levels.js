@@ -1138,7 +1138,7 @@ function buildLevel2_1Skate() {
     name: 'MUNDO 2-1: PARQUE COSTERO EN PATINES',
     subtitle: '¡Pistas Costeras, Barandas de Skate y Giros Turbo!',
     theme: 10,
-    bgm: 'ice',
+    bgm: 'level1',
     isSkateLevel: true,
     cols,
     rows: 15,
