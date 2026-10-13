@@ -1492,47 +1492,118 @@ class SuperAmbarGame {
         this.drawSnesBush(ctx, hx + 170, 13 * TILE_SIZE);
       }
     } else if (theme === 4) {
-      // MUNDO 1-4: CICLOVÍA COSTERA EN BICICLETA (Golden Sunset Sky, Ocean Bay & Park Trees)
+      // MUNDO 1-4: PASEO COSTERO EN BICICLETA (Tropical Beach, Sunset Synthwave & Ocean Bay)
+      // 1. Magical Tropical Sunset Sky Gradient (Synthwave / SNES Palette)
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#0284c7');
-      grad.addColorStop(0.45, '#38bdf8');
-      grad.addColorStop(0.72, '#fde047');
-      grad.addColorStop(1, '#fb923c');
+      grad.addColorStop(0, '#581c87');    // Deep twilight purple
+      grad.addColorStop(0.25, '#9333ea'); // Synthwave purple
+      grad.addColorStop(0.48, '#db2777'); // Vivid coral pink
+      grad.addColorStop(0.70, '#f97316'); // Warm sunset orange
+      grad.addColorStop(0.88, '#fde047'); // Golden horizon yellow
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Sun over the horizon
-      ctx.fillStyle = 'rgba(254, 240, 138, 0.85)';
+      // 2. Distant Horizon Islands / Mountains (Parallax 0.06)
+      ctx.fillStyle = '#3b0764';
+      for (let i = 0; i < 5; i++) {
+        const mx = ((i * 300 - this.cameraX * 0.06) % (LOGICAL_WIDTH + 320) + LOGICAL_WIDTH + 320) % (LOGICAL_WIDTH + 320) - 120;
+        ctx.beginPath();
+        ctx.ellipse(mx + 80, 230, 95, 30, 0, Math.PI, 0);
+        ctx.fill();
+      }
+
+      // 3. Giant Glowing Sunset Sun with Retro Heat-Haze Bands
+      const sunX = ((620 - this.cameraX * 0.04) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 150;
+      const sunY = 195;
+      const sunRad = 52;
+
+      // Outer golden glow
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRad * 0.4, sunX, sunY, sunRad * 1.8);
+      sunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
+      sunGlow.addColorStop(0.4, 'rgba(251, 146, 60, 0.45)');
+      sunGlow.addColorStop(1, 'rgba(251, 113, 133, 0)');
+      ctx.fillStyle = sunGlow;
       ctx.beginPath();
-      ctx.arc(660 - (this.cameraX * 0.04) % 400, 220, 48, 0, Math.PI * 2);
+      ctx.arc(sunX, sunY, sunRad * 1.8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Sparkling Ocean Bay in the background
-      ctx.fillStyle = '#0369a1';
-      ctx.fillRect(0, 290, LOGICAL_WIDTH, 140);
-      ctx.fillStyle = '#38bdf8';
-      for (let wx = 0; wx < LOGICAL_WIDTH; wx += 42) {
-        const shimmer = Math.sin(this.time * 4 + wx) * 6;
-        ctx.fillRect(wx + shimmer, 305 + (wx % 3) * 18, 22, 3);
+      // Sun core
+      const sunGrad = ctx.createLinearGradient(sunX, sunY - sunRad, sunX, sunY + sunRad);
+      sunGrad.addColorStop(0, '#fffbeb');
+      sunGrad.addColorStop(0.5, '#fde047');
+      sunGrad.addColorStop(1, '#f97316');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRad, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Retro sunset scanline bands cutting across the sun
+      ctx.fillStyle = '#db2777';
+      for (let sl = 6; sl < sunRad; sl += 8) {
+        ctx.fillRect(sunX - sunRad, sunY + sl, sunRad * 2, 2.5);
       }
 
-      // Clouds
-      for (let i = 0; i < 6; i++) {
-        const cx = ((i * 230 - this.cameraX * 0.2) % (LOGICAL_WIDTH + 220) + LOGICAL_WIDTH + 220) % (LOGICAL_WIDTH + 220) - 100;
-        this.drawSnesCloud(ctx, cx, 64 + (i % 3) * 32);
+      // 4. Sparkling Ocean Bay (from y = 226 to y = 345)
+      const seaGrad = ctx.createLinearGradient(0, 226, 0, 345);
+      seaGrad.addColorStop(0, '#1e1b4b');
+      seaGrad.addColorStop(0.3, '#1e3a8a');
+      seaGrad.addColorStop(1, '#0284c7');
+      ctx.fillStyle = seaGrad;
+      ctx.fillRect(0, 226, LOGICAL_WIDTH, 120);
+
+      // Sun Reflection Shimmer Trail directly under the sun
+      const reflX = sunX;
+      for (let ry = 230; ry < 345; ry += 7) {
+        const spread = (ry - 226) * 0.9;
+        const wave = Math.sin(this.time * 4 + ry) * 8;
+        ctx.fillStyle = ry < 270 ? 'rgba(254, 240, 138, 0.75)' : 'rgba(251, 146, 60, 0.55)';
+        ctx.fillRect(reflX - spread * 0.5 + wave, ry, spread, 2.5);
       }
 
-      // Coastal Park Hills & Bike Route Signs
-      for (let i = 0; i < 6; i++) {
-        const hx = ((i * 260 - this.cameraX * 0.45) % (LOGICAL_WIDTH + 280) + LOGICAL_WIDTH + 280) % (LOGICAL_WIDTH + 280) - 120;
-        ctx.fillStyle = '#15803d';
-        ctx.strokeStyle = '#052e16';
-        ctx.lineWidth = 2;
+      // Sparkling Wave Lines across the ocean
+      for (let wx = 0; wx < LOGICAL_WIDTH; wx += 50) {
+        for (let row = 0; row < 4; row++) {
+          const wy = 240 + row * 24;
+          const wPhase = Math.sin(this.time * 3 + wx * 0.08 + row) * 8;
+          ctx.fillStyle = row % 2 === 0 ? 'rgba(56, 189, 248, 0.7)' : 'rgba(125, 211, 252, 0.5)';
+          ctx.fillRect(wx + wPhase, wy, 28, 2);
+        }
+      }
+
+      // 5. Tropical Sandy Beach & Dunes (from y = 335 to ground floor)
+      const sandGrad = ctx.createLinearGradient(0, 335, 0, 13 * TILE_SIZE);
+      sandGrad.addColorStop(0, '#d97706');
+      sandGrad.addColorStop(0.4, '#f59e0b');
+      sandGrad.addColorStop(1, '#fbbf24');
+      ctx.fillStyle = sandGrad;
+
+      for (let i = 0; i < 5; i++) {
+        const dx = ((i * 260 - this.cameraX * 0.25) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 150;
         ctx.beginPath();
-        ctx.arc(hx + 70, 13 * TILE_SIZE, 68, Math.PI, 0);
+        ctx.ellipse(dx + 120, 13 * TILE_SIZE, 150, 85, 0, Math.PI, 0);
         ctx.fill();
-        ctx.stroke();
-        this.drawSnesBush(ctx, hx + 150, 13 * TILE_SIZE);
+      }
+
+      // 6. Flying Seagulls in Sunset Sky
+      for (let g = 0; g < 4; g++) {
+        const gx = ((g * 240 + this.time * 25 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 150) + LOGICAL_WIDTH + 150) % (LOGICAL_WIDTH + 150) - 50;
+        const gy = 70 + (g % 2) * 35;
+        this.drawSnesSeagull(ctx, gx, gy, this.time * 6 + g * 2);
+        this.drawSnesSeagull(ctx, gx + 22, gy - 8, this.time * 6 + g * 2 + 0.8);
+      }
+
+      // 7. Layer 1: Background Silhouette Palm Trees (Parallax 0.35)
+      for (let i = 0; i < 5; i++) {
+        const px = ((i * 240 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 260) + LOGICAL_WIDTH + 260) % (LOGICAL_WIDTH + 260) - 100;
+        const tilt = i % 2 === 0 ? 1 : -1;
+        this.drawSnesPalmTree(ctx, px, 13 * TILE_SIZE, 0.72, tilt, true);
+      }
+
+      // 8. Layer 2: Foreground Detailed Tropical Palms (Parallax 0.55)
+      for (let i = 0; i < 5; i++) {
+        const px = ((i * 320 - this.cameraX * 0.55) % (LOGICAL_WIDTH + 340) + LOGICAL_WIDTH + 340) % (LOGICAL_WIDTH + 340) - 120;
+        const tilt = (i % 2 === 0 ? 1.2 : -0.9);
+        this.drawSnesPalmTree(ctx, px + 80, 13 * TILE_SIZE, 1.05, tilt, false);
       }
     } else if (theme === 5) {
       // MUNDO 1-5: CUEVA DE CRISTAL SUBTERRÁNEA
@@ -1698,6 +1769,106 @@ class SuperAmbarGame {
     ctx.beginPath();
     ctx.arc(x + 16, groundY - 21, 9, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
+
+  drawSnesPalmTree(ctx, x, groundY, scale = 1.0, tilt = 1, isSilhouette = false) {
+    ctx.save();
+    ctx.translate(x, groundY);
+    ctx.scale(scale, scale);
+
+    const trunkH = 120;
+    const curve = tilt * 30;
+
+    // Curved trunk
+    ctx.strokeStyle = isSilhouette ? '#1e1b4b' : '#3e1a06';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(curve * 0.35, -trunkH * 0.5, curve, -trunkH);
+    ctx.stroke();
+
+    if (!isSilhouette) {
+      ctx.strokeStyle = '#854d0e';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(curve * 0.35, -trunkH * 0.5, curve, -trunkH);
+      ctx.stroke();
+
+      // Trunk segment rings
+      ctx.fillStyle = '#451a03';
+      for (let i = 1; i <= 6; i++) {
+        const t = i / 7;
+        const tx = (1 - t) * (1 - t) * 0 + 2 * (1 - t) * t * (curve * 0.35) + t * t * curve;
+        const ty = -trunkH * t;
+        ctx.fillRect(tx - 4, ty - 2, 8, 3);
+      }
+
+      // Coconuts
+      ctx.fillStyle = '#3e1a06';
+      ctx.beginPath();
+      ctx.arc(curve - 4, -trunkH + 4, 5, 0, Math.PI * 2);
+      ctx.arc(curve + 4, -trunkH + 4, 5, 0, Math.PI * 2);
+      ctx.arc(curve, -trunkH + 7, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Palm fronds (leaves)
+    const topX = curve;
+    const topY = -trunkH;
+    const wind = Math.sin(this.time * 2.5 + x * 0.05) * 5;
+
+    const leaves = [
+      { angle: -155, length: 54, drop: 22, color: isSilhouette ? '#1e1b4b' : '#14532d' },
+      { angle: -125, length: 62, drop: 28, color: isSilhouette ? '#2e1065' : '#166534' },
+      { angle: -85,  length: 66, drop: 30, color: isSilhouette ? '#3b0764' : '#15803d' },
+      { angle: -45,  length: 62, drop: 26, color: isSilhouette ? '#2e1065' : '#166534' },
+      { angle: -15,  length: 52, drop: 20, color: isSilhouette ? '#1e1b4b' : '#14532d' }
+    ];
+
+    leaves.forEach(leaf => {
+      const rad = (leaf.angle * Math.PI) / 180;
+      const ex = topX + Math.cos(rad) * leaf.length + wind;
+      const ey = topY + Math.sin(rad) * leaf.length * 0.5 + leaf.drop;
+      const cpx = topX + Math.cos(rad) * (leaf.length * 0.6);
+      const cpy = topY + Math.sin(rad) * (leaf.length * 0.3) - 12;
+
+      ctx.strokeStyle = leaf.color;
+      ctx.lineWidth = isSilhouette ? 4 : 5;
+      ctx.beginPath();
+      ctx.moveTo(topX, topY);
+      ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+      ctx.stroke();
+
+      ctx.lineWidth = 2;
+      for (let s = 0.2; s <= 0.95; s += 0.15) {
+        const lx = (1 - s) * (1 - s) * topX + 2 * (1 - s) * s * cpx + s * s * ex;
+        const ly = (1 - s) * (1 - s) * topY + 2 * (1 - s) * s * cpy + s * s * ey;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx - 7, ly + 8);
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx + 7, ly + 8);
+        ctx.stroke();
+      }
+    });
+
+    ctx.restore();
+  }
+
+  drawSnesSeagull(ctx, x, y, wingPhase) {
+    ctx.save();
+    ctx.strokeStyle = '#1e1b4b';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    const flap = Math.sin(wingPhase) * 5;
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y + flap);
+    ctx.quadraticCurveTo(x - 5, y - 4, x, y);
+    ctx.quadraticCurveTo(x + 5, y - 4, x + 10, y + flap);
+    ctx.stroke();
     ctx.restore();
   }
 

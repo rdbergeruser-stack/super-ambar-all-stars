@@ -497,8 +497,8 @@ function buildLevel4Bike() {
 
   return {
     id: 4,
-    name: 'MUNDO 1-4: CICLOVÍA TURBO EN BICICLETA',
-    subtitle: '¡Ámbar recorre la ciclovía en su Bicicleta! Pisa las flechas TURBO y salta las rampas',
+    name: 'MUNDO 1-4: PLAYA COSTERA EN BICICLETA',
+    subtitle: '¡Ámbar pedalea por la playa al atardecer! Pisa las flechas TURBO y salta las rampas',
     theme: 4,
     isBikeLevel: true,
     bgm: 'level1',
