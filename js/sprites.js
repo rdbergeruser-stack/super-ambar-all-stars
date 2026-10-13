@@ -2595,148 +2595,204 @@ class SpriteRenderer {
       // 16-BIT SHY BOO GHOST (SUPER MARIO WORLD RETRO MASTERPIECE)
       // ======================================================================
       ctx.translate(cx, bottomY);
-      if (enemy.vx < 0 || (enemy.facing && enemy.facing < 0)) ctx.scale(-1, 1);
+      if (enemy.facing && enemy.facing < 0) ctx.scale(-1, 1);
       const bob = Math.sin(time * 4 + enemy.x * 0.04) * 3.5;
 
-      // Soft eerie ghost glow
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      // Trailing spectral ghostly mist particles behind tail
+      for (let w = 1; w <= 3; w++) {
+        const wOff = (time * 6 + w * 2) % 6;
+        const wx = -18 - w * 6 - wOff;
+        const wy = -18 + bob + Math.sin(time * 5 + w) * 4;
+        const wAlpha = Math.max(0, 0.45 - (w * 0.12));
+        ctx.fillStyle = `rgba(224, 231, 255, ${wAlpha})`;
+        ctx.beginPath();
+        ctx.arc(wx, wy, 5 - w, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Soft eerie supernatural ghost aura
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.25)';
       ctx.beginPath();
-      ctx.arc(0, -20 + bob, 21, 0, Math.PI * 2);
+      ctx.arc(0, -20 + bob, 22, 0, Math.PI * 2);
       ctx.fill();
 
-      // Main Spherical Ghost Body with 16-bit SMW Shading
-      const booGrad = ctx.createRadialGradient(-3, -24 + bob, 4, 0, -20 + bob, 16);
-      booGrad.addColorStop(0, '#ffffff');
-      booGrad.addColorStop(0.7, '#f8fafc');
-      booGrad.addColorStop(0.95, '#e2e8f0');
-      booGrad.addColorStop(1, '#94a3b8');
-      ctx.fillStyle = booGrad;
-      ctx.strokeStyle = '#475569';
+      // Curled Little Wispy Ghost Tail Behind (3-stage curl)
+      ctx.fillStyle = '#e2e8f0';
+      ctx.strokeStyle = '#334155';
       ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.arc(0, -20 + bob, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // Curled Little Wispy Ghost Tail Behind
-      ctx.fillStyle = '#e2e8f0';
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(-13, -23 + bob);
-      ctx.quadraticCurveTo(-24, -22 + bob, -18, -12 + bob);
-      ctx.quadraticCurveTo(-14, -16 + bob, -11, -17 + bob);
+      ctx.moveTo(-12, -24 + bob);
+      ctx.quadraticCurveTo(-26, -22 + bob, -20, -11 + bob);
+      ctx.quadraticCurveTo(-14, -14 + bob, -10, -16 + bob);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
+
+      // Main Spherical Ghost Body with 16-bit SMW 3-Tone Shading
+      const booGrad = ctx.createRadialGradient(-4, -25 + bob, 3, 0, -19 + bob, 17);
+      booGrad.addColorStop(0, '#ffffff');
+      booGrad.addColorStop(0.65, '#f8fafc');
+      booGrad.addColorStop(0.88, '#e2e8f0');
+      booGrad.addColorStop(1, '#94a3b8');
+      ctx.fillStyle = booGrad;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(0, -20 + bob, 16.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Specular highlight gleam on top-left of forehead
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.beginPath();
+      ctx.ellipse(-6, -28 + bob, 4.5, 2.5, -0.4, 0, Math.PI * 2);
+      ctx.fill();
 
       if (enemy.isShy) {
         // --------------------------------------------------------------------
         // SHY BOO: ÁMBAR IS LOOKING! COVERING FACE WITH PAWS & BLUSHING!
         // --------------------------------------------------------------------
         // Embarrassed shivering wiggle
-        const shiver = Math.sin(time * 24) * 0.8;
+        const shiver = Math.sin(time * 28) * 1.0;
 
-        // Big Glowing Rosy Pink Blush Circles on Cheeks
+        // Big Glowing Rosy Pink Blush Halos on Cheeks
+        ctx.fillStyle = 'rgba(251, 113, 133, 0.35)';
+        ctx.beginPath();
+        ctx.arc(-8 + shiver, -16 + bob, 6.5, 0, Math.PI * 2);
+        ctx.arc(8 + shiver, -16 + bob, 6.5, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = '#f43f5e';
         ctx.beginPath();
-        ctx.arc(-7 + shiver, -16 + bob, 4, 0, Math.PI * 2);
-        ctx.arc(7 + shiver, -16 + bob, 4, 0, Math.PI * 2);
+        ctx.arc(-8 + shiver, -16 + bob, 3.8, 0, Math.PI * 2);
+        ctx.arc(8 + shiver, -16 + bob, 3.8, 0, Math.PI * 2);
         ctx.fill();
 
         // Closed Embarrassed Crescent Eyes
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 2.0;
         ctx.beginPath();
-        ctx.arc(-5 + shiver, -24 + bob, 2.5, Math.PI, 0);
+        ctx.arc(-6 + shiver, -24 + bob, 3.0, Math.PI, 0);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(5 + shiver, -24 + bob, 2.5, Math.PI, 0);
+        ctx.arc(6 + shiver, -24 + bob, 3.0, Math.PI, 0);
         ctx.stroke();
 
-        // Both Chubby White Ghost Hands Covering Face
+        // Both Chubby White Ghost Paws Covering Face
         ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.4;
         // Left hand
         ctx.beginPath();
-        ctx.ellipse(-4 + shiver, -20 + bob, 4.5, 4, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(-4.5 + shiver, -20 + bob, 5.0, 4.2, -0.25, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
         // Right hand
         ctx.beginPath();
-        ctx.ellipse(4 + shiver, -20 + bob, 4.5, 4, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(4.5 + shiver, -20 + bob, 5.0, 4.2, 0.25, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Little comical blue sweat drop
-        ctx.fillStyle = '#38bdf8';
+        // Little finger indentations on paws
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.0;
         ctx.beginPath();
-        ctx.moveTo(11, -29 + bob);
-        ctx.quadraticCurveTo(13, -26 + bob, 11, -24 + bob);
-        ctx.quadraticCurveTo(9, -26 + bob, 11, -29 + bob);
+        ctx.moveTo(-5 + shiver, -22 + bob);
+        ctx.lineTo(-4 + shiver, -18 + bob);
+        ctx.moveTo(5 + shiver, -22 + bob);
+        ctx.lineTo(4 + shiver, -18 + bob);
+        ctx.stroke();
+
+        // Cartoon blue sweat drop falling from brow
+        const dropY = -27 + bob + Math.sin(time * 16) * 1.5;
+        ctx.fillStyle = '#38bdf8';
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        ctx.moveTo(12, dropY - 5);
+        ctx.quadraticCurveTo(15, dropY - 2, 13, dropY);
+        ctx.quadraticCurveTo(11, dropY - 2, 12, dropY - 5);
+        ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(12, dropY - 3, 1, 1);
 
       } else {
         // --------------------------------------------------------------------
         // ACTIVE BOO: SNEAKING UP WITH MISCHIEVOUS GRIN & VAMPIRE FANGS!
         // --------------------------------------------------------------------
-        // Mischievous Narrow Eyes with Black Pupils
+        // Trailing left arm behind body
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.ellipse(-10, -18 + bob, 4.5, 3.2, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Mischievous Narrow Eyes with Black Pupils and White Shine
         ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.ellipse(5, -24 + bob, 2.8, 3.8, 0.15, 0, Math.PI * 2);
+        ctx.ellipse(5, -24 + bob, 3.0, 4.2, 0.15, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(4.5, -26 + bob, 1.5, 1.5);
+        ctx.fillRect(4.5, -26.5 + bob, 1.8, 1.8);
 
         // Angled Mischievous Eyebrow
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.moveTo(1, -27 + bob);
-        ctx.lineTo(8, -25 + bob);
+        ctx.moveTo(0, -28 + bob);
+        ctx.lineTo(9, -25 + bob);
         ctx.stroke();
 
         // Gaping Mischievous Vampire Mouth
         ctx.fillStyle = '#7f1d1d';
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1.4;
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.moveTo(1, -19 + bob);
-        ctx.quadraticCurveTo(7, -11 + bob, 12, -18 + bob);
+        ctx.moveTo(0, -19 + bob);
+        ctx.quadraticCurveTo(7, -9 + bob, 14, -18 + bob);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Sharp White Vampire Fangs
+        // Sharp White Vampire Fangs (Upper and Lower)
         ctx.fillStyle = '#ffffff';
-        // Top front fang
+        // Upper left fang
         ctx.beginPath();
-        ctx.moveTo(3, -19 + bob);
-        ctx.lineTo(5, -15 + bob);
-        ctx.lineTo(7, -19 + bob);
+        ctx.moveTo(2, -19 + bob);
+        ctx.lineTo(4.5, -14 + bob);
+        ctx.lineTo(6.5, -19 + bob);
         ctx.closePath();
         ctx.fill();
-        // Top second fang
+        // Upper right fang
         ctx.beginPath();
         ctx.moveTo(8, -19 + bob);
-        ctx.lineTo(10, -16 + bob);
-        ctx.lineTo(11, -19 + bob);
+        ctx.lineTo(10.5, -14.5 + bob);
+        ctx.lineTo(12.5, -19 + bob);
+        ctx.closePath();
+        ctx.fill();
+        // Lower center fang
+        ctx.beginPath();
+        ctx.moveTo(5, -12 + bob);
+        ctx.lineTo(7, -15.5 + bob);
+        ctx.lineTo(9, -12 + bob);
         ctx.closePath();
         ctx.fill();
 
-        // Pink Tongue
-        ctx.fillStyle = '#f43f5e';
+        // Playful Pink Tongue
+        ctx.fillStyle = '#fb7185';
         ctx.beginPath();
-        ctx.arc(6, -14 + bob, 2.5, 0, Math.PI);
+        ctx.arc(7, -12.5 + bob, 3.0, 0, Math.PI);
         ctx.fill();
 
-        // Outstretched Grabbing Ghost Arm
+        // Outstretched Grabbing Ghost Arm reaching towards Ámbar
         ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.4;
         ctx.beginPath();
-        ctx.ellipse(14, -18 + bob, 5, 3.5, 0.3, 0, Math.PI * 2);
+        ctx.ellipse(15, -18 + bob, 5.5, 4.0, 0.28, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }

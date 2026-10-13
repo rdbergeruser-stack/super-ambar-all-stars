@@ -427,3 +427,4 @@ if __name__ == "__main__":
     skate_files = create_roller_skates_sprites()
     mermaid_files = create_mermaid_sprites()
     print("All sprites created successfully!")
+

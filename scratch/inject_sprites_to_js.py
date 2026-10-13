@@ -26,3 +26,4 @@ if idx != -1:
     print('Updated js/sprite_assets.js with skate and mermaid arrays!')
 else:
     print('Could not find }; in js/sprite_assets.js')
+
