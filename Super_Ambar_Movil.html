@@ -1776,10 +1776,56 @@ class SpriteRenderer {
     ctx.restore();
   }
 
+  drawStarCoin(ctx, sc, time) {
+    const cx = Math.round(sc.x + sc.w / 2);
+    const cy = Math.round(sc.y + sc.h / 2 + Math.sin(time * 4 + sc.x * 0.05) * 3);
+    const rot = Math.cos(time * 3.5 + sc.x * 0.05);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Glowing Star Halo
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 10;
+
+    // Coin outer rim (spinning around Y)
+    ctx.scale(Math.abs(rot) < 0.1 ? 0.1 : rot, 1);
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Embossed Star in center
+    ctx.fillStyle = '#f472b6';
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const aOuter = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+      const aInner = aOuter + Math.PI / 5;
+      const rOuter = 8.5;
+      const rInner = 4.0;
+      if (i === 0) ctx.moveTo(Math.cos(aOuter) * rOuter, Math.sin(aOuter) * rOuter);
+      else ctx.lineTo(Math.cos(aOuter) * rOuter, Math.sin(aOuter) * rOuter);
+      ctx.lineTo(Math.cos(aInner) * rInner, Math.sin(aInner) * rInner);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Specular shine highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillRect(-5, -8, 4, 3);
+
+    ctx.restore();
+  }
+
   // ==========================================================================
   // 16-BIT SNES ENEMIES & KOOPA SHELL (RENDERED FROM EXTRACTED 16-BIT SPRITES)
   // ==========================================================================
-  drawEnemy(ctx, enemy, time) {
+  drawEnemy(ctx, enemy, time, theme = 1) {
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     const x = Math.round(enemy.x);
@@ -1801,6 +1847,59 @@ class SpriteRenderer {
           const bob = Math.abs(Math.sin(time * 12)) * -2.5;
           ctx.rotate(waddle);
           ctx.drawImage(img, -25, -50 + bob, 50, 50);
+
+          // Thematic enemy accessories (16-bit retro detail!)
+          if (theme === 4) {
+            // Beach Mode: Cool Retro Sunglasses!
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-16, -35 + bob, 12, 8);
+            ctx.fillRect(4, -35 + bob, 12, 8);
+            ctx.fillRect(-4, -33 + bob, 8, 3);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(-14, -34 + bob, 3, 2);
+            ctx.fillRect(6, -34 + bob, 3, 2);
+          } else if (theme === 2) {
+            // Snow Mode: Cozy Winter Beanie with Pom-pom!
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(0, -48 + bob, 14, Math.PI, 0);
+            ctx.fill();
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillRect(-14, -48 + bob, 28, 4);
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, -62 + bob, 5, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (theme === 3) {
+            // Castle Mode: Spiked Iron Helmet / Horns!
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(-12, -50 + bob, 24, 4);
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.moveTo(-10, -50 + bob);
+            ctx.lineTo(-14, -58 + bob);
+            ctx.lineTo(-6, -50 + bob);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(10, -50 + bob);
+            ctx.lineTo(14, -58 + bob);
+            ctx.lineTo(6, -50 + bob);
+            ctx.fill();
+          } else if (theme === 6) {
+            // Sky Mode: Fluttering Angel Wings!
+            const wingFlap = Math.sin(time * 24) * 6;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(-24, -30 + bob + wingFlap * 0.3, 10, 5, -0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(24, -30 + bob - wingFlap * 0.3, 10, 5, 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
         }
       }
     } else if (enemy.type === 'koopa') {
@@ -2824,6 +2923,17 @@ const LOGICAL_WIDTH = 854;
 const LOGICAL_HEIGHT = 480;
 const TILE_SIZE = 32;
 
+const STAR_COINS_DATA = {
+  1: [{ col: 34, row: 5 }, { col: 78, row: 4 }, { col: 122, row: 5 }],
+  2: [{ col: 32, row: 5 }, { col: 76, row: 4 }, { col: 118, row: 4 }],
+  3: [{ col: 30, row: 6 }, { col: 64, row: 4 }, { col: 96, row: 5 }],
+  4: [{ col: 36, row: 6 }, { col: 80, row: 5 }, { col: 138, row: 4 }],
+  5: [{ col: 34, row: 5 }, { col: 75, row: 4 }, { col: 120, row: 4 }],
+  6: [{ col: 32, row: 5 }, { col: 72, row: 4 }, { col: 116, row: 4 }],
+  7: [{ col: 35, row: 4 }, { col: 82, row: 10 }, { col: 128, row: 2 }],
+  8: [{ col: 28, row: 5 }, { col: 70, row: 4 }, { col: 112, row: 5 }]
+};
+
 class SuperAmbarGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -2856,6 +2966,8 @@ class SuperAmbarGame {
     this.player = this.createDefaultPlayer();
     this.level = null;
     this.items = [];
+    this.starCoins = [];
+    this.savedStarCoins = {};
     this.projectiles = [];
     this.enemyProjectiles = [];
     this.particles = [];
@@ -3127,6 +3239,19 @@ class SuperAmbarGame {
       vx: 0,
       vy: 0,
       static: true
+    }));
+
+    const starDefs = STAR_COINS_DATA[idx + 1] || [
+      { col: 32, row: 5 }, { col: 75, row: 4 }, { col: 120, row: 5 }
+    ];
+    const prevSaved = this.savedStarCoins[idx] || [false, false, false];
+    this.starCoins = starDefs.map((sc, i) => ({
+      x: sc.col * TILE_SIZE,
+      y: sc.row * TILE_SIZE,
+      w: 30,
+      h: 30,
+      collected: !!prevSaved[i],
+      index: i
     }));
 
     this.enemies = this.level.enemies.map(e => ({
@@ -3910,6 +4035,26 @@ class SuperAmbarGame {
         this.items.splice(i, 1);
       }
     }
+
+    // Giant Star Coins Collection
+    this.starCoins.forEach(sc => {
+      if (!sc.collected && this.rectsOverlap(p, sc)) {
+        sc.collected = true;
+        if (!this.savedStarCoins[this.currentLevelIdx]) {
+          this.savedStarCoins[this.currentLevelIdx] = [false, false, false];
+        }
+        this.savedStarCoins[this.currentLevelIdx][sc.index] = true;
+        this.addScore(1000, sc.x, sc.y);
+        const collectedCount = this.starCoins.filter(s => s.collected).length;
+        this.addFloatingText(sc.x, sc.y - 18, `¡MONEDA ESTRELLA ${collectedCount}/3! +1000`, '#fde047');
+        window.retroAudio.playSfx('oneup');
+        this.triggerScreenShake(0.12, 2.5);
+        this.triggerHitStop(0.04);
+        for (let k = 0; k < 16; k++) {
+          this.spawnSparkle(sc.x + 15, sc.y + 15);
+        }
+      }
+    });
   }
 
   updateProjectiles(dt) {
@@ -4451,9 +4596,15 @@ class SuperAmbarGame {
       }
     });
 
+    this.starCoins.forEach(sc => {
+      if (!sc.collected && sc.x + sc.w >= this.cameraX && sc.x <= this.cameraX + LOGICAL_WIDTH) {
+        window.spriteRenderer.drawStarCoin(ctx, sc, this.time);
+      }
+    });
+
     this.enemies.forEach(en => {
       if (!en.dead && en.x + en.w >= this.cameraX - 40 && en.x <= this.cameraX + LOGICAL_WIDTH + 40) {
-        window.spriteRenderer.drawEnemy(ctx, en, this.time);
+        window.spriteRenderer.drawEnemy(ctx, en, this.time, this.level ? this.level.theme : 1);
       }
     });
 
@@ -5151,6 +5302,19 @@ class SuperAmbarGame {
 
     ctx.fillStyle = '#cbd5e1';
     ctx.fillText('Salto + Salto Doble (Espacio)', 172, 47);
+
+    // Star Coins Tracker in HUD
+    ctx.textAlign = 'center';
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.fillStyle = '#fde047';
+    ctx.fillText('ESTRELLAS', LOGICAL_WIDTH - 280, 26);
+    const starCoins = this.starCoins || [];
+    for (let i = 0; i < 3; i++) {
+      const isCol = starCoins[i] && starCoins[i].collected;
+      ctx.fillStyle = isCol ? '#fde047' : '#475569';
+      ctx.font = '13px monospace';
+      ctx.fillText(isCol ? '★' : '☆', LOGICAL_WIDTH - 298 + i * 18, 47);
+    }
 
     ctx.textAlign = 'right';
     ctx.font = '11px "Press Start 2P", monospace';

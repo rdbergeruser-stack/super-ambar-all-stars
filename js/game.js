@@ -6,6 +6,17 @@ const LOGICAL_WIDTH = 854;
 const LOGICAL_HEIGHT = 480;
 const TILE_SIZE = 32;
 
+const STAR_COINS_DATA = {
+  1: [{ col: 34, row: 5 }, { col: 78, row: 4 }, { col: 122, row: 5 }],
+  2: [{ col: 32, row: 5 }, { col: 76, row: 4 }, { col: 118, row: 4 }],
+  3: [{ col: 30, row: 6 }, { col: 64, row: 4 }, { col: 96, row: 5 }],
+  4: [{ col: 36, row: 6 }, { col: 80, row: 5 }, { col: 138, row: 4 }],
+  5: [{ col: 34, row: 5 }, { col: 75, row: 4 }, { col: 120, row: 4 }],
+  6: [{ col: 32, row: 5 }, { col: 72, row: 4 }, { col: 116, row: 4 }],
+  7: [{ col: 35, row: 4 }, { col: 82, row: 10 }, { col: 128, row: 2 }],
+  8: [{ col: 28, row: 5 }, { col: 70, row: 4 }, { col: 112, row: 5 }]
+};
+
 class SuperAmbarGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -38,6 +49,8 @@ class SuperAmbarGame {
     this.player = this.createDefaultPlayer();
     this.level = null;
     this.items = [];
+    this.starCoins = [];
+    this.savedStarCoins = {};
     this.projectiles = [];
     this.enemyProjectiles = [];
     this.particles = [];
@@ -309,6 +322,19 @@ class SuperAmbarGame {
       vx: 0,
       vy: 0,
       static: true
+    }));
+
+    const starDefs = STAR_COINS_DATA[idx + 1] || [
+      { col: 32, row: 5 }, { col: 75, row: 4 }, { col: 120, row: 5 }
+    ];
+    const prevSaved = this.savedStarCoins[idx] || [false, false, false];
+    this.starCoins = starDefs.map((sc, i) => ({
+      x: sc.col * TILE_SIZE,
+      y: sc.row * TILE_SIZE,
+      w: 30,
+      h: 30,
+      collected: !!prevSaved[i],
+      index: i
     }));
 
     this.enemies = this.level.enemies.map(e => ({
@@ -1088,6 +1114,26 @@ class SuperAmbarGame {
         this.items.splice(i, 1);
       }
     }
+
+    // Giant Star Coins Collection
+    this.starCoins.forEach(sc => {
+      if (!sc.collected && this.rectsOverlap(p, sc)) {
+        sc.collected = true;
+        if (!this.savedStarCoins[this.currentLevelIdx]) {
+          this.savedStarCoins[this.currentLevelIdx] = [false, false, false];
+        }
+        this.savedStarCoins[this.currentLevelIdx][sc.index] = true;
+        this.addScore(1000, sc.x, sc.y);
+        const collectedCount = this.starCoins.filter(s => s.collected).length;
+        this.addFloatingText(sc.x, sc.y - 18, `¡MONEDA ESTRELLA ${collectedCount}/3! +1000`, '#fde047');
+        window.retroAudio.playSfx('oneup');
+        this.triggerScreenShake(0.12, 2.5);
+        this.triggerHitStop(0.04);
+        for (let k = 0; k < 16; k++) {
+          this.spawnSparkle(sc.x + 15, sc.y + 15);
+        }
+      }
+    });
   }
 
   updateProjectiles(dt) {
@@ -1629,9 +1675,15 @@ class SuperAmbarGame {
       }
     });
 
+    this.starCoins.forEach(sc => {
+      if (!sc.collected && sc.x + sc.w >= this.cameraX && sc.x <= this.cameraX + LOGICAL_WIDTH) {
+        window.spriteRenderer.drawStarCoin(ctx, sc, this.time);
+      }
+    });
+
     this.enemies.forEach(en => {
       if (!en.dead && en.x + en.w >= this.cameraX - 40 && en.x <= this.cameraX + LOGICAL_WIDTH + 40) {
-        window.spriteRenderer.drawEnemy(ctx, en, this.time);
+        window.spriteRenderer.drawEnemy(ctx, en, this.time, this.level ? this.level.theme : 1);
       }
     });
 
@@ -2329,6 +2381,19 @@ class SuperAmbarGame {
 
     ctx.fillStyle = '#cbd5e1';
     ctx.fillText('Salto + Salto Doble (Espacio)', 172, 47);
+
+    // Star Coins Tracker in HUD
+    ctx.textAlign = 'center';
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.fillStyle = '#fde047';
+    ctx.fillText('ESTRELLAS', LOGICAL_WIDTH - 280, 26);
+    const starCoins = this.starCoins || [];
+    for (let i = 0; i < 3; i++) {
+      const isCol = starCoins[i] && starCoins[i].collected;
+      ctx.fillStyle = isCol ? '#fde047' : '#475569';
+      ctx.font = '13px monospace';
+      ctx.fillText(isCol ? '★' : '☆', LOGICAL_WIDTH - 298 + i * 18, 47);
+    }
 
     ctx.textAlign = 'right';
     ctx.font = '11px "Press Start 2P", monospace';

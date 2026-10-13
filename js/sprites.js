@@ -877,10 +877,56 @@ class SpriteRenderer {
     ctx.restore();
   }
 
+  drawStarCoin(ctx, sc, time) {
+    const cx = Math.round(sc.x + sc.w / 2);
+    const cy = Math.round(sc.y + sc.h / 2 + Math.sin(time * 4 + sc.x * 0.05) * 3);
+    const rot = Math.cos(time * 3.5 + sc.x * 0.05);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Glowing Star Halo
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 10;
+
+    // Coin outer rim (spinning around Y)
+    ctx.scale(Math.abs(rot) < 0.1 ? 0.1 : rot, 1);
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#fde047';
+    ctx.beginPath();
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Embossed Star in center
+    ctx.fillStyle = '#f472b6';
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const aOuter = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+      const aInner = aOuter + Math.PI / 5;
+      const rOuter = 8.5;
+      const rInner = 4.0;
+      if (i === 0) ctx.moveTo(Math.cos(aOuter) * rOuter, Math.sin(aOuter) * rOuter);
+      else ctx.lineTo(Math.cos(aOuter) * rOuter, Math.sin(aOuter) * rOuter);
+      ctx.lineTo(Math.cos(aInner) * rInner, Math.sin(aInner) * rInner);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Specular shine highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillRect(-5, -8, 4, 3);
+
+    ctx.restore();
+  }
+
   // ==========================================================================
   // 16-BIT SNES ENEMIES & KOOPA SHELL (RENDERED FROM EXTRACTED 16-BIT SPRITES)
   // ==========================================================================
-  drawEnemy(ctx, enemy, time) {
+  drawEnemy(ctx, enemy, time, theme = 1) {
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     const x = Math.round(enemy.x);
@@ -902,6 +948,59 @@ class SpriteRenderer {
           const bob = Math.abs(Math.sin(time * 12)) * -2.5;
           ctx.rotate(waddle);
           ctx.drawImage(img, -25, -50 + bob, 50, 50);
+
+          // Thematic enemy accessories (16-bit retro detail!)
+          if (theme === 4) {
+            // Beach Mode: Cool Retro Sunglasses!
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-16, -35 + bob, 12, 8);
+            ctx.fillRect(4, -35 + bob, 12, 8);
+            ctx.fillRect(-4, -33 + bob, 8, 3);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(-14, -34 + bob, 3, 2);
+            ctx.fillRect(6, -34 + bob, 3, 2);
+          } else if (theme === 2) {
+            // Snow Mode: Cozy Winter Beanie with Pom-pom!
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(0, -48 + bob, 14, Math.PI, 0);
+            ctx.fill();
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillRect(-14, -48 + bob, 28, 4);
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, -62 + bob, 5, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (theme === 3) {
+            // Castle Mode: Spiked Iron Helmet / Horns!
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(-12, -50 + bob, 24, 4);
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.moveTo(-10, -50 + bob);
+            ctx.lineTo(-14, -58 + bob);
+            ctx.lineTo(-6, -50 + bob);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(10, -50 + bob);
+            ctx.lineTo(14, -58 + bob);
+            ctx.lineTo(6, -50 + bob);
+            ctx.fill();
+          } else if (theme === 6) {
+            // Sky Mode: Fluttering Angel Wings!
+            const wingFlap = Math.sin(time * 24) * 6;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(-24, -30 + bob + wingFlap * 0.3, 10, 5, -0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(24, -30 + bob - wingFlap * 0.3, 10, 5, 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
         }
       }
     } else if (enemy.type === 'koopa') {
