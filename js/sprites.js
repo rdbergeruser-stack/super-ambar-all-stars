@@ -139,7 +139,8 @@ class SpriteRenderer {
       const flyImg = this.images.fly[capeIdx] || this.images.fly[0];
 
       const hoverY = Math.sin(time * 7) * 2.5;
-      const pitch = Math.max(-0.26, Math.min(0.26, (player.vy || 0) * 0.04));
+      const divePitch = player.diveBombing ? 0.38 : 0;
+      const pitch = Math.max(-0.35, Math.min(0.72, (player.vy || 0) * 0.05 + divePitch));
 
       ctx.translate(0, -player.h / 2 + hoverY);
       ctx.rotate(pitch);
@@ -163,24 +164,25 @@ class SpriteRenderer {
     // BICYCLE MODE (MUNDO 1-4: CICLOVÍA TURBO EN BICICLETA)
     // ------------------------------------------------------------------------
     if (player.onBike && this.images.bike && this.images.bike.length > 0 && this.images.bike[0].complete) {
-      const speed = Math.abs(player.vx);
+      const speed = Math.abs(player.vx || 0);
       const pedalIndex = speed > 0.15
         ? Math.floor(time * (speed * 2.8 + 5)) % this.images.bike.length
         : 0;
       const bikeImg = this.images.bike[pedalIndex] || this.images.bike[0];
 
-      // Slight upward wheelie tilt when jumping or boosting!
-      if (!player.onGround) {
-        const tilt = Math.max(-0.22, Math.min(0.14, player.vy * 0.018));
-        ctx.rotate(tilt);
-      } else if (player.turboTimer > 0) {
-        ctx.rotate(-0.08);
-      }
+      const baseTilt = !player.onGround
+        ? Math.max(-0.22, Math.min(0.14, (player.vy || 0) * 0.018))
+        : (player.turboTimer > 0 ? -0.08 : 0);
+      const totalAngle = baseTilt + (player.bikeAngle || 0);
 
       const bobY = player.onGround && speed > 0.2 ? Math.sin(time * 22) * 1.2 : 0;
       const targetH = player.displayHeight || 86;
       const aspect = bikeImg.naturalWidth / Math.max(1, bikeImg.naturalHeight);
       const targetW = Math.round(targetH * aspect);
+
+      ctx.translate(0, -targetH * 0.44);
+      ctx.rotate(totalAngle);
+      ctx.translate(0, targetH * 0.44);
 
       ctx.drawImage(
         bikeImg,

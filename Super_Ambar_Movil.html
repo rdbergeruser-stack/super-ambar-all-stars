@@ -1038,7 +1038,8 @@ class SpriteRenderer {
       const flyImg = this.images.fly[capeIdx] || this.images.fly[0];
 
       const hoverY = Math.sin(time * 7) * 2.5;
-      const pitch = Math.max(-0.26, Math.min(0.26, (player.vy || 0) * 0.04));
+      const divePitch = player.diveBombing ? 0.38 : 0;
+      const pitch = Math.max(-0.35, Math.min(0.72, (player.vy || 0) * 0.05 + divePitch));
 
       ctx.translate(0, -player.h / 2 + hoverY);
       ctx.rotate(pitch);
@@ -1062,24 +1063,25 @@ class SpriteRenderer {
     // BICYCLE MODE (MUNDO 1-4: CICLOVÍA TURBO EN BICICLETA)
     // ------------------------------------------------------------------------
     if (player.onBike && this.images.bike && this.images.bike.length > 0 && this.images.bike[0].complete) {
-      const speed = Math.abs(player.vx);
+      const speed = Math.abs(player.vx || 0);
       const pedalIndex = speed > 0.15
         ? Math.floor(time * (speed * 2.8 + 5)) % this.images.bike.length
         : 0;
       const bikeImg = this.images.bike[pedalIndex] || this.images.bike[0];
 
-      // Slight upward wheelie tilt when jumping or boosting!
-      if (!player.onGround) {
-        const tilt = Math.max(-0.22, Math.min(0.14, player.vy * 0.018));
-        ctx.rotate(tilt);
-      } else if (player.turboTimer > 0) {
-        ctx.rotate(-0.08);
-      }
+      const baseTilt = !player.onGround
+        ? Math.max(-0.22, Math.min(0.14, (player.vy || 0) * 0.018))
+        : (player.turboTimer > 0 ? -0.08 : 0);
+      const totalAngle = baseTilt + (player.bikeAngle || 0);
 
       const bobY = player.onGround && speed > 0.2 ? Math.sin(time * 22) * 1.2 : 0;
       const targetH = player.displayHeight || 86;
       const aspect = bikeImg.naturalWidth / Math.max(1, bikeImg.naturalHeight);
       const targetW = Math.round(targetH * aspect);
+
+      ctx.translate(0, -targetH * 0.44);
+      ctx.rotate(totalAngle);
+      ctx.translate(0, targetH * 0.44);
 
       ctx.drawImage(
         bikeImg,
@@ -2865,6 +2867,8 @@ class SuperAmbarGame {
     this.screenShakeTimer = 0;
     this.screenShakeIntensity = 0;
     this.hitStopTimer = 0;
+    this.ghosts = [];
+    this.ghostTimer = 0;
 
     this.bindEvents();
     this.loadLevel(0, false);
@@ -2896,7 +2900,12 @@ class SuperAmbarGame {
       isJumping: false,
       onWall: 0,
       onBike: false,
+      bikeAngle: 0,
+      bikeSpinRot: 0,
+      bikeTricks: 0,
+      wheelieTimer: 0,
       isFlying: false,
+      diveBombing: false,
       turboTimer: 0,
       invulnerableTimer: 0,
       starTimer: 0,
@@ -3237,6 +3246,7 @@ class SuperAmbarGame {
     if (this.state === 'GAMEOVER') return;
 
     this.updatePlayer(dt);
+    this.updateGhosts(dt);
     this.updatePlatforms(dt);
     this.updateItems(dt);
     this.updateProjectiles(dt);
@@ -3328,10 +3338,28 @@ class SuperAmbarGame {
       // SUPERMAN FLIGHT CONTROLS:
       // Hold Up / W / Space (or ▲ SALTO on Mobile!) to fly up; Down / S to dive; release to hover/glide!
       if (this.keys.up || this.keys.jump) {
-        p.vy = Math.max(-5.0, p.vy - 0.58);
+        if (p.diveBombing && p.vy > 3.0) {
+          // Super Rocket Zoom Pull-up from a dive!
+          p.vy = -7.8;
+          p.vx = p.facing * 7.4;
+          this.triggerScreenShake(0.12, 2.8);
+          this.addFloatingText(p.x, p.y - 14, '¡ZOOM PICADA!', '#38bdf8');
+          window.retroAudio.playSfx('superJump');
+          for (let k = 0; k < 10; k++) this.spawnSparkle(p.x + p.w / 2, p.y + p.h / 2);
+          p.diveBombing = false;
+        } else {
+          p.vy = Math.max(-5.5, p.vy - 0.62);
+          p.diveBombing = false;
+        }
       } else if (this.keys.down) {
-        p.vy = Math.min(5.0, p.vy + 0.58);
+        // PICADA SUPERSÓNICA!
+        p.diveBombing = true;
+        p.vy = Math.min(10.8, p.vy + 0.88);
+        if (Math.random() < 0.45) {
+          this.spawnSparkle(p.x + p.w / 2, p.y + 6);
+        }
       } else {
+        p.diveBombing = false;
         p.vy = p.vy * 0.84 + 0.12;
       }
 
@@ -3432,6 +3460,56 @@ class SuperAmbarGame {
         this.spawnDust(p.x + (p.onWall === -1 ? 0 : p.w), p.y + p.h * 0.5, 5, -p.onWall * 1.5, -0.6);
         this.addFloatingText(p.x, p.y - 12, '¡WALL JUMP!', '#818cf8');
         p.onWall = 0;
+      }
+
+      // Bicycle Acrobacias / Flips in mid-air & Wheelie Combos!
+      if (p.onBike) {
+        if (!p.onGround) {
+          if (this.keys.up) {
+            p.bikeAngle -= 7.5 * dt;
+            p.bikeSpinRot += 7.5 * dt;
+            if (Math.random() < 0.35) this.spawnSparkle(p.x + p.w / 2, p.y + p.h / 2);
+          } else if (this.keys.down) {
+            p.bikeAngle += 7.5 * dt;
+            p.bikeSpinRot += 7.5 * dt;
+            if (Math.random() < 0.35) this.spawnSparkle(p.x + p.w / 2, p.y + p.h / 2);
+          }
+
+          if (p.bikeSpinRot >= Math.PI * 1.85) {
+            p.bikeTricks++;
+            p.bikeSpinRot -= Math.PI * 2;
+            this.addFloatingText(p.x, p.y - 16, p.bikeTricks > 1 ? '¡DOBLE FLIP!' : '¡360° FLIP!', '#f472b6');
+            window.retroAudio.playSfx('coin');
+            this.addScore(300, p.x, p.y);
+          }
+        } else {
+          // On Ground
+          if (p.bikeTricks > 0) {
+            p.turboTimer = Math.max(p.turboTimer, 1.3 * p.bikeTricks);
+            this.triggerScreenShake(0.12, 3.2);
+            this.addFloatingText(p.x, p.y - 20, '¡TRUCO PERFECTO! +TURBO', '#fde047');
+            window.retroAudio.playSfx('powerupAppear');
+            for (let k = 0; k < 12; k++) this.spawnSparkle(p.x + p.w / 2, p.y + p.h);
+            p.bikeTricks = 0;
+          }
+          p.bikeSpinRot = 0;
+
+          if (this.keys.up && Math.abs(p.vx) > 1.5) {
+            p.wheelieTimer += dt;
+            p.bikeAngle += (-0.36 - p.bikeAngle) * Math.min(1.0, dt * 12);
+            if (Math.random() < 0.35) {
+              this.spawnDust(p.x + (p.facing > 0 ? 0 : p.w), p.y + p.h, 1, -p.facing * 0.9, -0.3);
+            }
+            if (p.wheelieTimer >= 0.5) {
+              p.wheelieTimer = 0.1;
+              this.addScore(100, p.x, p.y - 12);
+              this.addFloatingText(p.x, p.y - 12, '¡WHEELIE! +100', '#38bdf8');
+            }
+          } else {
+            p.wheelieTimer = 0;
+            p.bikeAngle += (0 - p.bikeAngle) * Math.min(1.0, dt * 14);
+          }
+        }
       }
 
       if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
@@ -4009,14 +4087,17 @@ class SuperAmbarGame {
       }
 
       if (!p.dead && this.rectsOverlap(p, en)) {
-        if (p.starTimer > 0) {
+        if (p.starTimer > 0 || (p.isFlying && p.diveBombing && p.vy > 3.0)) {
           if (en.type === 'boss') {
             this.damageBoss(en);
           } else {
             en.squished = true;
             en.squishTimer = 0.25;
             window.retroAudio.playSfx('kick');
-            this.addScore(200, en.x, en.y);
+            this.triggerScreenShake(0.14, 3.5);
+            this.addScore(300, en.x, en.y);
+            this.addFloatingText(en.x, en.y - 12, '¡PICADA!', '#38bdf8');
+            for (let k = 0; k < 6; k++) this.spawnSparkle(en.x + en.w / 2, en.y + en.h / 2);
           }
           continue;
         }
@@ -4268,6 +4349,43 @@ class SuperAmbarGame {
     }
   }
 
+  updateGhosts(dt) {
+    const p = this.player;
+    const isHighSpeed = Math.abs(p.vx) > 6.0 || p.turboTimer > 0 || (p.isFlying && (p.diveBombing || Math.abs(p.vx) > 5.0));
+
+    if (isHighSpeed && !p.dead) {
+      this.ghostTimer = (this.ghostTimer || 0) - dt;
+      if (this.ghostTimer <= 0) {
+        this.ghostTimer = 0.042;
+        const color = p.isFlying ? '#38bdf8' : (p.onBike ? '#f472b6' : '#fde047');
+        this.ghosts.push({
+          x: p.x,
+          y: p.y,
+          w: p.w,
+          h: p.h,
+          facing: p.facing,
+          powerState: p.powerState,
+          onBike: p.onBike,
+          isFlying: p.isFlying,
+          bikeAngle: p.bikeAngle || 0,
+          color,
+          alpha: 0.45,
+          life: 0.18,
+          maxLife: 0.18
+        });
+      }
+    }
+
+    for (let i = this.ghosts.length - 1; i >= 0; i--) {
+      const g = this.ghosts[i];
+      g.life -= dt;
+      g.alpha = Math.max(0, (g.life / g.maxLife) * 0.45);
+      if (g.life <= 0) {
+        this.ghosts.splice(i, 1);
+      }
+    }
+  }
+
   // ==========================================================================
   // RENDERING
   // ==========================================================================
@@ -4351,6 +4469,16 @@ class SuperAmbarGame {
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#d50000';
       ctx.stroke();
+    });
+
+    // Draw Speed Trail Ghosts
+    this.ghosts.forEach(g => {
+      ctx.save();
+      ctx.globalAlpha = g.alpha;
+      ctx.shadowColor = g.color;
+      ctx.shadowBlur = 8;
+      window.spriteRenderer.drawAmbar(ctx, g, this.time);
+      ctx.restore();
     });
 
     // Draw High-Definition Ámbar!
