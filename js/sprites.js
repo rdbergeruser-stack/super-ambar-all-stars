@@ -114,9 +114,9 @@ class SpriteRenderer {
     }
 
     ctx.translate(cx, bottomY);
-    if (player.facing < 0) {
-      ctx.scale(-1, 1);
-    }
+    const sx = (player.squashX || 1.0) * (player.facing < 0 ? -1 : 1);
+    const sy = player.squashY || 1.0;
+    ctx.scale(sx, sy);
 
     const isSuper = player.powerState >= 1;
     const isMagic = player.powerState >= 2;

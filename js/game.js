@@ -46,6 +46,9 @@ class SuperAmbarGame {
     this.fireworks = [];
 
     this.cameraX = 0;
+    this.screenShakeTimer = 0;
+    this.screenShakeIntensity = 0;
+    this.hitStopTimer = 0;
 
     this.bindEvents();
     this.loadLevel(0, false);
@@ -64,6 +67,11 @@ class SuperAmbarGame {
       h: powerState >= 1 ? 54 : 36,
       vx: 0,
       vy: 0,
+      prevVy: 0,
+      squashX: 1.0,
+      squashY: 1.0,
+      isJumping: false,
+      onWall: 0,
       facing: 1,
       onGround: false,
       airJumpsLeft: 1, // Allows a second mid-air boost jump!
@@ -399,6 +407,15 @@ class SuperAmbarGame {
 
     if (this.state === 'GAMEOVER') return;
 
+    if (this.screenShakeTimer > 0) {
+      this.screenShakeTimer -= dt;
+    }
+
+    if (this.hitStopTimer > 0) {
+      this.hitStopTimer -= dt;
+      return; // Freeze action for micro-impact!
+    }
+
     this.updatePlayer(dt);
     this.updatePlatforms(dt);
     this.updateItems(dt);
@@ -415,6 +432,10 @@ class SuperAmbarGame {
 
   updatePlayer(dt) {
     const p = this.player;
+
+    // Smooth spring recovery of Squash & Stretch deformation
+    p.squashX += (1.0 - p.squashX) * Math.min(1.0, 18 * dt);
+    p.squashY += (1.0 - p.squashY) * Math.min(1.0, 18 * dt);
 
     if (p.dead) {
       p.vy += 22 * dt;
@@ -474,6 +495,15 @@ class SuperAmbarGame {
       if (Math.abs(p.vx) < 0.08) p.vx = 0;
     }
 
+    // Footstep / Skid dust particles when turning or speeding on the ground
+    if (p.onGround && Math.abs(p.vx) > 2.0) {
+      if ((this.keys.left && p.vx > 0.8) || (this.keys.right && p.vx < -0.8)) {
+        if (Math.random() < 0.55) {
+          this.spawnDust(p.x + p.w / 2, p.y + p.h, 1, -p.vx * 0.25, -0.4);
+        }
+      }
+    }
+
     if (p.isFlying) {
       // SUPERMAN FLIGHT CONTROLS:
       // Hold Up / W / Space (or ▲ SALTO on Mobile!) to fly up; Down / S to dive; release to hover/glide!
@@ -512,12 +542,19 @@ class SuperAmbarGame {
         const speedBonus = Math.abs(p.vx) * 0.22;
         p.vy = (p.onBike ? -13.2 : -12.8) - speedBonus;
         p.onGround = false;
+        p.isJumping = true;
+        p.squashX = 0.82;
+        p.squashY = 1.25;
         p.coyoteTimer = 0;
         p.jumpBufferTimer = 0;
+        this.spawnDust(p.x + p.w / 2, p.y + p.h, 3, 0, -0.4);
         window.retroAudio.playSfx(p.powerState >= 1 || p.onBike ? 'superJump' : 'jump');
       } else if (this.keys.jumpJustPressed && !p.onGround && p.airJumpsLeft > 0) {
         p.airJumpsLeft--;
         p.vy = -11.6;
+        p.isJumping = true;
+        p.squashX = 0.80;
+        p.squashY = 1.28;
         p.jumpBufferTimer = 0;
         window.retroAudio.playSfx('superJump');
         if (p.onBike) {
@@ -528,8 +565,53 @@ class SuperAmbarGame {
         }
       }
 
-      if (!this.keys.jump && p.vy < -7.5) {
-        p.vy *= 0.82;
+      // Variable Jump Height: releasing jump button early cuts upward momentum cleanly!
+      if (!this.keys.jump && p.vy < -3.5 && p.isJumping) {
+        p.vy *= 0.58;
+        p.isJumping = false;
+      }
+
+      // Wall Slide & Wall Jump detection
+      p.onWall = 0;
+      if (!p.onGround && !p.isFlying && !p.onBike && p.vy > 0.5) {
+        const checkR1 = Math.floor((p.y + 10) / TILE_SIZE);
+        const checkR2 = Math.floor((p.y + p.h - 10) / TILE_SIZE);
+        const checkLeftC = Math.floor((p.x - 4) / TILE_SIZE);
+        const checkRightC = Math.floor((p.x + p.w + 4) / TILE_SIZE);
+
+        const isWallLeft = this.isSolidTile(this.getTile(checkR1, checkLeftC)) || this.isSolidTile(this.getTile(checkR2, checkLeftC));
+        const isWallRight = this.isSolidTile(this.getTile(checkR1, checkRightC)) || this.isSolidTile(this.getTile(checkR2, checkRightC));
+
+        if (this.keys.left && isWallLeft) {
+          p.onWall = -1;
+          p.vy = Math.min(2.4, p.vy); // Wall friction slide!
+          if (Math.random() < 0.35) {
+            this.spawnDust(p.x, p.y + p.h * 0.7, 1, 0.4, -0.2);
+          }
+        } else if (this.keys.right && isWallRight) {
+          p.onWall = 1;
+          p.vy = Math.min(2.4, p.vy); // Wall friction slide!
+          if (Math.random() < 0.35) {
+            this.spawnDust(p.x + p.w, p.y + p.h * 0.7, 1, -0.4, -0.2);
+          }
+        }
+      }
+
+      // Execute Wall Jump
+      if (p.onWall !== 0 && this.keys.jumpJustPressed) {
+        p.vy = -12.4;
+        p.vx = -p.onWall * 6.4; // Push off strongly away from the wall
+        p.facing = -p.onWall;
+        p.isJumping = true;
+        p.squashX = 0.82;
+        p.squashY = 1.25;
+        p.airJumpsLeft = 1;
+        p.coyoteTimer = 0;
+        p.jumpBufferTimer = 0;
+        window.retroAudio.playSfx(p.powerState >= 1 ? 'superJump' : 'jump');
+        this.spawnDust(p.x + (p.onWall === -1 ? 0 : p.w), p.y + p.h * 0.5, 5, -p.onWall * 1.5, -0.6);
+        this.addFloatingText(p.x, p.y - 12, '¡WALL JUMP!', '#818cf8');
+        p.onWall = 0;
       }
 
       if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
@@ -550,6 +632,7 @@ class SuperAmbarGame {
 
     // Move & Collide Y
     const prevBottom = p.y + p.h - p.vy;
+    p.prevVy = p.vy;
     p.y += p.vy;
     if (p.isFlying) {
       if (p.y < 14) {
@@ -574,10 +657,17 @@ class SuperAmbarGame {
         p.y + p.h >= plat.y &&
         p.y + p.h <= plat.y + plat.h + 12
       ) {
+        if (!p.onGround && p.prevVy > 2.5) {
+          const impact = Math.min(1.0, p.prevVy / 12.0);
+          p.squashX = 1.0 + impact * 0.32;
+          p.squashY = 1.0 - impact * 0.28;
+          this.spawnDust(p.x + p.w / 2, plat.y, Math.floor(impact * 4) + 2, 0, -0.4);
+        }
         p.y = plat.y - p.h;
         p.vy = 0;
         p.onGround = true;
         p.airJumpsLeft = 1;
+        p.isJumping = false;
         p.x += plat.vx;
       }
     });
@@ -678,14 +768,27 @@ class SuperAmbarGame {
               p.vy = -15.8;
               p.onGround = false;
               p.airJumpsLeft = 1;
+              p.isJumping = true;
+              p.squashX = 0.78;
+              p.squashY = 1.30;
               window.retroAudio.playSfx('spring');
               for (let i = 0; i < 8; i++) {
                 this.spawnSparkle(c * TILE_SIZE + 16, r * TILE_SIZE);
               }
             } else {
+              if (p.prevVy > 2.5) {
+                const impact = Math.min(1.0, p.prevVy / 12.0);
+                p.squashX = 1.0 + impact * 0.32;
+                p.squashY = 1.0 - impact * 0.28;
+                this.spawnDust(p.x + p.w / 2, p.y + p.h, Math.floor(impact * 5) + 2, 0, -0.4);
+                if (p.prevVy > 8.0) {
+                  this.triggerScreenShake(0.08, 2.0);
+                }
+              }
               p.vy = 0;
               p.onGround = true;
               p.airJumpsLeft = 1;
+              p.isJumping = false;
               if (ch === 'T') {
                 // TURBO BOOST PAD ON THE BICYCLE TRACK!
                 if (p.turboTimer <= 0.2) {
@@ -716,6 +819,8 @@ class SuperAmbarGame {
 
             p.y = (r + 1) * TILE_SIZE;
             p.vy = 1.0;
+            p.squashX = 1.25;
+            p.squashY = 0.82;
             this.hitBlockFromBelow(r, c, ch);
             return;
           }
@@ -727,6 +832,7 @@ class SuperAmbarGame {
   hitBlockFromBelow(r, c, ch) {
     const bx = c * TILE_SIZE;
     const by = r * TILE_SIZE;
+    this.triggerScreenShake(0.10, 2.2);
 
     this.enemies.forEach(en => {
       if (!en.dead && en.x + en.w > bx && en.x < bx + TILE_SIZE && Math.abs((en.y + en.h) - by) < 10) {
@@ -792,6 +898,8 @@ class SuperAmbarGame {
       if (this.player.powerState >= 1) {
         this.level.grid[r][c] = '.';
         window.retroAudio.playSfx('break');
+        this.triggerHitStop(0.04);
+        this.triggerScreenShake(0.18, 3.8);
         this.addScore(50, bx, by);
         const dirs = [[-2.5, -6], [2.5, -6], [-2, -3.5], [2, -3.5]];
         dirs.forEach(([vx, vy]) => {
@@ -1098,6 +1206,12 @@ class SuperAmbarGame {
         if (stompFromAbove) {
           p.vy = -10.5;
           p.airJumpsLeft = 1;
+          p.isJumping = true;
+          p.squashX = 1.25;
+          p.squashY = 0.78;
+          this.triggerHitStop(0.04);
+          this.triggerScreenShake(0.12, 3.2);
+          this.spawnDust(p.x + p.w / 2, p.y + p.h, 4, 0, -0.6);
           if (en.type === 'boss') {
             this.damageBoss(en);
           } else if (en.type === 'koopa') {
@@ -1122,6 +1236,8 @@ class SuperAmbarGame {
           }
         } else if (en.type === 'koopa' && en.inShell && en.vx === 0) {
           en.vx = (p.x < en.x ? 1 : -1) * 7.2;
+          this.triggerHitStop(0.03);
+          this.triggerScreenShake(0.08, 2.0);
           window.retroAudio.playSfx('kick');
           this.addScore(200, en.x, en.y);
         } else {
@@ -1135,12 +1251,15 @@ class SuperAmbarGame {
     if (boss.hurtTimer > 0) return;
     boss.hp--;
     boss.hurtTimer = 0.6;
+    this.triggerHitStop(0.08);
+    this.triggerScreenShake(0.28, 6.5);
     window.retroAudio.playSfx('bossHit');
     this.addScore(500, boss.x, boss.y);
 
     if (boss.hp <= 0) {
       boss.dead = true;
       window.retroAudio.playSfx('bossDefeat');
+      this.triggerScreenShake(0.6, 9.0);
       this.addScore(5000, boss.x, boss.y);
       this.addFloatingText(boss.x, boss.y - 20, '¡REY NUBARRÓN DERROTADO!', '#ffe58f');
       for (let i = 0; i < 25; i++) {
@@ -1167,6 +1286,9 @@ class SuperAmbarGame {
   damagePlayer() {
     const p = this.player;
     if (p.invulnerableTimer > 0 || p.starTimer > 0 || p.dead) return;
+
+    this.triggerHitStop(0.06);
+    this.triggerScreenShake(0.24, 6.0);
 
     if (p.powerState >= 1) {
       window.retroAudio.playSfx('hurt');
@@ -1240,6 +1362,36 @@ class SuperAmbarGame {
     }
   }
 
+  triggerScreenShake(duration = 0.16, intensity = 3.5) {
+    this.screenShakeTimer = Math.max(this.screenShakeTimer, duration);
+    this.screenShakeIntensity = Math.max(this.screenShakeIntensity, intensity);
+  }
+
+  triggerHitStop(duration = 0.04) {
+    this.hitStopTimer = Math.max(this.hitStopTimer, duration);
+  }
+
+  spawnDust(x, y, count = 3, vx = 0, vy = -0.5, color = null) {
+    const isBeach = this.level && this.level.theme === 4;
+    const defaultColor = isBeach ? '#fde047' : '#cbd5e1';
+    const c = color || defaultColor;
+
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        type: 'dust',
+        x: x + (Math.random() - 0.5) * 8,
+        y: y + (Math.random() - 0.5) * 4,
+        vx: vx + (Math.random() - 0.5) * 1.8,
+        vy: vy - Math.random() * 1.2,
+        size: 3 + Math.random() * 3,
+        maxSize: 6 + Math.random() * 4,
+        color: c,
+        life: 0.28 + Math.random() * 0.16,
+        maxLife: 0.35
+      });
+    }
+  }
+
   spawnSparkle(x, y) {
     const colors = ['#ff85c0', '#ffe58f', '#5cdbd3', '#b37feb', '#95de64', '#ffffff'];
     this.particles.push({
@@ -1258,7 +1410,13 @@ class SuperAmbarGame {
       const pt = this.particles[i];
       pt.x += pt.vx;
       pt.y += pt.vy;
-      pt.vy += 0.15;
+      if (pt.type === 'dust') {
+        pt.vx *= 0.92;
+        pt.vy *= 0.90;
+        pt.size = Math.min(pt.maxSize, pt.size + dt * 9);
+      } else {
+        pt.vy += 0.15;
+      }
       pt.life -= dt;
       if (pt.life <= 0) this.particles.splice(i, 1);
     }
@@ -1309,8 +1467,15 @@ class SuperAmbarGame {
 
     this.renderBackground(ctx);
 
+    let shakeX = 0;
+    let shakeY = 0;
+    if (this.screenShakeTimer > 0) {
+      shakeX = (Math.random() - 0.5) * this.screenShakeIntensity * 2;
+      shakeY = (Math.random() - 0.5) * this.screenShakeIntensity * 2;
+    }
+
     ctx.save();
-    ctx.translate(-Math.round(this.cameraX), 0);
+    ctx.translate(-Math.round(this.cameraX) + shakeX, shakeY);
 
     if (this.level.checkpointX) {
       this.renderCheckpointFlag(ctx, this.level.checkpointX, 13 * TILE_SIZE);
@@ -1372,8 +1537,19 @@ class SuperAmbarGame {
     window.spriteRenderer.drawAmbar(ctx, this.player, this.time);
 
     this.particles.forEach(pt => {
-      ctx.fillStyle = pt.color;
-      ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+      if (pt.type === 'dust') {
+        ctx.save();
+        const alpha = Math.max(0, Math.min(1, pt.life / (pt.maxLife || 0.35)));
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, Math.max(1, pt.size / 2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = pt.color;
+        ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+      }
     });
 
     this.fireworks.forEach(fw => {
