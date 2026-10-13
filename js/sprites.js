@@ -11,6 +11,8 @@ class SpriteRenderer {
       hoodie: [],
       bike: [],
       fly: [],
+      skate: [],
+      mermaid: [],
       cloud: [],
       goomba: null,
       koopa: null,
@@ -28,7 +30,7 @@ class SpriteRenderer {
   loadSpriteAssets() {
     if (!window.SPRITE_ASSETS) return;
 
-    ['jeans', 'hoodie', 'bike', 'fly', 'cloud'].forEach(group => {
+    ['jeans', 'hoodie', 'bike', 'fly', 'skate', 'mermaid', 'cloud'].forEach(group => {
       if (Array.isArray(window.SPRITE_ASSETS[group])) {
         this.images[group] = window.SPRITE_ASSETS[group].map(src => {
           const img = new Image();
@@ -197,347 +199,140 @@ class SpriteRenderer {
 
     // ------------------------------------------------------------------------
     // MERMAID MODE (MUNDO 2-2: ÁMBAR SIRENA EN EL ARRECIFE DE CORAL)
+    // Studio-grade 16-bit dedicated mermaid sprite (assets/ambar_mermaid_0/1.png)
     // ------------------------------------------------------------------------
     if (player.isMermaid) {
-      const vy = player.vy || 0;
-      const vx = player.vx || 0;
-      const speed = Math.hypot(vx, vy);
-      const isStroking = player.swimStrokeTimer > 0;
-      const swimPitch = Math.max(-0.45, Math.min(0.45, vy * 0.08 + (speed > 1 ? 0.06 : 0)));
+      const frames = (this.images.mermaid && this.images.mermaid.length > 0 && this.images.mermaid[0].complete)
+        ? this.images.mermaid
+        : (this.images.hoodie || this.images.jeans);
 
-      const frames = (this.images.hoodie && this.images.hoodie[0]) ? this.images.hoodie : this.images.jeans;
-      const img = (frames && frames[0] && frames[0].complete && frames[0].naturalWidth > 0) ? frames[0] : null;
+      if (frames && frames.length > 0 && frames[0].complete && frames[0].naturalWidth > 0) {
+        const vy = player.vy || 0;
+        const vx = player.vx || 0;
+        const speed = Math.hypot(vx, vy);
+        const isStroking = player.swimStrokeTimer > 0;
+        const swimPitch = Math.max(-0.45, Math.min(0.45, vy * 0.08 + (speed > 1 ? 0.06 : 0)));
 
-      // Natural vertical centering of swimmer
-      const totalH = player.displayHeight || 64;
-      ctx.translate(0, -totalH * 0.38);
-      ctx.rotate(swimPitch);
+        // Frame 0: Swimming kick power stroke. Frame 1: Undulating recovery glide.
+        const frameIdx = (isStroking || speed > 1.2)
+          ? (Math.floor(time * 8) % frames.length)
+          : (Math.floor(time * 3) % frames.length);
 
-      // 1. ÁMBAR COMPLETE UPPER BODY (Head, Hair, Glasses, Smile, Neck, Torso & Arms)
-      // Crop exactly at the waist seam (row 95 of 152 in sprite = 0.625)
-      let upperH = Math.round(totalH * 0.52);
-      let upperW = Math.round(upperH * (62 / 95));
-      if (img) {
-        const cropH = Math.floor(img.naturalHeight * 0.625);
-        ctx.drawImage(img, 0, 0, img.naturalWidth, cropH, Math.round(-upperW / 2), -upperH, upperW, upperH);
-      }
+        const img = frames[frameIdx] || frames[0];
+        const targetH = player.displayHeight || 68;
+        const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
+        const targetW = Math.round(targetH * aspect);
 
-      // Flowing underwater ponytail hair waving in current behind head
-      const hairWave = Math.sin(time * 9) * 4;
-      ctx.fillStyle = '#451a03';
-      ctx.beginPath();
-      ctx.ellipse(-14, -upperH * 0.78 + hairWave * 0.5, 9, 5, -0.35, 0, Math.PI * 2);
-      ctx.ellipse(-22, -upperH * 0.72 + hairWave, 8, 4, -0.25, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#f43f5e';
-      ctx.beginPath();
-      ctx.arc(-8, -upperH * 0.82, 3.5, 0, Math.PI * 2);
-      ctx.fill();
+        // Center vertically so swimming rotation is centered on Ámbar's body
+        ctx.translate(0, -targetH * 0.42);
+        ctx.rotate(swimPitch);
 
-      // 2. GOLDEN WAIST SCALE GIRDLE (Seamless transition at y: 0)
-      const waistY = 0;
-      const waistW = Math.round(upperW * 0.76);
-      ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.ellipse(0, waistY, waistW / 2 + 2, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fef08a';
-      ctx.beginPath();
-      ctx.ellipse(0, waistY - 1, waistW / 2, 2.5, 0, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.drawImage(
+          img,
+          Math.round(-targetW / 2),
+          Math.round(-targetH * 0.58),
+          targetW,
+          targetH
+        );
 
-      // Delicate pearl dots along waist seam
-      ctx.fillStyle = '#ffffff';
-      for (let p = -3; p <= 3; p++) {
-        ctx.beginPath();
-        ctx.arc(p * (waistW / 7), waistY, 1.3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Iridescent Side Hip Fins (curving sea fans)
-      ctx.fillStyle = 'rgba(45, 212, 191, 0.85)';
-      ctx.beginPath();
-      ctx.moveTo(-waistW / 2, waistY - 1);
-      ctx.quadraticCurveTo(-waistW / 2 - 8, waistY - 4, -waistW / 2 - 9, waistY + 7);
-      ctx.lineTo(-waistW / 2 + 1, waistY + 4);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(waistW / 2, waistY - 1);
-      ctx.quadraticCurveTo(waistW / 2 + 8, waistY - 4, waistW / 2 + 9, waistY + 7);
-      ctx.lineTo(waistW / 2 - 1, waistY + 4);
-      ctx.fill();
-
-      // Organic Curving Serpentine Mermaid Tail
-      // Computed via multi-joint spine with dynamic dolphin kick flex!
-      ctx.save();
-      const spine = [];
-      const numJoints = 6;
-      let currX = 0;
-      let currY = waistY + 2;
-
-      for (let j = 0; j < numJoints; j++) {
-        const jPhase = time * 8 + j * 0.75;
-        const jFlex = (j / numJoints);
-        const jWave = isStroking ? Math.sin(jPhase * 1.5) * (jFlex * 7.5) : Math.sin(jPhase) * (jFlex * 4.5);
-        currX += jWave;
-        currY += 6.5;
-        const segW = Math.max(5, 22 * (1 - (j / numJoints) * 0.72));
-        spine.push({ x: currX, y: currY, w: segW });
-      }
-
-      // Draw continuous mermaid tail body with layered 16-bit scales
-      for (let s = 0; s < spine.length - 1; s++) {
-        const p1 = spine[s];
-        const p2 = spine[s + 1];
-
-        // Tail gradient segment
-        const tGrad = ctx.createLinearGradient(p1.x - p1.w / 2, p1.y, p1.x + p1.w / 2, p1.y);
-        tGrad.addColorStop(0, '#042f2e');
-        tGrad.addColorStop(0.3, '#0d9488');
-        tGrad.addColorStop(0.7, '#14b8a6');
-        tGrad.addColorStop(1, '#065f46');
-        ctx.fillStyle = tGrad;
-
-        ctx.beginPath();
-        ctx.moveTo(p1.x - p1.w / 2, p1.y);
-        ctx.lineTo(p2.x - p2.w / 2, p2.y);
-        ctx.lineTo(p2.x + p2.w / 2, p2.y);
-        ctx.lineTo(p1.x + p1.w / 2, p1.y);
-        ctx.closePath();
-        ctx.fill();
-
-        // 16-Bit Shimmering Fish Scales
-        const scaleCols = ['#2dd4bf', '#5eead4', '#f472b6', '#fde047'];
-        const numScales = Math.max(2, Math.floor(p1.w / 5));
-        for (let sc = 0; sc < numScales; sc++) {
-          const scX = p1.x - p1.w / 2 + 2 + sc * (p1.w / numScales);
-          const scY = p1.y + 1;
-          ctx.fillStyle = scaleCols[(s + sc) % scaleCols.length];
+        // Subtle underwater bubble trail from her swimming tail
+        if (speed > 0.4 && Math.random() < 0.4) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
           ctx.beginPath();
-          ctx.arc(scX, scY, 1.8, 0, Math.PI);
+          ctx.arc(
+            -targetW * 0.28 + (Math.random() - 0.5) * 8,
+            targetH * 0.35 + Math.random() * 6,
+            1.5 + Math.random() * 1.5,
+            0,
+            Math.PI * 2
+          );
           ctx.fill();
         }
+
+        ctx.restore();
+        return;
       }
-
-      // Majestic Dual-Lobe Caudal Tail Fin (Aleta Caudal Real)
-      const tip = spine[spine.length - 1];
-      const prev = spine[spine.length - 2];
-      const finAngle = Math.atan2(tip.y - prev.y, tip.x - prev.x) - Math.PI / 2;
-      const flapWave = Math.sin(time * 12) * 0.25;
-
-      ctx.save();
-      ctx.translate(tip.x, tip.y);
-      ctx.rotate(finAngle + flapWave);
-
-      // Iridescent Tail Fluke Membrane (Dual Lobes)
-      const finGrad = ctx.createLinearGradient(0, 0, 0, 26);
-      finGrad.addColorStop(0, '#0d9488');
-      finGrad.addColorStop(0.4, '#2dd4bf');
-      finGrad.addColorStop(0.7, '#ec4899');
-      finGrad.addColorStop(1, '#fde047');
-      ctx.fillStyle = finGrad;
-
-      // Left lobe
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(-14, 2, -26, 12, -28, 26);
-      ctx.bezierCurveTo(-20, 28, -8, 20, 0, 10);
-      ctx.closePath();
-      ctx.fill();
-
-      // Right lobe
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(14, 2, 26, 12, 28, 26);
-      ctx.bezierCurveTo(20, 28, 8, 20, 0, 10);
-      ctx.closePath();
-      ctx.fill();
-
-      // Fin spine rays in pure white
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.2;
-      for (let r = 1; r <= 3; r++) {
-        ctx.beginPath();
-        ctx.moveTo(0, 2);
-        ctx.quadraticCurveTo(-r * 8, 12, -r * 9, 24);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, 2);
-        ctx.quadraticCurveTo(r * 8, 12, r * 9, 24);
-        ctx.stroke();
-      }
-
-      // Trailing fin ribbons / delicate streamers
-      ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(-28, 26);
-      ctx.quadraticCurveTo(-34, 32 + Math.sin(time * 14) * 3, -30, 40);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(28, 26);
-      ctx.quadraticCurveTo(34, 32 + Math.sin(time * 14) * 3, 30, 40);
-      ctx.stroke();
-
-      ctx.restore();
-      ctx.restore();
-
-      // Trailing ocean bubbles and aquatic sparkles
-      ctx.save();
-      for (let b = 0; b < 4; b++) {
-        const bPhase = (time * 14 + b * 1.5) % 1.0;
-        const bx = tip.x - 8 + (b % 2) * 16 + Math.sin(bPhase * 6) * 4;
-        const by = tip.y + bPhase * 28;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-        ctx.beginPath();
-        ctx.arc(bx, by, 1.5 + (b % 2), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      ctx.restore();
-      return;
     }
 
     // ------------------------------------------------------------------------
     // ROLLER SKATE MODE (MUNDO 2-1: PARQUE COSTERO EN PATINES)
+    // Studio-grade 16-bit dedicated quad roller skate sprites (assets/ambar_skate_0..3.png)
     // ------------------------------------------------------------------------
     if (player.onSkates) {
-      let useSuperSprite = isSuper;
-      if (player.growAnimTimer > 0) {
-        useSuperSprite = Math.floor(time * 18) % 2 === 0;
-      }
-      const frames = useSuperSprite ? this.images.hoodie : this.images.jeans;
+      const frames = (this.images.skate && this.images.skate.length > 0 && this.images.skate[0].complete)
+        ? this.images.skate
+        : (isSuper ? this.images.hoodie : this.images.jeans);
+
       if (frames && frames.length > 0 && frames[0].complete && frames[0].naturalWidth > 0) {
         const vx = player.vx || 0;
         const speed = Math.abs(vx);
         const onGround = player.onGround;
         const isGrinding = player.isGrinding;
 
-        // Dynamic roller skate stride cycle
-        const skateCycle = onGround && speed > 0.2 ? Math.floor(time * (speed * 3.5 + 6)) % frames.length : 0;
+        // Dynamic 4-frame roller skating stride cycle
+        let skateCycle = 0;
+        let bobY = 0;
+        if (!onGround) {
+          skateCycle = Math.min(3, frames.length - 1);
+        } else if (speed > 0.2) {
+          const stepRate = speed * 2.8 + 6;
+          const cycle = Math.floor(time * stepRate) % 4;
+          if (cycle === 0) {
+            skateCycle = 1; // Right stride push
+            bobY = -1.5;
+          } else if (cycle === 1) {
+            skateCycle = 0; // Glide
+            bobY = 0;
+          } else if (cycle === 2) {
+            skateCycle = Math.min(2, frames.length - 1); // Mid-stride
+            bobY = -1.5;
+          } else {
+            skateCycle = Math.min(3, frames.length - 1); // Left stride push
+            bobY = 0;
+          }
+        }
+
         const img = frames[skateCycle] || frames[0];
-        const targetH = player.displayHeight || (useSuperSprite ? 86 : 56);
+        const targetH = player.displayHeight || (isSuper ? 86 : 56);
         const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
         const targetW = Math.round(targetH * aspect);
 
         // Aerodynamic skating lean
-        const skateTilt = isGrinding ? Math.sin(time * 18) * 0.05 : (onGround && speed > 0.5 ? 0.09 : 0);
+        const skateTilt = isGrinding
+          ? Math.sin(time * 18) * 0.05
+          : (onGround && speed > 0.8 ? 0.08 : 0);
         ctx.rotate(skateTilt);
 
-        // Elevate Ámbar by 4px so the roller skate wheels underneath her soles rest flush at y: 0
-        const wheelY = 0;
-        const soleY = -4;
-
+        // Draw complete sprite flush with ground at y: 0
         ctx.drawImage(
           img,
           Math.round(-targetW / 2),
-          Math.round(-targetH + soleY),
+          Math.round(-targetH + bobY),
           targetW,
           targetH
         );
 
-        // ----------------------------------------------------------------------
-        // AUTHENTIC QUAD ROLLER SKATES ATTACHED TO ÁMBAR'S FEET
-        // ----------------------------------------------------------------------
-        const strideAngle = onGround && speed > 0.2 ? (time * (speed * 4.5 + 8)) : 0;
-        const strideOffset = onGround && speed > 0.2 ? Math.sin(strideAngle) * 5 : 0;
-
-        // Left and right foot skate positions directly aligned with her sneakers
-        const skates = isGrinding
-          ? [
-              { x: -8, y: soleY, lead: false },
-              { x: 7, y: soleY, lead: true }
-            ]
-          : [
-              { x: -7 - strideOffset, y: soleY + Math.max(0, -Math.sin(strideAngle) * 2), lead: false },
-              { x: 7 + strideOffset, y: soleY + Math.max(0, Math.sin(strideAngle) * 2), lead: true }
-            ];
-
-        const wheelTurn = time * (speed * 20 + 12);
-
-        skates.forEach((sk) => {
-          ctx.save();
-          ctx.translate(sk.x, sk.y);
-
-          // 1. Hot Pink Roller Skate Ankle Strap & Counter (wraps around her sneaker)
-          ctx.fillStyle = '#f43f5e';
-          ctx.fillRect(-6, -3, 12, 2.5);
-          ctx.fillStyle = '#fde047';
-          ctx.fillRect(-1, -3, 2, 2.5); // Gold buckle
-
-          // 2. Heavy-Duty Aluminum Chassis (Truck Plate directly under sole)
-          ctx.fillStyle = '#64748b';
-          ctx.fillRect(-7, 0, 14, 2);
-          ctx.fillStyle = '#cbd5e1';
-          ctx.fillRect(-6, 0, 12, 1);
-
-          // Front Rubber Toe-Stop Brake Plug
-          ctx.fillStyle = '#ec4899';
-          ctx.beginPath();
-          ctx.arc(7.5, 0.5, 2, 0, Math.PI * 2);
-          ctx.fill();
-
-          // 3. Quad Urethane Wheels (Front wheel & Rear wheel touching the ground at wheelY)
-          const drawWheel = (wx) => {
-            const wy = 2; // Centers wheel so bottom reaches y: 4 relative to soleY (-4), touching y: 0!
-            // Cyan Urethane Tire
-            ctx.fillStyle = '#083344';
-            ctx.beginPath();
-            ctx.arc(wx, wy, 2.8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#06b6d4';
-            ctx.beginPath();
-            ctx.arc(wx, wy, 2.2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Spinning Star Axle Hub
-            ctx.save();
-            ctx.translate(wx, wy);
-            ctx.rotate(wheelTurn);
-            ctx.fillStyle = '#fde047';
-            ctx.fillRect(-0.7, -1.8, 1.4, 3.6);
-            ctx.fillRect(-1.8, -0.7, 3.6, 1.4);
-            ctx.fillStyle = '#e11d48';
-            ctx.beginPath();
-            ctx.arc(0, 0, 0.9, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          };
-
-          drawWheel(-4.5); // Rear quad wheel
-          drawWheel(4.5);  // Front quad wheel
-
-          ctx.restore();
-        });
-
-        // ----------------------------------------------------------------------
-        // SPECTACULAR METAL RAIL GRIND SPARKS
-        // ----------------------------------------------------------------------
+        // Rail grind friction sparks
         if (isGrinding) {
           ctx.save();
-          // Grind friction sparks shooting backwards from the trucks
-          for (let s = 0; s < 8; s++) {
-            const spX = -12 - Math.random() * 24;
-            const spY = 2 + (Math.random() - 0.5) * 7;
+          for (let s = 0; s < 7; s++) {
+            const spX = -10 - Math.random() * 22;
+            const spY = 1 + (Math.random() - 0.5) * 6;
             const spCol = ['#fde047', '#f59e0b', '#38bdf8', '#ffffff'][Math.floor(Math.random() * 4)];
             ctx.fillStyle = spCol;
             ctx.fillRect(spX, spY, 2.5, 2.5);
           }
-          // Glowing contact hot-spot
           ctx.fillStyle = 'rgba(253, 224, 71, 0.7)';
           ctx.beginPath();
-          ctx.ellipse(0, 4, 14, 2.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 3, 14, 2.5, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
-        } else if (onGround && speed > 1.2) {
-          // Subtle rolling wind puff behind wheels
-          if (Math.random() < 0.35) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-            ctx.beginPath();
-            ctx.arc(-16 - Math.random() * 6, 2, 2 + Math.random() * 2, 0, Math.PI * 2);
-            ctx.fill();
-          }
+        } else if (onGround && speed > 1.4 && Math.random() < 0.35) {
+          // Rolling wind puff behind wheels
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.beginPath();
+          ctx.arc(-14 - Math.random() * 6, -2, 2 + Math.random() * 2, 0, Math.PI * 2);
+          ctx.fill();
         }
 
         ctx.restore();
