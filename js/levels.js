@@ -705,9 +705,115 @@ function buildLevel6Sky() {
 }
 
 // ============================================================================
-// NIVEL 1-7: GRAN FORTALEZA FINAL DEL REY TORMENTA
+// NIVEL 1-7: VUELO SUPERSÓNICO DE SUPER ÁMBAR (¡VUELA COMO SUPERMAN!)
 // ============================================================================
-function buildLevel7FinalCastle() {
+function buildLevel7Flying() {
+  const cols = 185;
+  const grid = createEmptyGrid(cols, 15);
+  const coins = [];
+  const enemies = [];
+  const platforms = [];
+
+  // Soft cloud safety floor at the bottom so Ámbar never falls into a pit while flying!
+  fillRect(grid, 0, 14, cols, 1, '#');
+  // Starting launch pad & ending landing sanctuary
+  fillRect(grid, 0, 13, 18, 1, '#');
+  fillRect(grid, 160, 13, 25, 1, '#');
+
+  // Opening Rainbow Power-Up & Star
+  grid[8][8] = 'M';
+  grid[8][10] = '?';
+
+  // Helper to create aerial rings of coins to fly through!
+  const addCoinRing = (centerCol, centerRow) => {
+    const offsets = [
+      [-1, -1], [0, -2], [1, -1],
+      [-2, 0],           [2, 0],
+      [-1, 1],  [0, 2],  [1, 1]
+    ];
+    offsets.forEach(([dc, dr]) => {
+      coins.push({ x: (centerCol + dc) * 32 + 4, y: (centerRow + dr) * 32 + 4 });
+    });
+  };
+
+  addCoinRing(22, 6);
+  addCoinRing(32, 4);
+  addCoinRing(42, 8);
+
+  // Aerial Turbo Boost Gates ('T') suspended in the sky!
+  grid[6][27] = 'T';
+  grid[4][37] = 'T';
+  grid[8][47] = 'T';
+
+  // Sky squadron of flying clouds
+  enemies.push({ type: 'cloud', x: 29 * 32, y: 5 * 32, baseY: 5 * 32 });
+  enemies.push({ type: 'cloud', x: 39 * 32, y: 7 * 32, baseY: 7 * 32 });
+  enemies.push({ type: 'cloud', x: 48 * 32, y: 4 * 32, baseY: 4 * 32 });
+
+  // Floating Sky Pillars / Gates to slalom through in flight (cols 54..76)
+  fillRect(grid, 55, 0, 2, 5, 'H');
+  fillRect(grid, 55, 10, 2, 4, 'H');
+  addCoinRing(56, 7);
+
+  fillRect(grid, 66, 0, 2, 3, 'H');
+  fillRect(grid, 66, 8, 2, 6, 'H');
+  addCoinRing(67, 5);
+
+  fillRect(grid, 77, 0, 2, 6, 'H');
+  fillRect(grid, 77, 11, 2, 3, 'H');
+  addCoinRing(78, 8);
+
+  // Checkpoint island in mid-air at col 86!
+  fillRect(grid, 84, 13, 8, 1, '#');
+  const checkpointCol = 86;
+  grid[8][88] = 'M';
+  grid[8][90] = 'L'; // 1-UP Green Mushroom!
+
+  // Giant "AMBAR" Coin Banner in the upper stratosphere (cols 95..124)!
+  addAmbarCoinBanner(coins, 96, 3);
+  grid[9][95] = 'T';
+  grid[9][108] = 'T';
+  grid[9][120] = 'S'; // Invincibility Star in mid-air!
+
+  // High-altitude enemy fleet
+  enemies.push({ type: 'cloud', x: 102 * 32, y: 8 * 32, baseY: 8 * 32 });
+  enemies.push({ type: 'cloud', x: 114 * 32, y: 5 * 32, baseY: 5 * 32 });
+  enemies.push({ type: 'cloud', x: 128 * 32, y: 7 * 32, baseY: 7 * 32 });
+  enemies.push({ type: 'cloud', x: 136 * 32, y: 4 * 32, baseY: 4 * 32 });
+  enemies.push({ type: 'cloud', x: 144 * 32, y: 9 * 32, baseY: 9 * 32 });
+
+  addCoinRing(132, 6);
+  addCoinRing(142, 4);
+  addCoinRing(152, 7);
+  grid[6][148] = 'T';
+
+  // Final landing staircase to the Sky Goal Flagpole!
+  addStairs(grid, 162, 6, 1);
+  grid[12][168] = 'H';
+
+  return {
+    id: 7,
+    name: 'MUNDO 1-7: ¡SUPER ÁMBAR VUELA POR EL CIELO!',
+    subtitle: '¡Vuela como Superman con las flechas / ESPACIO y dispara Arcoíris con X!',
+    theme: 6,
+    isFlyingLevel: true,
+    bgm: 'star',
+    cols,
+    rows: 15,
+    grid,
+    coins,
+    enemies,
+    platforms,
+    checkpointX: checkpointCol * 32,
+    flagX: 174 * 32,
+    castleX: 178 * 32
+  };
+}
+
+// ============================================================================
+// NIVEL 1-8: GRAN FORTALEZA FINAL DEL REY TORMENTA
+// ============================================================================
+function buildLevel8FinalCastle() {
   const cols = 155;
   const grid = createEmptyGrid(cols, 15);
   const coins = [];
@@ -741,7 +847,7 @@ function buildLevel7FinalCastle() {
   });
 
   fillRect(grid, 43, 9, 8, 1, 'B');
-  grid[9][47] = 'S'; // Invincibility Star!
+  grid[9][47] = 'S';
   enemies.push({ type: 'robot', x: 48 * 32, y: 12 * 32 });
   enemies.push({ type: 'koopa', x: 54 * 32, y: 12 * 32 });
   enemies.push({ type: 'cloud', x: 60 * 32, y: 6 * 32, baseY: 6 * 32 });
@@ -786,8 +892,8 @@ function buildLevel7FinalCastle() {
   });
 
   return {
-    id: 7,
-    name: 'MUNDO 1-7: GRAN FORTALEZA FINAL',
+    id: 8,
+    name: 'MUNDO 1-8: GRAN FORTALEZA FINAL',
     subtitle: '¡Batalla Final contra el Rey Tormenta! Salva el Reino de Ámbar',
     theme: 3,
     bgm: 'level3',
@@ -810,5 +916,6 @@ window.LEVEL_BUILDERS = [
   buildLevel4Bike,
   buildLevel5Crystal,
   buildLevel6Sky,
-  buildLevel7FinalCastle
+  buildLevel7Flying,
+  buildLevel8FinalCastle
 ];

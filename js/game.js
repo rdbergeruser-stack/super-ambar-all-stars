@@ -72,6 +72,7 @@ class SuperAmbarGame {
       powerState: powerState, // 0: Chiquita (Jardinero), 1: Super Ámbar (Buzo Rosa + Lentes), 2: Ámbar Arcoíris
       growAnimTimer: 0,
       onBike: false,
+      isFlying: false,
       turboTimer: 0,
       invulnerableTimer: 0,
       starTimer: 0,
@@ -90,6 +91,7 @@ class SuperAmbarGame {
 
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.up = true;
       if (e.code === 'ArrowDown' || e.code === 'KeyS') this.keys.down = true;
 
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyK') {
@@ -122,6 +124,7 @@ class SuperAmbarGame {
     window.addEventListener('keyup', (e) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') this.keys.up = false;
       if (e.code === 'ArrowDown' || e.code === 'KeyS') this.keys.down = false;
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyK') {
         this.keys.jump = false;
@@ -214,7 +217,10 @@ class SuperAmbarGame {
     const oldH = this.player.h;
     const oldState = this.player.powerState;
     this.player.powerState = newState;
-    if (this.player.onBike) {
+    if (this.player.isFlying) {
+      this.player.w = 56;
+      this.player.h = 38;
+    } else if (this.player.onBike) {
       this.player.w = 42;
       this.player.h = 56;
     } else {
@@ -266,6 +272,12 @@ class SuperAmbarGame {
       this.player.onBike = true;
       this.player.w = 42;
       this.player.h = 56;
+    } else if (this.level.isFlyingLevel) {
+      this.player.isFlying = true;
+      this.player.powerState = 2; // Grants Rainbow Beam shooting while flying like Superman!
+      this.player.w = 56;
+      this.player.h = 38;
+      this.player.y = 6 * TILE_SIZE;
     }
 
     if (this.checkpointReached && this.level.checkpointX) {
@@ -441,13 +453,15 @@ class SuperAmbarGame {
       }
     }
 
-    // Horizontal Movement (with high-speed Bicycle Mode in Mundo 1-4!)
-    const baseMax = p.onBike
-      ? (p.turboTimer > 0 ? 8.2 : (this.keys.action ? 6.5 : 5.3))
-      : (this.keys.action ? 5.4 : 4.2);
+    // Horizontal Movement (with Bicycle Mode in 1-4 & Superman Flight Mode in 1-7!)
+    const baseMax = p.isFlying
+      ? (p.turboTimer > 0 ? 7.8 : (this.keys.action ? 6.0 : 4.9))
+      : p.onBike
+        ? (p.turboTimer > 0 ? 8.2 : (this.keys.action ? 6.5 : 5.3))
+        : (this.keys.action ? 5.4 : 4.2);
     const maxSpeed = baseMax * (p.starTimer > 0 ? 1.2 : 1.0);
-    const accel = p.onBike ? (p.onGround ? 0.56 : 0.42) : (p.onGround ? 0.48 : 0.36);
-    const friction = p.onBike ? (p.onGround ? 0.90 : 0.96) : (p.onGround ? 0.82 : 0.94);
+    const accel = p.isFlying ? 0.50 : p.onBike ? (p.onGround ? 0.56 : 0.42) : (p.onGround ? 0.48 : 0.36);
+    const friction = p.isFlying ? 0.90 : p.onBike ? (p.onGround ? 0.90 : 0.96) : (p.onGround ? 0.82 : 0.94);
 
     if (this.keys.left) {
       p.vx = Math.max(-maxSpeed, p.vx - accel);
@@ -460,56 +474,73 @@ class SuperAmbarGame {
       if (Math.abs(p.vx) < 0.08) p.vx = 0;
     }
 
-    // Coyote time & Jump buffer
-    if (p.onGround) {
-      p.coyoteTimer = 0.14;
-      p.airJumpsLeft = 1;
-    } else {
-      p.coyoteTimer -= dt;
-    }
-
-    if (this.keys.jumpJustPressed) {
-      p.jumpBufferTimer = 0.15;
-    } else {
-      p.jumpBufferTimer -= dt;
-    }
-
-    // HIGH, EFFORTLESS JUMP + DOUBLE JUMP (OR BICYCLE BUNNY-HOP & WHEELIE!)
-    if (p.jumpBufferTimer > 0 && p.coyoteTimer > 0) {
-      const speedBonus = Math.abs(p.vx) * 0.22;
-      p.vy = (p.onBike ? -13.2 : -12.8) - speedBonus;
-      p.onGround = false;
-      p.coyoteTimer = 0;
-      p.jumpBufferTimer = 0;
-      window.retroAudio.playSfx(p.powerState >= 1 || p.onBike ? 'superJump' : 'jump');
-    } else if (this.keys.jumpJustPressed && !p.onGround && p.airJumpsLeft > 0) {
-      p.airJumpsLeft--;
-      p.vy = -11.6;
-      p.jumpBufferTimer = 0;
-      window.retroAudio.playSfx('superJump');
-      if (p.onBike) {
-        this.addFloatingText(p.x, p.y - 10, '¡WHEELIE!', '#38bdf8');
+    if (p.isFlying) {
+      // SUPERMAN FLIGHT CONTROLS:
+      // Hold Up / W / Space (or ▲ SALTO on Mobile!) to fly up; Down / S to dive; release to hover/glide!
+      if (this.keys.up || this.keys.jump) {
+        p.vy = Math.max(-5.0, p.vy - 0.58);
+      } else if (this.keys.down) {
+        p.vy = Math.min(5.0, p.vy + 0.58);
+      } else {
+        p.vy = p.vy * 0.84 + 0.12;
       }
-      for (let i = 0; i < 8; i++) {
-        this.spawnSparkle(p.x + p.w / 2, p.y + p.h);
+
+      if (Math.random() < 0.35) {
+        this.spawnSparkle(p.x + (p.facing > 0 ? 4 : p.w - 4), p.y + p.h / 2);
       }
+
+      if (this.keys.actionJustPressed && p.shootCooldown <= 0 && this.projectiles.length < 4) {
+        this.shootRainbowStar();
+      }
+    } else {
+      // Coyote time & Jump buffer
+      if (p.onGround) {
+        p.coyoteTimer = 0.14;
+        p.airJumpsLeft = 1;
+      } else {
+        p.coyoteTimer -= dt;
+      }
+
+      if (this.keys.jumpJustPressed) {
+        p.jumpBufferTimer = 0.15;
+      } else {
+        p.jumpBufferTimer -= dt;
+      }
+
+      // HIGH, EFFORTLESS JUMP + DOUBLE JUMP (OR BICYCLE BUNNY-HOP & WHEELIE!)
+      if (p.jumpBufferTimer > 0 && p.coyoteTimer > 0) {
+        const speedBonus = Math.abs(p.vx) * 0.22;
+        p.vy = (p.onBike ? -13.2 : -12.8) - speedBonus;
+        p.onGround = false;
+        p.coyoteTimer = 0;
+        p.jumpBufferTimer = 0;
+        window.retroAudio.playSfx(p.powerState >= 1 || p.onBike ? 'superJump' : 'jump');
+      } else if (this.keys.jumpJustPressed && !p.onGround && p.airJumpsLeft > 0) {
+        p.airJumpsLeft--;
+        p.vy = -11.6;
+        p.jumpBufferTimer = 0;
+        window.retroAudio.playSfx('superJump');
+        if (p.onBike) {
+          this.addFloatingText(p.x, p.y - 10, '¡WHEELIE!', '#38bdf8');
+        }
+        for (let i = 0; i < 8; i++) {
+          this.spawnSparkle(p.x + p.w / 2, p.y + p.h);
+        }
+      }
+
+      if (!this.keys.jump && p.vy < -7.5) {
+        p.vy *= 0.82;
+      }
+
+      if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
+        this.shootRainbowStar();
+      }
+
+      const gravity = (p.vy < 0 && this.keys.jump) ? 0.35 : 0.44;
+      p.vy = Math.min(12.0, p.vy + gravity);
     }
 
-    // Smooth variable jump cut
-    if (!this.keys.jump && p.vy < -7.5) {
-      p.vy *= 0.82;
-    }
-
-    // Shoot Rainbow Magic Star
-    if (this.keys.actionJustPressed && p.powerState >= 2 && p.shootCooldown <= 0 && this.projectiles.length < 3) {
-      this.shootRainbowStar();
-    }
-
-    // Floatier gravity while holding jump on the way up
-    const gravity = (p.vy < 0 && this.keys.jump) ? 0.35 : 0.44;
-    p.vy = Math.min(12.0, p.vy + gravity);
-
-    // Move & Collide X (with ledge step-up assistance!)
+    // Move & Collide X
     p.x += p.vx;
     if (p.x < 0) {
       p.x = 0;
@@ -517,9 +548,13 @@ class SuperAmbarGame {
     }
     this.resolvePlayerTileCollisionsX(p);
 
-    // Move & Collide Y (with head corner correction!)
+    // Move & Collide Y
     const prevBottom = p.y + p.h - p.vy;
     p.y += p.vy;
+    if (p.isFlying && p.y < 14) {
+      p.y = 14;
+      p.vy = Math.max(0, p.vy);
+    }
     p.onGround = false;
     this.resolvePlayerTileCollisionsY(p);
 
@@ -1785,10 +1820,18 @@ class SuperAmbarGame {
       '🌈 PODER ARCOÍRIS (TECLA X)'
     ];
     const outfitColors = ['#93c5fd', '#f472b6', '#fde047'];
-    ctx.fillStyle = this.player.onBike ? '#4ade80' : (outfitColors[this.player.powerState] || '#fff');
+    ctx.fillStyle = this.player.isFlying
+      ? '#fde047'
+      : this.player.onBike
+        ? '#4ade80'
+        : (outfitColors[this.player.powerState] || '#fff');
     ctx.font = '9px "Press Start 2P", monospace';
     ctx.fillText(
-      this.player.onBike ? '🚲 ¡EN BICICLETA TURBO!' : outfitLabels[this.player.powerState],
+      this.player.isFlying
+        ? '🦸‍♀️ ¡SÚPER VUELO + ARCOÍRIS (X)!'
+        : this.player.onBike
+          ? '🚲 ¡EN BICICLETA TURBO!'
+          : outfitLabels[this.player.powerState],
       172,
       27
     );

@@ -10,6 +10,7 @@ class SpriteRenderer {
       jeans: [],
       hoodie: [],
       bike: [],
+      fly: [],
       goomba: null,
       koopa: null,
       robot: null,
@@ -26,7 +27,7 @@ class SpriteRenderer {
   loadSpriteAssets() {
     if (!window.SPRITE_ASSETS) return;
 
-    ['jeans', 'hoodie', 'bike'].forEach(group => {
+    ['jeans', 'hoodie', 'bike', 'fly'].forEach(group => {
       if (Array.isArray(window.SPRITE_ASSETS[group])) {
         this.images[group] = window.SPRITE_ASSETS[group].map(src => {
           const img = new Image();
@@ -98,7 +99,7 @@ class SpriteRenderer {
   }
 
   // ==========================================================================
-  // 16-BIT SNES ÁMBAR SPRITE (WALKING, SUPER GROWTH, AND BICYCLE RIDING!)
+  // 16-BIT SNES ÁMBAR SPRITE (WALKING, SUPER GROWTH, BICYCLE, AND SUPERMAN FLIGHT!)
   // ==========================================================================
   drawAmbar(ctx, player, time) {
     ctx.save();
@@ -124,9 +125,37 @@ class SpriteRenderer {
       const hue = Math.floor((time * 540) % 360);
       ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
       ctx.shadowBlur = 14;
-    } else if (isMagic || player.turboTimer > 0) {
+    } else if (isMagic || player.turboTimer > 0 || player.isFlying) {
       ctx.shadowColor = player.turboTimer > 0 ? '#38bdf8' : '#fde047';
       ctx.shadowBlur = 11;
+    }
+
+    // ------------------------------------------------------------------------
+    // SUPERMAN FLIGHT MODE (MUNDO 1-7: ¡SUPER ÁMBAR VUELA POR EL CIELO!)
+    // ------------------------------------------------------------------------
+    if (player.isFlying && this.images.fly && this.images.fly.length > 0 && this.images.fly[0].complete) {
+      const capeIdx = Math.floor(time * 10) % this.images.fly.length;
+      const flyImg = this.images.fly[capeIdx] || this.images.fly[0];
+
+      const hoverY = Math.sin(time * 7) * 2.5;
+      const pitch = Math.max(-0.26, Math.min(0.26, (player.vy || 0) * 0.04));
+
+      ctx.translate(0, -player.h / 2 + hoverY);
+      ctx.rotate(pitch);
+
+      const targetH = player.displayHeight || 56;
+      const aspect = flyImg.naturalWidth / Math.max(1, flyImg.naturalHeight);
+      const targetW = Math.round(targetH * aspect);
+
+      ctx.drawImage(
+        flyImg,
+        Math.round(-targetW / 2),
+        Math.round(-targetH / 2),
+        targetW,
+        targetH
+      );
+      ctx.restore();
+      return;
     }
 
     // ------------------------------------------------------------------------
