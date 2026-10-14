@@ -14,15 +14,22 @@ class SpriteRenderer {
       skate: [],
       mermaid: [],
       cloud: [],
+      boss: [],
       goomba: null,
       koopa: null,
       robot: null,
-      boss: null,
       mushroom: null,
       oneup: null,
       star: null,
       rainbow: null,
       shell: null
+    };
+    this.mapImages = {
+      world1: null,
+      world2: null
+    };
+    this.bgImages = {
+      castleFinal: null
     };
     this.loadSpriteAssets();
   }
@@ -30,7 +37,7 @@ class SpriteRenderer {
   loadSpriteAssets() {
     if (!window.SPRITE_ASSETS) return;
 
-    ['jeans', 'hoodie', 'bike', 'fly', 'skate', 'mermaid', 'cloud'].forEach(group => {
+    ['jeans', 'hoodie', 'bike', 'fly', 'skate', 'mermaid', 'cloud', 'boss'].forEach(group => {
       if (Array.isArray(window.SPRITE_ASSETS[group])) {
         this.images[group] = window.SPRITE_ASSETS[group].map(src => {
           const img = new Image();
@@ -40,13 +47,29 @@ class SpriteRenderer {
       }
     });
 
-    ['goomba', 'koopa', 'robot', 'boss', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
+    ['goomba', 'koopa', 'robot', 'mushroom', 'oneup', 'star', 'rainbow', 'shell'].forEach(key => {
       if (window.SPRITE_ASSETS[key]) {
         const img = new Image();
         img.src = window.SPRITE_ASSETS[key];
         this.images[key] = img;
       }
     });
+
+    if (window.SPRITE_ASSETS.map_world1) {
+      const img = new Image();
+      img.src = window.SPRITE_ASSETS.map_world1;
+      this.mapImages.world1 = img;
+    }
+    if (window.SPRITE_ASSETS.map_world2) {
+      const img = new Image();
+      img.src = window.SPRITE_ASSETS.map_world2;
+      this.mapImages.world2 = img;
+    }
+    if (window.SPRITE_ASSETS.bg_castle_final) {
+      const img = new Image();
+      img.src = window.SPRITE_ASSETS.bg_castle_final;
+      this.bgImages.castleFinal = img;
+    }
   }
 
   roundRect(ctx, x, y, w, h, r) {
@@ -2358,7 +2381,18 @@ class SpriteRenderer {
         }
       }
     } else if (enemy.type === 'boss') {
-      const img = this.images.boss;
+      // 16-BIT MULTI-FRAME ANIMATED FINAL BOSS (REY TORMENTA / BOWSER)
+      const bossFrames = this.images.boss;
+      let frameIdx = 0;
+      // When attacking or roaring after shooting lightning/flames
+      if (enemy.roarTimer > 0 || (enemy.attackTimer !== undefined && enemy.attackTimer <= 0.55)) {
+        frameIdx = 2; // Frame 2: Roar & attack pose with electric sparks!
+      } else {
+        // Continuous idle hovering & breathing animation between Frame 0 and Frame 1
+        frameIdx = Math.floor(time * 5) % 2;
+      }
+
+      const img = Array.isArray(bossFrames) ? (bossFrames[frameIdx] || bossFrames[0]) : bossFrames;
       if (img && img.complete && img.naturalWidth > 0) {
         ctx.save();
         ctx.translate(cx, bottomY);
@@ -2367,18 +2401,31 @@ class SpriteRenderer {
           ctx.filter = 'brightness(1.8) sepia(1) hue-rotate(-50deg) saturate(4)';
         }
         const hover = Math.sin(time * 5) * 3.5;
-        ctx.drawImage(img, -49, -92 + hover, 98, 92);
+        // Boss display size 108x116 px
+        ctx.drawImage(img, -54, -114 + hover, 108, 116);
+
+        // Electric lightning sparks aura when in roaring attack pose!
+        if (frameIdx === 2) {
+          ctx.fillStyle = Math.random() < 0.5 ? '#fde047' : '#ffffff';
+          for (let s = 0; s < 4; s++) {
+            const sx = (Math.random() - 0.5) * 70;
+            const sy = -60 + (Math.random() - 0.5) * 60;
+            ctx.fillRect(sx, sy, 3, 3);
+          }
+        }
         ctx.restore();
       }
 
-      const maxHp = enemy.maxHp || 5;
-      const barW = 68;
+      const maxHp = enemy.maxHp || 6;
+      const barW = 76;
       const barX = cx - barW / 2;
-      const barY = y - 28;
+      const barY = y - 32;
       ctx.fillStyle = '#090d16';
       ctx.fillRect(barX - 2, barY - 2, barW + 4, 10);
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(barX, barY, (barW * Math.max(0, enemy.hp)) / maxHp, 6);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(barX, barY, (barW * Math.max(0, enemy.hp)) / maxHp, 2);
     } else if (enemy.type === 'fish') {
       // ======================================================================
       // 16-BIT CHEEP-CHEEP (TROPICAL CORAL REEF FISH - SUPER MARIO ALL-STARS)

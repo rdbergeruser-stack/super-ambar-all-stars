@@ -1543,19 +1543,22 @@ class SuperAmbarGame {
           }
         }
 
+        if (en.roarTimer > 0) en.roarTimer -= dt;
+
         en.attackTimer -= dt;
         if (en.attackTimer <= 0 && Math.abs(en.x - p.x) < 440) {
           en.attackTimer = 2.4;
+          en.roarTimer = 0.85; // Holds roaring/lightning attack pose!
           const dx = p.x - en.x;
           const dy = p.y - en.y;
           const dist = Math.max(1, Math.hypot(dx, dy));
           this.enemyProjectiles.push({
             x: en.x + en.w / 2,
             y: en.y + en.h / 2,
-            w: 14,
-            h: 14,
-            vx: (dx / dist) * 4.2,
-            vy: (dy / dist) * 4.2
+            w: 16,
+            h: 16,
+            vx: (dx / dist) * 4.5,
+            vy: (dy / dist) * 4.5
           });
         }
 
@@ -2937,94 +2940,36 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 8) {
-      // MUNDO 1-8: GRAN FORTALEZA VOLCÁNICA FINAL
-      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#090505');
-      grad.addColorStop(0.5, '#180404');
-      grad.addColorStop(1, '#2c0808');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      // MUNDO 1-8: GRAN FORTALEZA FINAL (16-BIT SNES BOSS ARENA ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.castleFinal;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Castle Boss Chamber with subtle camera parallax
+        const paraX = -((this.cameraX * 0.16) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 140, LOGICAL_HEIGHT);
 
-      // Dark volcanic fortress battlements & arches
-      const offsetX = Math.floor(this.cameraX * 0.22) % 64;
-      ctx.strokeStyle = '#2d0f0f';
-      ctx.lineWidth = 2;
-      for (let r = 1; r < 12; r++) {
-        const y = r * 36;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(LOGICAL_WIDTH, y);
-        ctx.stroke();
-        const rowShift = (r % 2) * 32;
-        for (let x = -offsetX + rowShift; x < LOGICAL_WIDTH; x += 64) {
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(x, y + 36);
-          ctx.stroke();
+        // Rising fiery embers and sparkles from the volcanic depths
+        const lavaY = 13 * TILE_SIZE - 20;
+        for (let em = 0; em < 16; em++) {
+          const ex = ((em * 55 + this.time * 24 - this.cameraX * 0.35) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const ey = lavaY - ((this.time * 55 + em * 26) % 150);
+          ctx.fillStyle = em % 2 === 0 ? '#fde047' : '#f97316';
+          ctx.fillRect(ex, ey, 2.5, 2.5);
         }
-      }
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+        grad.addColorStop(0, '#090505');
+        grad.addColorStop(0.5, '#180404');
+        grad.addColorStop(1, '#2c0808');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Castle arches & burning iron torches
-      for (let i = 0; i < 5; i++) {
-        const ax = ((i * 240 - this.cameraX * 0.3) % (LOGICAL_WIDTH + 240) + LOGICAL_WIDTH + 240) % (LOGICAL_WIDTH + 240) - 80;
-        ctx.fillStyle = '#180808';
-        ctx.fillRect(ax, 90, 64, 150);
-        ctx.beginPath();
-        ctx.arc(ax + 32, 90, 32, Math.PI, 0);
-        ctx.fill();
-
-        // Iron bars in arch
-        ctx.fillStyle = '#050202';
-        for (let bx = ax + 12; bx < ax + 60; bx += 14) {
-          ctx.fillRect(bx, 60, 4, 180);
-        }
-
-        // Flickering Iron Wall Torch Sconce
-        const tx = ax + 32;
-        const ty = 140;
-        ctx.fillStyle = '#3f3f46';
-        ctx.fillRect(tx - 3, ty, 6, 12);
-        // Fire Glow
-        const tGlow = ctx.createRadialGradient(tx, ty - 6, 2, tx, ty - 6, 28);
-        tGlow.addColorStop(0, 'rgba(254, 215, 170, 0.7)');
-        tGlow.addColorStop(0.5, 'rgba(239, 68, 68, 0.35)');
-        tGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
-        ctx.fillStyle = tGlow;
-        ctx.beginPath();
-        ctx.arc(tx, ty - 6, 28, 0, Math.PI * 2);
-        ctx.fill();
-        // Fire tongue
-        const fFlicker = Math.sin(this.time * 18 + i) * 3;
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.ellipse(tx, ty - 6, 7, 10 + fFlicker, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.ellipse(tx, ty - 4, 4, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Bubbling Molten Lava Moat at Bottom of Fortress
-      const lavaY = 13 * TILE_SIZE - 25;
-      const lavaGrad = ctx.createLinearGradient(0, lavaY, 0, LOGICAL_HEIGHT);
-      lavaGrad.addColorStop(0, '#f97316');
-      lavaGrad.addColorStop(0.3, '#dc2626');
-      lavaGrad.addColorStop(1, '#7f1d1d');
-      ctx.fillStyle = lavaGrad;
-      ctx.fillRect(0, lavaY, LOGICAL_WIDTH, LOGICAL_HEIGHT - lavaY);
-
-      // Bubbling Lava waves and rising embers
-      for (let bx = 0; bx < LOGICAL_WIDTH; bx += 32) {
-        const wave = Math.sin(this.time * 5 + bx * 0.1) * 4;
-        ctx.fillStyle = '#fef08a';
-        ctx.fillRect(bx, lavaY + wave, 24, 3);
-      }
-      for (let em = 0; em < 12; em++) {
-        const ex = ((em * 77 + this.time * 20 - this.cameraX * 0.4) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
-        const ey = lavaY - ((this.time * 50 + em * 25) % 120);
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(ex, ey, 2.5, 2.5);
+        const lavaY = 13 * TILE_SIZE - 25;
+        const lavaGrad = ctx.createLinearGradient(0, lavaY, 0, LOGICAL_HEIGHT);
+        lavaGrad.addColorStop(0, '#f97316');
+        lavaGrad.addColorStop(0.3, '#dc2626');
+        lavaGrad.addColorStop(1, '#7f1d1d');
+        ctx.fillStyle = lavaGrad;
+        ctx.fillRect(0, lavaY, LOGICAL_WIDTH, LOGICAL_HEIGHT - lavaY);
       }
 
     } else if (theme === 9) {
@@ -4184,6 +4129,25 @@ class SuperAmbarGame {
   }
 
   renderWorld1Map(ctx, t) {
+    const mapImg = window.spriteRenderer && window.spriteRenderer.mapImages && window.spriteRenderer.mapImages.world1;
+    if (mapImg && mapImg.complete && mapImg.naturalWidth > 0) {
+      // 16-BIT SNES SUPER MARIO WORLD OVERWORLD MAP IMAGE (ISLA REINO ÁMBAR)
+      ctx.drawImage(mapImg, 0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Subtle atmospheric ocean wave ripples
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      for (let row = 0; row < 12; row++) {
+        const wy = row * 38 + 14;
+        const speed = (row % 2 === 0 ? 1 : -1) * 14;
+        const offX = ((t * speed) % 80 + 80) % 80;
+        for (let wx = -40 + offX; wx < LOGICAL_WIDTH + 40; wx += 80) {
+          ctx.fillRect(wx, wy, 14, 2);
+        }
+      }
+      this.renderWorld1Paths(ctx, t);
+      return;
+    }
+
     // 1. Layered 16-Bit Super Mario World Ocean
     const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
     oceanGrad.addColorStop(0, '#0284c7');
@@ -4629,6 +4593,10 @@ class SuperAmbarGame {
       ctx.fill();
     }
 
+    this.renderWorld1Paths(ctx, t);
+  }
+
+  renderWorld1Paths(ctx, t) {
     // =========================================================================
     // 3. ROADS / PATHS CONNECTING NODES (AUTHENTIC SMW STEPPING STONES)
     // =========================================================================
@@ -4708,6 +4676,30 @@ class SuperAmbarGame {
   }
 
   renderWorld2Map(ctx, t) {
+    const mapImg = window.spriteRenderer && window.spriteRenderer.mapImages && window.spriteRenderer.mapImages.world2;
+    if (mapImg && mapImg.complete && mapImg.naturalWidth > 0) {
+      // 16-BIT SNES SUPER MARIO WORLD WINTER OVERWORLD MAP IMAGE (REINO DE CRISTAL)
+      ctx.drawImage(mapImg, 0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+      // Dancing aurora borealis ribbons over the illustrated ice map
+      ctx.save();
+      for (let ai = 0; ai < 2; ai++) {
+        ctx.beginPath();
+        const aColor = ai === 0 ? 'rgba(16, 185, 129, 0.18)' : 'rgba(6, 182, 212, 0.20)';
+        ctx.strokeStyle = aColor;
+        ctx.lineWidth = 14;
+        ctx.moveTo(0, 40 + ai * 16);
+        for (let ax = 0; ax <= LOGICAL_WIDTH; ax += 30) {
+          const ay = 40 + ai * 16 + Math.sin(ax * 0.007 + t * 0.9 + ai * 1.6) * 14;
+          ctx.lineTo(ax, ay);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+      this.renderWorld2Paths(ctx, t);
+      return;
+    }
+
     // 1. Deep Arctic Ocean Gradient
     const oceanGrad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
     oceanGrad.addColorStop(0, '#021226');
@@ -5194,6 +5186,10 @@ class SuperAmbarGame {
     ctx.arc(casX, casY - 18, 80, 0, Math.PI * 2);
     ctx.fill();
 
+    this.renderWorld2Paths(ctx, t);
+  }
+
+  renderWorld2Paths(ctx, t) {
     // =========================================================================
     // CRYSTALLINE ICE BRIDGES CONNECTING NODES (WORLD 2)
     // =========================================================================
