@@ -1164,13 +1164,10 @@ function buildLevel2_2GhostHouse() {
   grid[9][16] = 'M';
   grid[9][20] = '?';
 
-  // Haunted room dividing walls
-  fillRect(grid, 34, 4, 3, 9, 'B');
-  grid[11][34] = '.'; // Doorway
-  grid[12][34] = '.';
-
-  fillRect(grid, 62, 2, 3, 8, 'B'); // Hanging wall
-  fillRect(grid, 88, 5, 3, 8, 'B');
+  // Haunted room dividing walls with generous arched doorways
+  fillRect(grid, 34, 4, 3, 5, 'B'); // Upper divider (rows 4..8), rows 9..12 completely open!
+  fillRect(grid, 62, 2, 3, 5, 'B'); // Hanging chandelier wall (rows 2..6), rows 7..12 open!
+  fillRect(grid, 88, 4, 3, 5, 'B'); // Second dividing wall (rows 4..8), rows 9..12 open!
 
   // Phantom floating platforms
   platforms.push({
@@ -1234,8 +1231,7 @@ function buildLevel2_3FrostCastle() {
   // Obsidian frost castle bedrock
   fillRect(grid, 0, 13, 50, 2, '#');
   fillRect(grid, 56, 13, 40, 2, '#');
-  fillRect(grid, 102, 13, 38, 2, '#');
-  fillRect(grid, 144, 13, 36, 2, '#'); // Boss Arena floor!
+  fillRect(grid, 102, 13, 78, 2, '#'); // Continuous bedrock throughout Boss Arena!
 
   // Castle ceiling
   fillRect(grid, 0, 0, cols, 2, 'B');
@@ -1279,8 +1275,11 @@ function buildLevel2_3FrostCastle() {
   // Checkpoint at col 94
   const checkpointCol = 94;
 
-  // Boss Arena Entrance Gates
-  fillRect(grid, 142, 2, 2, 7, 'B'); // Gate archway
+  // Boss Arena Grand Archway Gateway (Generous 8-tile clearance, no chasm underneath!)
+  fillRect(grid, 140, 2, 6, 3, 'B'); // Archway lintel across top
+  fillRect(grid, 139, 5, 1, 8, 'B'); // Left arch pillar
+  fillRect(grid, 146, 5, 1, 8, 'B'); // Right arch pillar
+  // Cols 140..145 are completely open from row 5 to floor (row 13)!
 
   // THE BOSS: REY ESCARCHA (KING FROST)!
   enemies.push({

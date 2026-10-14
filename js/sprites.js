@@ -22,7 +22,9 @@ class SpriteRenderer {
       oneup: null,
       star: null,
       rainbow: null,
-      shell: null
+      shell: null,
+      boo: [],
+      frost_boss: []
     };
     this.mapImages = {
       world1: null,
@@ -42,7 +44,7 @@ class SpriteRenderer {
   loadSpriteAssets() {
     if (!window.SPRITE_ASSETS) return;
 
-    ['jeans', 'hoodie', 'bike', 'fly', 'skate', 'mermaid', 'cloud', 'boss'].forEach(group => {
+    ['jeans', 'hoodie', 'bike', 'fly', 'skate', 'mermaid', 'cloud', 'boss', 'boo', 'frost_boss'].forEach(group => {
       if (Array.isArray(window.SPRITE_ASSETS[group])) {
         this.images[group] = window.SPRITE_ASSETS[group].map(src => {
           const img = new Image();
@@ -2661,6 +2663,35 @@ class SpriteRenderer {
       if (enemy.facing && enemy.facing < 0) ctx.scale(-1, 1);
       const bob = Math.sin(time * 4 + enemy.x * 0.04) * 3.5;
 
+      const booFrames = this.images.boo;
+      const booImg = booFrames && (enemy.isShy ? booFrames[1] : booFrames[0]);
+      if (booImg && booImg.complete && booImg.naturalWidth > 0) {
+        // Trailing spectral ghostly mist particles behind tail
+        for (let w = 1; w <= 3; w++) {
+          const wOff = (time * 6 + w * 2) % 6;
+          const wx = -18 - w * 6 - wOff;
+          const wy = -18 + bob + Math.sin(time * 5 + w) * 4;
+          const wAlpha = Math.max(0, 0.45 - (w * 0.12));
+          ctx.fillStyle = `rgba(224, 231, 255, ${wAlpha})`;
+          ctx.beginPath();
+          ctx.arc(wx, wy, 5 - w, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Soft eerie supernatural ghost aura
+        ctx.fillStyle = 'rgba(241, 245, 249, 0.22)';
+        ctx.beginPath();
+        ctx.arc(0, -20 + bob, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Embarrassed shivering wiggle when shy
+        const shiver = enemy.isShy ? Math.sin(time * 30) * 1.5 : 0;
+        const bW = enemy.isShy ? 44 : 50;
+        const bH = 36;
+        ctx.drawImage(booImg, -bW / 2 + shiver, -bH - 2 + bob, bW, bH);
+        return;
+      }
+
       // Trailing spectral ghostly mist particles behind tail
       for (let w = 1; w <= 3; w++) {
         const wOff = (time * 6 + w * 2) % 6;
@@ -3015,7 +3046,46 @@ class SpriteRenderer {
         ctx.filter = 'brightness(2.2) saturate(2.5)';
       }
 
-      const breath = Math.sin(time * 4) * 2.5;
+      const breath = Math.sin(time * 3.5) * 3.5;
+      const fbFrames = this.images.frost_boss;
+      let frameIdx = Math.floor(time * 2.5) % 2; // alternates between 0 and 1
+      if (enemy.roarTimer > 0 || (enemy.attackTimer !== undefined && enemy.attackTimer <= 0.6)) {
+        frameIdx = 2; // Fierce roaring ice blast frame!
+      }
+      const fbImg = fbFrames && fbFrames[frameIdx];
+      if (fbImg && fbImg.complete && fbImg.naturalWidth > 0) {
+        // Soft Blizzard Frost Aura radiating from King Frost
+        const bossAura = ctx.createRadialGradient(0, -50 + breath, 10, 0, -50 + breath, 65);
+        bossAura.addColorStop(0, 'rgba(125, 211, 252, 0.45)');
+        bossAura.addColorStop(0.5, 'rgba(56, 189, 248, 0.20)');
+        bossAura.addColorStop(1, 'rgba(8, 47, 73, 0)');
+        ctx.fillStyle = bossAura;
+        ctx.beginPath();
+        ctx.arc(0, -50 + breath, 65, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ice sparks when attacking
+        if (frameIdx === 2) {
+          for (let sp = 0; sp < 6; sp++) {
+            const spx = -35 - Math.random() * 40;
+            const spy = -50 - 20 + Math.random() * 40;
+            ctx.fillStyle = sp % 2 === 0 ? '#38bdf8' : '#ffffff';
+            ctx.fillRect(spx, spy, 3, 3);
+          }
+        }
+
+        // Shadow on floor
+        ctx.fillStyle = 'rgba(8, 47, 73, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(0, 4, 38, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const drawW = frameIdx === 2 ? 112 : 94;
+        const drawH = 108;
+        ctx.drawImage(fbImg, -drawW / 2 - (frameIdx === 2 ? 8 : 0), -drawH + 6 + breath, drawW, drawH);
+        ctx.filter = 'none';
+        return;
+      }
 
       // 1. Blizzard Frost Aura radiating from King Frost
       const bossAura = ctx.createRadialGradient(0, -42 + breath, 10, 0, -42 + breath, 52);

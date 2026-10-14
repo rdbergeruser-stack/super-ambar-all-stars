@@ -1493,8 +1493,10 @@ class SuperAmbarGame {
         }
 
         en.attackTimer = (en.attackTimer || 2.4) - dt;
+        if (en.roarTimer > 0) en.roarTimer -= dt;
         if (en.attackTimer <= 0 && Math.abs(en.x - p.x) < 460) {
           en.attackTimer = 2.4;
+          en.roarTimer = 0.85;
           const dx = p.x - en.x;
           const dy = p.y - en.y;
           const dist = Math.max(1, Math.hypot(dx, dy));
@@ -5297,17 +5299,22 @@ class SuperAmbarGame {
       ctx.arc(x, y, 16, 0, Math.PI * 2);
       ctx.fill();
 
-      // Cute Boo silhouette
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(x, y - 1, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(x - 3, y - 2, 2, 2);
-      ctx.fillRect(x + 2, y - 2, 2, 2);
-      ctx.fillStyle = '#f472b6';
-      ctx.fillRect(x - 5, y + 1, 2, 2);
-      ctx.fillRect(x + 4, y + 1, 2, 2);
+      // Cute Boo icon
+      const booImg = window.spriteRenderer && window.spriteRenderer.images && window.spriteRenderer.images.boo && window.spriteRenderer.images.boo[0];
+      if (booImg && booImg.complete && booImg.naturalWidth > 0) {
+        ctx.drawImage(booImg, x - 13, y - 10, 26, 18);
+      } else {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y - 1, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x - 3, y - 2, 2, 2);
+        ctx.fillRect(x + 2, y - 2, 2, 2);
+        ctx.fillStyle = '#f472b6';
+        ctx.fillRect(x - 5, y + 1, 2, 2);
+        ctx.fillRect(x + 4, y + 1, 2, 2);
+      }
 
       ctx.strokeStyle = '#c084fc';
       ctx.lineWidth = 2;
