@@ -29,7 +29,12 @@ class SpriteRenderer {
       world2: null
     };
     this.bgImages = {
-      castleFinal: null
+      castleFinal: null,
+      cavern1_5: null,
+      space1_S: null,
+      glacial2_1: null,
+      mansion2_2: null,
+      frostCitadel2_3: null
     };
     this.loadSpriteAssets();
   }
@@ -65,10 +70,21 @@ class SpriteRenderer {
       img.src = window.SPRITE_ASSETS.map_world2;
       this.mapImages.world2 = img;
     }
-    if (window.SPRITE_ASSETS.bg_castle_final) {
+
+    const bgMap = {
+      bg_castle_final: 'castleFinal',
+      bg_cavern_1_5: 'cavern1_5',
+      bg_space_1_s: 'space1_S',
+      bg_glacial_2_1: 'glacial2_1',
+      bg_mansion_2_2: 'mansion2_2',
+      bg_frost_citadel_2_3: 'frostCitadel2_3'
+    };
+    for (const key in bgMap) {
+      const target = bgMap[key];
+      const src = (window.SPRITE_ASSETS && window.SPRITE_ASSETS[key]) ? window.SPRITE_ASSETS[key] : `assets/${key}.png`;
       const img = new Image();
-      img.src = window.SPRITE_ASSETS.bg_castle_final;
-      this.bgImages.castleFinal = img;
+      img.src = src;
+      this.bgImages[target] = img;
     }
   }
 

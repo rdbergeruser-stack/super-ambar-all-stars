@@ -2750,94 +2750,60 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 5) {
-      // MUNDO 1-5: CAVERNA DE AMATISTA Y GEMAS
-      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#04020a');
-      grad.addColorStop(0.4, '#130826');
-      grad.addColorStop(1, '#090414');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      // MUNDO 1-5: CAVERNA DE AMATISTA Y GEMAS (16-BIT SNES CUEVA SUBTERRÁNEA ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.cavern1_5;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Amethyst Crystal Cavern with subtle camera parallax
+        const paraX = -((this.cameraX * 0.18) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 150, LOGICAL_HEIGHT);
 
-      // Deep Cavern Stalactites hanging from ceiling with animated falling water drips
-      for (let i = 0; i < 14; i++) {
-        const sx = ((i * 95 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 140) + LOGICAL_WIDTH + 140) % (LOGICAL_WIDTH + 140) - 50;
-        const sh = 40 + (i % 3) * 28;
-        ctx.fillStyle = '#2e1065';
-        ctx.beginPath();
-        ctx.moveTo(sx, 0);
-        ctx.lineTo(sx + 14, sh);
-        ctx.lineTo(sx + 28, 0);
-        ctx.closePath();
-        ctx.fill();
+        // Bioluminescent crystal spore motes floating in dark cave
+        for (let s = 0; s < 18; s++) {
+          const mx = ((s * 75 + this.time * 15 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 100) + LOGICAL_WIDTH + 100) % (LOGICAL_WIDTH + 100) - 50;
+          const my = 120 + Math.sin(this.time * 2 + s) * 70;
+          ctx.fillStyle = s % 2 === 0 ? '#38bdf8' : '#c084fc';
+          ctx.fillRect(mx, my, 2, 2);
+        }
 
-        // Water droplet dripping from stalactite tip
-        if (i % 2 === 0) {
+        // Crystalline water drips
+        for (let i = 0; i < 8; i++) {
+          const sx = ((i * 120 - this.cameraX * 0.18) % (LOGICAL_WIDTH + 140) + LOGICAL_WIDTH + 140) % (LOGICAL_WIDTH + 140) - 50;
           const dropT = (this.time * 1.8 + i) % 1.5;
           if (dropT < 1.0) {
-            const dy = sh + dropT * 180;
+            const dy = 50 + dropT * 180;
             ctx.fillStyle = '#38bdf8';
-            ctx.fillRect(sx + 13, dy, 2, 4);
+            ctx.fillRect(sx, dy, 2, 4);
           }
         }
-      }
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+        grad.addColorStop(0, '#04020a');
+        grad.addColorStop(0.4, '#130826');
+        grad.addColorStop(1, '#090414');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Parallax Multifaceted Amethyst & Turquoise Crystal Clusters rising from the ground
-      for (let i = 0; i < 9; i++) {
-        const cx = ((i * 155 - this.cameraX * 0.28) % (LOGICAL_WIDTH + 200) + LOGICAL_WIDTH + 200) % (LOGICAL_WIDTH + 200) - 70;
-        const ch = 130 + (i % 4) * 40;
-        const cy = 13 * TILE_SIZE;
+        // Deep Cavern Stalactites hanging from ceiling with animated falling water drips
+        for (let i = 0; i < 14; i++) {
+          const sx = ((i * 95 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 140) + LOGICAL_WIDTH + 140) % (LOGICAL_WIDTH + 140) - 50;
+          const sh = 40 + (i % 3) * 28;
+          ctx.fillStyle = '#2e1065';
+          ctx.beginPath();
+          ctx.moveTo(sx, 0);
+          ctx.lineTo(sx + 14, sh);
+          ctx.lineTo(sx + 28, 0);
+          ctx.closePath();
+          ctx.fill();
 
-        // Amethyst Crystal Spikes
-        const isTeal = i % 3 === 0;
-        const cBase = isTeal ? '#0e7490' : '#6b21a8';
-        const cMid = isTeal ? '#06b6d4' : '#9333ea';
-        const cHi = isTeal ? '#67e8f9' : '#c084fc';
-
-        // Crystal Glow
-        const cg = ctx.createRadialGradient(cx + 20, cy - ch * 0.6, 10, cx + 20, cy - ch * 0.6, 65);
-        cg.addColorStop(0, isTeal ? 'rgba(34, 211, 238, 0.35)' : 'rgba(192, 132, 252, 0.35)');
-        cg.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = cg;
-        ctx.beginPath();
-        ctx.arc(cx + 20, cy - ch * 0.6, 65, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Main Crystal Body
-        ctx.fillStyle = cBase;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + 20, cy - ch);
-        ctx.lineTo(cx + 40, cy);
-        ctx.closePath();
-        ctx.fill();
-
-        // Left facet highlight
-        ctx.fillStyle = cMid;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + 20, cy - ch);
-        ctx.lineTo(cx + 18, cy);
-        ctx.closePath();
-        ctx.fill();
-
-        // Crest glint
-        ctx.fillStyle = cHi;
-        ctx.beginPath();
-        ctx.moveTo(cx + 12, cy - ch * 0.7);
-        ctx.lineTo(cx + 20, cy - ch);
-        ctx.lineTo(cx + 22, cy - ch * 0.6);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(cx + 19, cy - ch - 1, 3, 3);
-      }
-
-      // Bioluminescent crystal spore motes floating in dark cave
-      for (let s = 0; s < 18; s++) {
-        const mx = ((s * 75 + this.time * 15 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 100) + LOGICAL_WIDTH + 100) % (LOGICAL_WIDTH + 100) - 50;
-        const my = 120 + Math.sin(this.time * 2 + s) * 70;
-        ctx.fillStyle = s % 2 === 0 ? '#38bdf8' : '#c084fc';
-        ctx.fillRect(mx, my, 2, 2);
+          if (i % 2 === 0) {
+            const dropT = (this.time * 1.8 + i) % 1.5;
+            if (dropT < 1.0) {
+              const dy = sh + dropT * 180;
+              ctx.fillStyle = '#38bdf8';
+              ctx.fillRect(sx + 13, dy, 2, 4);
+            }
+          }
+        }
       }
 
     } else if (theme === 6) {
@@ -2973,72 +2939,64 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 9) {
-      // MUNDO 1-S: LA VÍA LÁCTEA ESTELAR (NIVEL SECRETO)
-      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#030014');
-      grad.addColorStop(0.5, '#080220');
-      grad.addColorStop(1, '#0c042e');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      // MUNDO 1-S: LA VÍA LÁCTEA ESTELAR (16-BIT SNES COSMIC SPACE ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.space1_S;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Star World & Galaxy with subtle camera parallax
+        const paraX = -((this.cameraX * 0.10) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 140, LOGICAL_HEIGHT);
 
-      // Glowing Multi-Colored Interstellar Nebulas
-      const nebulae = [
-        { x: 220, y: 150, rad: 160, c1: 'rgba(236, 72, 153, 0.28)', c2: 'rgba(219, 39, 119, 0)' },
-        { x: 620, y: 220, rad: 180, c1: 'rgba(6, 182, 212, 0.28)', c2: 'rgba(14, 116, 144, 0)' },
-        { x: 440, y: 340, rad: 170, c1: 'rgba(139, 92, 246, 0.25)', c2: 'rgba(109, 40, 217, 0)' }
-      ];
-      nebulae.forEach(n => {
-        const nx = ((n.x - this.cameraX * 0.08) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 150;
-        const ng = ctx.createRadialGradient(nx, n.y, 10, nx, n.y, n.rad);
-        ng.addColorStop(0, n.c1);
-        ng.addColorStop(1, n.c2);
-        ctx.fillStyle = ng;
-        ctx.beginPath();
-        ctx.arc(nx, n.y, n.rad, 0, Math.PI * 2);
-        ctx.fill();
-      });
+        // Hyper-speed Cosmic Shooting Stars with Neon Rainbow Trails
+        for (let st = 0; st < 3; st++) {
+          const stX = ((this.time * 300 + st * 320 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 350) + LOGICAL_WIDTH + 350) % (LOGICAL_WIDTH + 350) - 150;
+          const stY = 30 + st * 90;
+          const sGrad = ctx.createLinearGradient(stX - 60, stY - 25, stX, stY);
+          sGrad.addColorStop(0, 'rgba(6, 182, 212, 0)');
+          sGrad.addColorStop(0.5, 'rgba(236, 72, 153, 0.7)');
+          sGrad.addColorStop(1, 'rgba(254, 240, 138, 0.95)');
+          ctx.strokeStyle = sGrad;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(stX - 60, stY - 25);
+          ctx.lineTo(stX, stY);
+          ctx.stroke();
+        }
 
-      // Distant Spiral Galaxy
-      const galX = ((700 - this.cameraX * 0.05) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 150;
-      ctx.save();
-      ctx.translate(galX, 120);
-      ctx.rotate(this.time * 0.15);
-      const galG = ctx.createRadialGradient(0, 0, 2, 0, 0, 48);
-      galG.addColorStop(0, 'rgba(254, 240, 138, 0.8)');
-      galG.addColorStop(0.4, 'rgba(192, 132, 252, 0.4)');
-      galG.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = galG;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 48, 22, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+        // Twinkling foreground stardust
+        for (let s = 0; s < 30; s++) {
+          const sx = ((s * 43 - this.cameraX * 0.08) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const sy = (s * 23) % (LOGICAL_HEIGHT - 30);
+          const col = s % 3 === 0 ? '#38bdf8' : (s % 3 === 1 ? '#f43f5e' : '#facc15');
+          const blink = Math.sin(this.time * 5 + s) * 0.4 + 0.6;
+          ctx.fillStyle = col;
+          ctx.globalAlpha = blink;
+          ctx.fillRect(sx, sy, 2, 2);
+        }
+        ctx.globalAlpha = 1.0;
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+        grad.addColorStop(0, '#030014');
+        grad.addColorStop(0.5, '#080220');
+        grad.addColorStop(1, '#0c042e');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Deep Space Twinkling Starfield
-      for (let s = 0; s < 50; s++) {
-        const sx = ((s * 43 - this.cameraX * 0.06) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
-        const sy = (s * 23) % (LOGICAL_HEIGHT - 30);
-        const col = s % 3 === 0 ? '#38bdf8' : (s % 3 === 1 ? '#f43f5e' : '#facc15');
-        const blink = Math.sin(this.time * 5 + s) * 0.4 + 0.6;
-        ctx.fillStyle = col;
-        ctx.globalAlpha = blink;
-        ctx.fillRect(sx, sy, 2, 2);
-      }
-      ctx.globalAlpha = 1.0;
-
-      // Hyper-speed Cosmic Shooting Stars with Neon Rainbow Trails
-      for (let st = 0; st < 3; st++) {
-        const stX = ((this.time * 300 + st * 320 - this.cameraX * 0.15) % (LOGICAL_WIDTH + 350) + LOGICAL_WIDTH + 350) % (LOGICAL_WIDTH + 350) - 150;
-        const stY = 30 + st * 90;
-        const sGrad = ctx.createLinearGradient(stX - 60, stY - 25, stX, stY);
-        sGrad.addColorStop(0, 'rgba(6, 182, 212, 0)');
-        sGrad.addColorStop(0.5, 'rgba(236, 72, 153, 0.7)');
-        sGrad.addColorStop(1, 'rgba(254, 240, 138, 0.95)');
-        ctx.strokeStyle = sGrad;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(stX - 60, stY - 25);
-        ctx.lineTo(stX, stY);
-        ctx.stroke();
+        // Glowing Multi-Colored Interstellar Nebulas
+        const nebulae = [
+          { x: 220, y: 150, rad: 160, c1: 'rgba(236, 72, 153, 0.28)', c2: 'rgba(219, 39, 119, 0)' },
+          { x: 620, y: 220, rad: 180, c1: 'rgba(6, 182, 212, 0.28)', c2: 'rgba(14, 116, 144, 0)' },
+          { x: 440, y: 340, rad: 170, c1: 'rgba(139, 92, 246, 0.25)', c2: 'rgba(109, 40, 217, 0)' }
+        ];
+        nebulae.forEach(n => {
+          const nx = ((n.x - this.cameraX * 0.08) % (LOGICAL_WIDTH + 300) + LOGICAL_WIDTH + 300) % (LOGICAL_WIDTH + 300) - 150;
+          const ng = ctx.createRadialGradient(nx, n.y, 10, nx, n.y, n.rad);
+          ng.addColorStop(0, n.c1);
+          ng.addColorStop(1, n.c2);
+          ctx.fillStyle = ng;
+          ctx.beginPath();
+          ctx.arc(nx, n.y, n.rad, 0, Math.PI * 2);
+          ctx.fill();
+        });
       }
 
     } else if (theme === 10) {
@@ -3215,85 +3173,76 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 12) {
-      // MUNDO 2-1: VALLE GLACIAL Y BOSQUE NEVADO (SNES Super Mario World Glacial Tundra)
-      const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
-      grad.addColorStop(0, '#031738');
-      grad.addColorStop(0.35, '#07335e');
-      grad.addColorStop(0.70, '#0284c7');
-      grad.addColorStop(1, '#bae6fd');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      // MUNDO 2-1: VALLE GLACIAL Y BOSQUE NEVADO (16-BIT SNES GLACIAL TUNDRA ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.glacial2_1;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Alpine Glacier with subtle camera parallax
+        const paraX = -((this.cameraX * 0.16) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 140, LOGICAL_HEIGHT);
 
-      // Shimmering Aurora Borealis ribbons dancing across upper sky
-      for (let a = 0; a < 3; a++) {
-        const aWave = Math.sin(this.time * 0.8 + a * 1.5) * 22;
-        const aGrad = ctx.createLinearGradient(0, 30 + a * 25, 0, 160 + a * 20);
-        aGrad.addColorStop(0, a === 0 ? 'rgba(52, 211, 153, 0.45)' : (a === 1 ? 'rgba(34, 211, 238, 0.40)' : 'rgba(168, 85, 247, 0.35)'));
-        aGrad.addColorStop(1, 'rgba(3, 23, 56, 0)');
-        ctx.fillStyle = aGrad;
-        ctx.beginPath();
-        ctx.moveTo(0, 60 + aWave + a * 20);
-        ctx.bezierCurveTo(LOGICAL_WIDTH * 0.3, 25 - aWave, LOGICAL_WIDTH * 0.7, 105 + aWave, LOGICAL_WIDTH, 50 - aWave);
-        ctx.lineTo(LOGICAL_WIDTH, 175);
-        ctx.lineTo(0, 175);
-        ctx.closePath();
-        ctx.fill();
-      }
+        // Drifting Snowflakes in Foreground Parallax
+        for (let s = 0; s < 35; s++) {
+          const sx = ((s * 42 - this.time * 25 - this.cameraX * 0.22) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const sy = (s * 23 + this.time * 40 + Math.sin(this.time * 2 + s) * 12) % LOGICAL_HEIGHT;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.fillRect(sx, sy, s % 3 === 0 ? 3 : 2, s % 3 === 0 ? 3 : 2);
+        }
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
+        grad.addColorStop(0, '#031738');
+        grad.addColorStop(0.35, '#07335e');
+        grad.addColorStop(0.70, '#0284c7');
+        grad.addColorStop(1, '#bae6fd');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
-      // Parallax Distant Jagged Glacial Peaks
-      for (let i = 0; i < 5; i++) {
-        const gx = ((i * 260 - this.cameraX * 0.14) % (LOGICAL_WIDTH + 280) + LOGICAL_WIDTH + 280) % (LOGICAL_WIDTH + 280) - 100;
-        const gh = 160 + (i % 2) * 45;
-        ctx.fillStyle = '#0c4a6e';
-        ctx.beginPath();
-        ctx.moveTo(gx, 13 * TILE_SIZE);
-        ctx.lineTo(gx + 85, 13 * TILE_SIZE - gh);
-        ctx.lineTo(gx + 135, 13 * TILE_SIZE - gh * 0.78);
-        ctx.lineTo(gx + 200, 13 * TILE_SIZE);
-        ctx.closePath();
-        ctx.fill();
-        // White snow-cap facet
-        ctx.fillStyle = '#f8fafc';
-        ctx.beginPath();
-        ctx.moveTo(gx + 55, 13 * TILE_SIZE - gh * 0.65);
-        ctx.lineTo(gx + 85, 13 * TILE_SIZE - gh);
-        ctx.lineTo(gx + 115, 13 * TILE_SIZE - gh * 0.75);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // Parallax Snow-Covered Fir Trees
-      for (let t = 0; t < 8; t++) {
-        const tx = ((t * 150 - this.cameraX * 0.35) % (LOGICAL_WIDTH + 180) + LOGICAL_WIDTH + 180) % (LOGICAL_WIDTH + 180) - 70;
-        const ty = 13 * TILE_SIZE;
-        ctx.fillStyle = '#064e3b';
-        for (let tier = 0; tier < 3; tier++) {
-          const tw = 28 - tier * 6;
-          const th = 24;
-          const topTierY = ty - 40 - tier * 20;
+        // Shimmering Aurora Borealis ribbons dancing across upper sky
+        for (let a = 0; a < 3; a++) {
+          const aWave = Math.sin(this.time * 0.8 + a * 1.5) * 22;
+          const aGrad = ctx.createLinearGradient(0, 30 + a * 25, 0, 160 + a * 20);
+          aGrad.addColorStop(0, a === 0 ? 'rgba(52, 211, 153, 0.45)' : (a === 1 ? 'rgba(34, 211, 238, 0.40)' : 'rgba(168, 85, 247, 0.35)'));
+          aGrad.addColorStop(1, 'rgba(3, 23, 56, 0)');
+          ctx.fillStyle = aGrad;
           ctx.beginPath();
-          ctx.moveTo(tx - tw, topTierY + th);
-          ctx.lineTo(tx, topTierY);
-          ctx.lineTo(tx + tw, topTierY + th);
+          ctx.moveTo(0, 60 + aWave + a * 20);
+          ctx.bezierCurveTo(LOGICAL_WIDTH * 0.3, 25 - aWave, LOGICAL_WIDTH * 0.7, 105 + aWave, LOGICAL_WIDTH, 50 - aWave);
+          ctx.lineTo(LOGICAL_WIDTH, 175);
+          ctx.lineTo(0, 175);
           ctx.closePath();
           ctx.fill();
-          // Thick puffy snow on branches
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(tx - tw + 3, topTierY + th - 4, tw * 2 - 6, 4);
-          ctx.fillStyle = '#064e3b';
         }
       }
 
-      // Drifting Snowflakes in Foreground Parallax
-      for (let s = 0; s < 30; s++) {
-        const sx = ((s * 42 - this.time * 25 - this.cameraX * 0.22) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
-        const sy = (s * 23 + this.time * 40 + Math.sin(this.time * 2 + s) * 12) % LOGICAL_HEIGHT;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-        ctx.fillRect(sx, sy, s % 3 === 0 ? 3 : 2, s % 3 === 0 ? 3 : 2);
+    } else if (theme === 13) {
+      // MUNDO 2-2: LA MANSIÓN ENCANTADA DE LOS BOOS (16-BIT SNES VICTORIAN GOTHIC MANOR ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.mansion2_2;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Haunted Manor with subtle camera parallax
+        const paraX = -((this.cameraX * 0.16) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 140, LOGICAL_HEIGHT);
+
+        // Eerie wispy purple ground mist floating along lower hall
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.12)';
+        for (let m = 0; m < 5; m++) {
+          const mx = ((m * 180 + this.time * 20 - this.cameraX * 0.3) % (LOGICAL_WIDTH + 200) + LOGICAL_WIDTH + 200) % (LOGICAL_WIDTH + 200) - 100;
+          const my = 12 * TILE_SIZE + Math.sin(this.time * 1.5 + m) * 10;
+          ctx.beginPath();
+          ctx.ellipse(mx, my, 90, 24, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Drifting ghostly orbs/wisps
+        for (let o = 0; o < 8; o++) {
+          const ox = ((o * 120 + Math.sin(this.time * 2 + o) * 30 - this.cameraX * 0.25) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const oy = 100 + (o * 35 + Math.cos(this.time * 1.8 + o) * 25) % 250;
+          ctx.fillStyle = 'rgba(192, 132, 252, 0.35)';
+          ctx.beginPath();
+          ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        return;
       }
 
-    } else if (theme === 13) {
-      // MUNDO 2-2: LA MANSIÓN ENCANTADA DE LOS BOOS (Victorian Gothic Manor Interior)
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
       grad.addColorStop(0, '#06030c');
       grad.addColorStop(0.45, '#170929');
@@ -3467,7 +3416,33 @@ class SuperAmbarGame {
       }
 
     } else if (theme === 14) {
-      // MUNDO 2-3: FORTALEZA GLACIAL DEL REY ESCARCHA (Frost Fortress Obsidian Citadel)
+      // MUNDO 2-3: FORTALEZA GLACIAL DEL REY ESCARCHA (16-BIT SNES FROST CITADEL ILUSTRADA)
+      const bgImg = window.spriteRenderer && window.spriteRenderer.bgImages && window.spriteRenderer.bgImages.frostCitadel2_3;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+        // High-definition 16-bit SNES Ice Citadel with subtle camera parallax
+        const paraX = -((this.cameraX * 0.16) % (LOGICAL_WIDTH * 0.25));
+        ctx.drawImage(bgImg, paraX, 0, LOGICAL_WIDTH + 140, LOGICAL_HEIGHT);
+
+        // Frost Blizzard Wind particles drifting across hall
+        for (let f = 0; f < 30; f++) {
+          const fx = ((f * 38 - this.time * 95 - this.cameraX * 0.48) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const fy = (f * 18 + Math.sin(this.time * 4 + f) * 16) % LOGICAL_HEIGHT;
+          ctx.fillStyle = '#bae6fd';
+          ctx.fillRect(fx, fy, 2.5, 2.5);
+        }
+
+        // Cyan Spirit flame flickers
+        for (let sp = 0; sp < 6; sp++) {
+          const sx = ((sp * 150 - this.cameraX * 0.25) % LOGICAL_WIDTH + LOGICAL_WIDTH) % LOGICAL_WIDTH;
+          const sy = 160 + Math.sin(this.time * 4 + sp) * 4;
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        return;
+      }
+
       const grad = ctx.createLinearGradient(0, 0, 0, LOGICAL_HEIGHT);
       grad.addColorStop(0, '#01040f');
       grad.addColorStop(0.35, '#07162c');
