@@ -38,6 +38,7 @@ class SpriteRenderer {
       mansion2_2: null,
       frostCitadel2_3: null
     };
+    this.castleImages = {};
     this.loadSpriteAssets();
   }
 
@@ -88,6 +89,32 @@ class SpriteRenderer {
       img.src = src;
       this.bgImages[target] = img;
     }
+
+    const castleKeys = ['1_1', '1_2', '1_3', '1_4', '1_5', '1_6', '1_7', '1_8', '1_s', '2_1', '2_2', '2_3'];
+    castleKeys.forEach(k => {
+      const src = (window.SPRITE_ASSETS && window.SPRITE_ASSETS.castles && window.SPRITE_ASSETS.castles[k])
+        ? window.SPRITE_ASSETS.castles[k]
+        : `assets/castle_${k}.png`;
+      const img = new Image();
+      img.src = src;
+      this.castleImages[k] = img;
+    });
+  }
+
+  getCastleImage(level) {
+    if (!level) return this.castleImages['1_1'];
+    const byId = {
+      1: '1_1', 2: '1_2', 3: '1_3', 4: '1_4', 5: '1_5',
+      6: '1_6', 7: '1_7', 8: '1_8', 9: '1_s',
+      10: '2_1', 11: '2_2', 12: '2_3'
+    };
+    const byTheme = {
+      1: '1_1', 2: '1_2', 3: '1_3', 4: '1_4', 5: '1_5',
+      6: '1_6', 7: '1_7', 8: '1_8', 9: '1_s',
+      12: '2_1', 13: '2_2', 14: '2_3'
+    };
+    const key = (level.id && byId[level.id]) || (level.theme && byTheme[level.theme]) || '1_1';
+    return this.castleImages[key] || this.castleImages['1_1'];
   }
 
   roundRect(ctx, x, y, w, h, r) {

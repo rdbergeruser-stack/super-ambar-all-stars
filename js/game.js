@@ -3728,48 +3728,72 @@ class SuperAmbarGame {
     ctx.fillText('ÁMBAR', fx + 10, this.flagSlideY + 22);
 
     const cx = this.level.castleX;
-    ctx.fillStyle = '#9a3412';
-    ctx.fillRect(cx, groundY - 115, 114, 115);
-    ctx.strokeRect(cx, groundY - 115, 114, 115);
+    const castleImg = window.spriteRenderer ? window.spriteRenderer.getCastleImage(this.level) : null;
+    if (castleImg && castleImg.complete && castleImg.naturalWidth > 0) {
+      const drawH = 216;
+      const drawW = Math.round(drawH * (castleImg.naturalWidth / castleImg.naturalHeight));
+      const drawX = cx - 14;
+      const drawY = groundY - drawH;
 
-    ctx.strokeStyle = '#431407';
-    ctx.lineWidth = 1.5;
-    for (let by = groundY - 100; by < groundY; by += 16) {
+      // Dark interior backing for arched doorway at bottom center
+      const doorW = 40;
+      const doorH = 42;
+      const doorX = drawX + Math.round((drawW - doorW) / 2);
+      ctx.fillStyle = '#0a0a14';
       ctx.beginPath();
-      ctx.moveTo(cx, by);
-      ctx.lineTo(cx + 114, by);
+      ctx.arc(doorX + doorW / 2, groundY - doorH + doorW / 2, doorW / 2, Math.PI, 0);
+      ctx.lineTo(doorX + doorW, groundY);
+      ctx.lineTo(doorX, groundY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Render high-detail 16-bit SNES Castle Image
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(castleImg, drawX, drawY, drawW, drawH);
+    } else {
+      ctx.fillStyle = '#9a3412';
+      ctx.fillRect(cx, groundY - 115, 114, 115);
+      ctx.strokeRect(cx, groundY - 115, 114, 115);
+
+      ctx.strokeStyle = '#431407';
+      ctx.lineWidth = 1.5;
+      for (let by = groundY - 100; by < groundY; by += 16) {
+        ctx.beginPath();
+        ctx.moveTo(cx, by);
+        ctx.lineTo(cx + 114, by);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(cx + 20, groundY - 160, 74, 45);
+      ctx.strokeRect(cx + 20, groundY - 160, 74, 45);
+
+      for (let i = 0; i < 5; i++) {
+        ctx.fillStyle = '#c2410c';
+        ctx.fillRect(cx + i * 24, groundY - 127, 16, 12);
+        ctx.strokeRect(cx + i * 24, groundY - 127, 16, 12);
+      }
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.moveTo(cx + 14, groundY - 160);
+      ctx.lineTo(cx + 57, groundY - 210);
+      ctx.lineTo(cx + 100, groundY - 160);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#090d16';
+      ctx.beginPath();
+      ctx.arc(cx + 57, groundY - 28, 22, Math.PI, 0);
+      ctx.lineTo(cx + 79, groundY);
+      ctx.lineTo(cx + 35, groundY);
+      ctx.closePath();
+      ctx.fill();
       ctx.stroke();
     }
-
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 2;
-    ctx.fillStyle = '#b45309';
-    ctx.fillRect(cx + 20, groundY - 160, 74, 45);
-    ctx.strokeRect(cx + 20, groundY - 160, 74, 45);
-
-    for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = '#c2410c';
-      ctx.fillRect(cx + i * 24, groundY - 127, 16, 12);
-      ctx.strokeRect(cx + i * 24, groundY - 127, 16, 12);
-    }
-
-    ctx.fillStyle = '#1e3a8a';
-    ctx.beginPath();
-    ctx.moveTo(cx + 14, groundY - 160);
-    ctx.lineTo(cx + 57, groundY - 210);
-    ctx.lineTo(cx + 100, groundY - 160);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#090d16';
-    ctx.beginPath();
-    ctx.arc(cx + 57, groundY - 28, 22, Math.PI, 0);
-    ctx.lineTo(cx + 79, groundY);
-    ctx.lineTo(cx + 35, groundY);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
   }
 
   renderHUD(ctx) {
