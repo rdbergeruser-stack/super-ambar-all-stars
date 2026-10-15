@@ -2689,6 +2689,7 @@ class SpriteRenderer {
         const bW = enemy.isShy ? 44 : 50;
         const bH = 36;
         ctx.drawImage(booImg, -bW / 2 + shiver, -bH - 2 + bob, bW, bH);
+        ctx.restore();
         return;
       }
 
@@ -3084,6 +3085,7 @@ class SpriteRenderer {
         const drawH = 108;
         ctx.drawImage(fbImg, -drawW / 2 - (frameIdx === 2 ? 8 : 0), -drawH + 6 + breath, drawW, drawH);
         ctx.filter = 'none';
+        ctx.restore();
         return;
       }
 

@@ -10,3 +10,4 @@ Thumbs.db
 .vercel
 __pycache__/
 *.pyc
+scratch/

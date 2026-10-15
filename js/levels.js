@@ -1275,11 +1275,11 @@ function buildLevel2_3FrostCastle() {
   // Checkpoint at col 94
   const checkpointCol = 94;
 
-  // Boss Arena Grand Archway Gateway (Generous 8-tile clearance, no chasm underneath!)
-  fillRect(grid, 140, 2, 6, 3, 'B'); // Archway lintel across top
-  fillRect(grid, 139, 5, 1, 8, 'B'); // Left arch pillar
-  fillRect(grid, 146, 5, 1, 8, 'B'); // Right arch pillar
-  // Cols 140..145 are completely open from row 5 to floor (row 13)!
+  // Boss Arena Grand Archway Gateway (Overhead decorative archway with 8 tiles of wide-open clearance!)
+  fillRect(grid, 138, 2, 10, 2, 'B'); // Overhead arch lintel
+  fillRect(grid, 138, 4, 1, 1, 'B');  // Left archway decorative trim
+  fillRect(grid, 147, 4, 1, 1, 'B');  // Right archway decorative trim
+  // Walking corridor (cols 138..150, rows 5..12) is completely wide-open to run and jump into Boss Arena!
 
   // THE BOSS: REY ESCARCHA (KING FROST)!
   enemies.push({
