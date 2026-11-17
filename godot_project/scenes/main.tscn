@@ -1,0 +1,313 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/player_ambar.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/camera_wonder.gd" id="3_camera"]
+[ext_resource type="PackedScene" path="res://scenes/coin_3d.tscn" id="4_coin"]
+[ext_resource type="PackedScene" path="res://scenes/goal_castle_3d.tscn" id="5_castle"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/touch_controls.gd" id="7_touch"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wonder"]
+sky_top_color = Color(0.18, 0.52, 0.95, 1)
+sky_horizon_color = Color(0.72, 0.88, 0.98, 1)
+ground_bottom_color = Color(0.12, 0.18, 0.28, 1)
+ground_horizon_color = Color(0.72, 0.88, 0.98, 1)
+
+[sub_resource type="Sky" id="Sky_wonder"]
+sky_material = SubResource("ProceduralSkyMaterial_wonder")
+
+[sub_resource type="Environment" id="Environment_wonder"]
+background_mode = 2
+sky = SubResource("Sky_wonder")
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.92, 1, 1)
+ambient_light_energy = 0.55
+tonemap_mode = 2
+glow_enabled = true
+glow_bloom = 0.18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_color = Color(0.24, 0.78, 0.32, 1)
+roughness = 0.65
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground1"]
+material = SubResource("StandardMaterial3D_grass")
+size = Vector3(45, 1.5, 3.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground1"]
+size = Vector3(45, 1.5, 3.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plat"]
+material = SubResource("StandardMaterial3D_grass")
+size = Vector3(4, 0.6, 2.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plat"]
+size = Vector3(4, 0.6, 2.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qblock"]
+albedo_color = Color(0.98, 0.72, 0.12, 1)
+metallic = 0.3
+roughness = 0.35
+emission_enabled = true
+emission = Color(0.9, 0.6, 0.1, 1)
+emission_energy_multiplier = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_qblock"]
+material = SubResource("StandardMaterial3D_qblock")
+size = Vector3(1, 1, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qblock"]
+size = Vector3(1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
+bg_color = Color(0.06, 0.09, 0.18, 0.82)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 8.0
+expand_margin_top = 6.0
+expand_margin_right = 8.0
+expand_margin_bottom = 6.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_btn"]
+radius = 42.0
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_wonder")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 0)
+light_color = Color(1, 0.96, 0.9, 1)
+light_energy = 1.35
+shadow_enabled = true
+shadow_bias = 0.04
+shadow_blur = 1.4
+
+[node name="PlayerAmbar" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+
+[node name="CameraWonder" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 3.5, 11.5)
+current = true
+fov = 42.0
+script = ExtResource("3_camera")
+target_node = NodePath("../PlayerAmbar")
+
+[node name="LevelGeometry" type="Node3D" parent="."]
+
+[node name="GroundPart1" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -0.75, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
+mesh = SubResource("BoxMesh_ground1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart1"]
+shape = SubResource("BoxShape3D_ground1")
+
+[node name="GroundPart2" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, -0.75, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
+mesh = SubResource("BoxMesh_ground1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart2"]
+shape = SubResource("BoxShape3D_ground1")
+
+[node name="Plat1" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.8, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
+mesh = SubResource("BoxMesh_plat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat1"]
+shape = SubResource("BoxShape3D_plat")
+
+[node name="Plat2" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 4.4, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
+mesh = SubResource("BoxMesh_plat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat2"]
+shape = SubResource("BoxShape3D_plat")
+
+[node name="Plat3" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 3.2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
+mesh = SubResource("BoxMesh_plat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat3"]
+shape = SubResource("BoxShape3D_plat")
+
+[node name="IslandChasm" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2.2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
+mesh = SubResource("BoxMesh_plat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/IslandChasm"]
+shape = SubResource("BoxShape3D_plat")
+
+[node name="QBlock1" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock1"]
+mesh = SubResource("BoxMesh_qblock")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock1"]
+shape = SubResource("BoxShape3D_qblock")
+
+[node name="QBlock2" type="StaticBody3D" parent="LevelGeometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock2"]
+mesh = SubResource("BoxMesh_qblock")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock2"]
+shape = SubResource("BoxShape3D_qblock")
+
+[node name="CoinsGroup" type="Node3D" parent="."]
+
+[node name="Coin1" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.4, 0)
+
+[node name="Coin2" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4.4, 0)
+
+[node name="Coin3" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.2, 0)
+
+[node name="Coin4" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 5.8, 0)
+
+[node name="Coin5" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 4.6, 0)
+
+[node name="GoalCastle3D" parent="." instance=ExtResource("5_castle")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 78, 0, 0)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("6_hud")
+
+[node name="Control" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="HUD/Control"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 16.0
+offset_right = -24.0
+offset_bottom = 54.0
+grow_horizontal = 2
+theme_override_constants/separation = 24
+
+[node name="LifeBox" type="PanelContainer" parent="HUD/Control/TopBar"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="LabelLives" type="Label" parent="HUD/Control/TopBar/LifeBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "♥ × 3"
+
+[node name="CoinBox" type="PanelContainer" parent="HUD/Control/TopBar"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="LabelCoins" type="Label" parent="HUD/Control/TopBar/CoinBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+text = "★ × 00"
+
+[node name="PowerBox" type="PanelContainer" parent="HUD/Control/TopBar"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
+
+[node name="LabelPower" type="Label" parent="HUD/Control/TopBar/PowerBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "SUPER ÁMBAR WONDER"
+
+[node name="TouchControls" type="CanvasLayer" parent="."]
+script = ExtResource("7_touch")
+
+[node name="Control" type="Control" parent="TouchControls"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftContainer" type="Control" parent="TouchControls/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -140.0
+offset_right = 260.0
+offset_bottom = -20.0
+grow_vertical = 0
+
+[node name="BtnLeft" type="TouchScreenButton" parent="TouchControls/Control/LeftContainer"]
+position = Vector2(0, 10)
+shape = SubResource("CircleShape2D_btn")
+action = "move_left"
+visibility_mode = 1
+
+[node name="BtnRight" type="TouchScreenButton" parent="TouchControls/Control/LeftContainer"]
+position = Vector2(110, 10)
+shape = SubResource("CircleShape2D_btn")
+action = "move_right"
+visibility_mode = 1
+
+[node name="RightContainer" type="Control" parent="TouchControls/Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -140.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="BtnRun" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
+position = Vector2(10, 20)
+shape = SubResource("CircleShape2D_btn")
+action = "run_dash"
+visibility_mode = 1
+
+[node name="BtnPower" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
+position = Vector2(85, -45)
+shape = SubResource("CircleShape2D_btn")
+action = "power_action"
+visibility_mode = 1
+
+[node name="BtnJump" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
+position = Vector2(160, 20)
+shape = SubResource("CircleShape2D_btn")
+action = "jump"
+visibility_mode = 1

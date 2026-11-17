@@ -1,0 +1,285 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/player_ambar.gd" id="1_script"]
+[ext_resource type="Shader" path="res://materials/toon_rim_shader.gdshader" id="2_shader"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ambar"]
+radius = 0.42
+height = 1.65
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hoodie"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.925, 0.282, 0.6, 1)
+shader_parameter/rim_color = Color(1, 0.85, 0.92, 1)
+shader_parameter/rim_power = 2.2
+shader_parameter/rim_intensity = 1.3
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="BoxMesh" id="BoxMesh_torso"]
+material = SubResource("ShaderMaterial_hoodie")
+size = Vector3(0.55, 0.58, 0.38)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_skin"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.996, 0.843, 0.667, 1)
+shader_parameter/rim_color = Color(1, 0.95, 0.88, 1)
+shader_parameter/rim_power = 2.4
+shader_parameter/rim_intensity = 1.0
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+material = SubResource("ShaderMaterial_skin")
+radius = 0.32
+height = 0.58
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hair"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.27, 0.1, 0.02, 1)
+shader_parameter/rim_color = Color(0.65, 0.45, 0.3, 1)
+shader_parameter/rim_power = 2.2
+shader_parameter/rim_intensity = 1.1
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="SphereMesh" id="SphereMesh_bun"]
+material = SubResource("ShaderMaterial_hair")
+radius = 0.16
+height = 0.3
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ribbon"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.937, 0.267, 0.267, 1)
+shader_parameter/rim_color = Color(1, 0.7, 0.7, 1)
+shader_parameter/rim_power = 2.0
+shader_parameter/rim_intensity = 1.2
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="BoxMesh" id="BoxMesh_ribbon"]
+material = SubResource("ShaderMaterial_ribbon")
+size = Vector3(0.08, 0.08, 0.12)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glasses"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.345, 0.11, 0.53, 1)
+shader_parameter/rim_color = Color(0.75, 0.5, 0.98, 1)
+shader_parameter/rim_power = 1.8
+shader_parameter/rim_intensity = 1.5
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="BoxMesh" id="BoxMesh_glasses"]
+material = SubResource("ShaderMaterial_glasses")
+size = Vector3(0.42, 0.12, 0.06)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_denim"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.01, 0.518, 0.78, 1)
+shader_parameter/rim_color = Color(0.6, 0.85, 1, 1)
+shader_parameter/rim_power = 2.2
+shader_parameter/rim_intensity = 1.1
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_leg"]
+material = SubResource("ShaderMaterial_denim")
+top_radius = 0.12
+bottom_radius = 0.1
+height = 0.45
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shoes"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/albedo_color = Color(0.957, 0.247, 0.369, 1)
+shader_parameter/rim_color = Color(1, 0.7, 0.8, 1)
+shader_parameter/rim_power = 2.0
+shader_parameter/rim_intensity = 1.2
+shader_parameter/shadow_cut = 0.45
+shader_parameter/shadow_softness = 0.08
+
+[sub_resource type="BoxMesh" id="BoxMesh_shoe"]
+material = SubResource("ShaderMaterial_shoes")
+size = Vector3(0.18, 0.14, 0.28)
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Torso:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0.74, 0), Vector3(0, 0.71, 0), Vector3(0, 0.74, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Head:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 1.25, 0), Vector3(0, 1.21, 0), Vector3(0, 1.25, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_walk"]
+resource_name = "walk"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("LeftLeg:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.45, 0, 0), Vector3(-0.45, 0, 0), Vector3(0.45, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("RightLeg:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.45, 0, 0), Vector3(0.45, 0, 0), Vector3(-0.45, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Torso:position:y")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.74, 0.78, 0.74, 0.78, 0.74]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ambar"]
+_data = {
+"idle": SubResource("Animation_idle"),
+"walk": SubResource("Animation_walk")
+}
+
+[node name="PlayerAmbar" type="CharacterBody3D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, 0)
+shape = SubResource("CapsuleShape3D_ambar")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Torso" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.74, 0)
+mesh = SubResource("BoxMesh_torso")
+
+[node name="Head" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+mesh = SubResource("SphereMesh_head")
+
+[node name="HairBunLeft" type="MeshInstance3D" parent="Visuals/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0.22, 0)
+mesh = SubResource("SphereMesh_bun")
+
+[node name="RibbonLeft" type="MeshInstance3D" parent="Visuals/Head/HairBunLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0.08)
+mesh = SubResource("BoxMesh_ribbon")
+
+[node name="HairBunRight" type="MeshInstance3D" parent="Visuals/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.22, 0)
+mesh = SubResource("SphereMesh_bun")
+
+[node name="RibbonRight" type="MeshInstance3D" parent="Visuals/Head/HairBunRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08, 0.08)
+mesh = SubResource("BoxMesh_ribbon")
+
+[node name="Glasses" type="MeshInstance3D" parent="Visuals/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.28)
+mesh = SubResource("BoxMesh_glasses")
+
+[node name="LeftLeg" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0.45, 0)
+
+[node name="MeshLeg" type="MeshInstance3D" parent="Visuals/LeftLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+mesh = SubResource("CylinderMesh_leg")
+
+[node name="Shoe" type="MeshInstance3D" parent="Visuals/LeftLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.38, 0.06)
+mesh = SubResource("BoxMesh_shoe")
+
+[node name="RightLeg" type="Node3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, 0.45, 0)
+
+[node name="MeshLeg" type="MeshInstance3D" parent="Visuals/RightLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+mesh = SubResource("CylinderMesh_leg")
+
+[node name="Shoe" type="MeshInstance3D" parent="Visuals/RightLeg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.38, 0.06)
+mesh = SubResource("BoxMesh_shoe")
+
+[node name="SoftAuraLight" type="OmniLight3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0.3)
+light_color = Color(1, 0.85, 0.95, 1)
+light_energy = 0.85
+omni_range = 3.2
+
+[node name="DustParticles" type="CPUParticles3D" parent="Visuals"]
+emitting = false
+amount = 12
+one_shot = true
+explosiveness = 0.8
+emission_shape = 3
+emission_box_extents = Vector3(0.2, 0.05, 0.2)
+direction = Vector3(0, 1, 0)
+spread = 35.0
+gravity = Vector3(0, -9.8, 0)
+initial_velocity_min = 2.5
+initial_velocity_max = 4.0
+
+[node name="RainbowParticles" type="CPUParticles3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+amount = 16
+lifetime = 0.6
+emission_shape = 1
+emission_sphere_radius = 0.5
+direction = Vector3(0, 1, 0)
+spread = 180.0
+gravity = Vector3(0, -1.0, 0)
+initial_velocity_min = 1.0
+initial_velocity_max = 2.0
+color = Color(1, 0.9, 0.2, 0.8)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visuals"]
+libraries = {
+"": SubResource("AnimationLibrary_ambar")
+}
+autoplay = "idle"
