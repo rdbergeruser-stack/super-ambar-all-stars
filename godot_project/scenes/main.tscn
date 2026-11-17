@@ -7,29 +7,22 @@
 [ext_resource type="PackedScene" path="res://scenes/goal_castle_3d.tscn" id="5_castle"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="6_hud"]
 [ext_resource type="Script" path="res://scripts/touch_controls.gd" id="7_touch"]
-
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wonder"]
-sky_top_color = Color(0.18, 0.52, 0.95, 1)
-sky_horizon_color = Color(0.72, 0.88, 0.98, 1)
-ground_bottom_color = Color(0.12, 0.18, 0.28, 1)
-ground_horizon_color = Color(0.72, 0.88, 0.98, 1)
-
-[sub_resource type="Sky" id="Sky_wonder"]
-sky_material = SubResource("ProceduralSkyMaterial_wonder")
+[ext_resource type="Texture2D" path="res://assets/btn_left.png" id="8_btn_left"]
+[ext_resource type="Texture2D" path="res://assets/btn_right.png" id="9_btn_right"]
+[ext_resource type="Texture2D" path="res://assets/btn_jump.png" id="10_btn_jump"]
+[ext_resource type="Texture2D" path="res://assets/btn_run.png" id="11_btn_run"]
+[ext_resource type="Texture2D" path="res://assets/btn_power.png" id="12_btn_power"]
 
 [sub_resource type="Environment" id="Environment_wonder"]
-background_mode = 2
-sky = SubResource("Sky_wonder")
+background_mode = 1
+background_color = Color(0.38, 0.72, 0.98, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.85, 0.92, 1, 1)
-ambient_light_energy = 0.55
-tonemap_mode = 2
-glow_enabled = true
-glow_bloom = 0.18
+ambient_light_color = Color(0.92, 0.96, 1, 1)
+ambient_light_energy = 1.15
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
-albedo_color = Color(0.24, 0.78, 0.32, 1)
-roughness = 0.65
+albedo_color = Color(0.32, 0.86, 0.38, 1)
+roughness = 0.55
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground1"]
 material = SubResource("StandardMaterial3D_grass")
@@ -82,11 +75,15 @@ environment = SubResource("Environment_wonder")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 0)
-light_color = Color(1, 0.96, 0.9, 1)
-light_energy = 1.35
-shadow_enabled = true
-shadow_bias = 0.04
-shadow_blur = 1.4
+light_color = Color(1, 0.98, 0.92, 1)
+light_energy = 1.45
+shadow_enabled = false
+
+[node name="FillLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 6, 12)
+light_color = Color(0.88, 0.94, 1, 1)
+light_energy = 0.75
+shadow_enabled = false
 
 [node name="PlayerAmbar" parent="." instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
@@ -269,16 +266,20 @@ offset_bottom = -20.0
 grow_vertical = 0
 
 [node name="BtnLeft" type="TouchScreenButton" parent="TouchControls/Control/LeftContainer"]
-position = Vector2(0, 10)
+position = Vector2(0, 0)
+scale = Vector2(0.85, 0.85)
+texture_normal = ExtResource("8_btn_left")
 shape = SubResource("CircleShape2D_btn")
 action = "move_left"
-visibility_mode = 1
+visibility_mode = 0
 
 [node name="BtnRight" type="TouchScreenButton" parent="TouchControls/Control/LeftContainer"]
-position = Vector2(110, 10)
+position = Vector2(115, 0)
+scale = Vector2(0.85, 0.85)
+texture_normal = ExtResource("9_btn_right")
 shape = SubResource("CircleShape2D_btn")
 action = "move_right"
-visibility_mode = 1
+visibility_mode = 0
 
 [node name="RightContainer" type="Control" parent="TouchControls/Control"]
 layout_mode = 1
@@ -295,19 +296,25 @@ grow_horizontal = 0
 grow_vertical = 0
 
 [node name="BtnRun" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
-position = Vector2(10, 20)
+position = Vector2(0, 10)
+scale = Vector2(0.85, 0.85)
+texture_normal = ExtResource("11_btn_run")
 shape = SubResource("CircleShape2D_btn")
 action = "run_dash"
-visibility_mode = 1
+visibility_mode = 0
 
 [node name="BtnPower" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
-position = Vector2(85, -45)
+position = Vector2(80, -75)
+scale = Vector2(0.85, 0.85)
+texture_normal = ExtResource("12_btn_power")
 shape = SubResource("CircleShape2D_btn")
 action = "power_action"
-visibility_mode = 1
+visibility_mode = 0
 
 [node name="BtnJump" type="TouchScreenButton" parent="TouchControls/Control/RightContainer"]
-position = Vector2(160, 20)
+position = Vector2(150, 10)
+scale = Vector2(0.85, 0.85)
+texture_normal = ExtResource("10_btn_jump")
 shape = SubResource("CircleShape2D_btn")
 action = "jump"
-visibility_mode = 1
+visibility_mode = 0
