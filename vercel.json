@@ -1,5 +1,12 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/wonder",
+      "destination": "/wonder/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/wonder/(.*).wasm",

@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=34 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/player_ambar.tscn" id="2_player"]
@@ -13,38 +13,65 @@
 [ext_resource type="Texture2D" path="res://assets/btn_run.png" id="11_btn_run"]
 [ext_resource type="Texture2D" path="res://assets/btn_power.png" id="12_btn_power"]
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wonder"]
+sky_top_color = Color(0.18, 0.52, 0.96, 1)
+sky_horizon_color = Color(0.72, 0.91, 1, 1)
+sky_curve = 0.12
+ground_bottom_color = Color(0.22, 0.55, 0.88, 1)
+ground_horizon_color = Color(0.72, 0.91, 1, 1)
+sun_angle_max = 35.0
+
+[sub_resource type="Sky" id="Sky_wonder"]
+sky_material = SubResource("ProceduralSkyMaterial_wonder")
+
 [sub_resource type="Environment" id="Environment_wonder"]
-background_mode = 1
-background_color = Color(0.38, 0.72, 0.98, 1)
-ambient_light_source = 2
+background_mode = 2
+sky = SubResource("Sky_wonder")
+ambient_light_source = 3
 ambient_light_color = Color(0.92, 0.96, 1, 1)
-ambient_light_energy = 1.15
+ambient_light_sky_contribution = 0.75
+ambient_light_energy = 1.25
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
-albedo_color = Color(0.32, 0.86, 0.38, 1)
-roughness = 0.55
+albedo_color = Color(0.32, 0.88, 0.38, 1)
+roughness = 0.45
+emission_enabled = true
+emission = Color(0.2, 0.7, 0.25, 1)
+emission_energy_multiplier = 0.12
 
-[sub_resource type="BoxMesh" id="BoxMesh_ground1"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dirt"]
+albedo_color = Color(0.54, 0.31, 0.16, 1)
+roughness = 0.75
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground_grass"]
 material = SubResource("StandardMaterial3D_grass")
+size = Vector3(45, 0.35, 3.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground_dirt"]
+material = SubResource("StandardMaterial3D_dirt")
+size = Vector3(45, 1.15, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(45, 1.5, 3.2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ground1"]
-size = Vector3(45, 1.5, 3.2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_plat"]
+[sub_resource type="BoxMesh" id="BoxMesh_plat_grass"]
 material = SubResource("StandardMaterial3D_grass")
-size = Vector3(4, 0.6, 2.5)
+size = Vector3(4, 0.22, 2.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plat_dirt"]
+material = SubResource("StandardMaterial3D_dirt")
+size = Vector3(4, 0.38, 2.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_plat"]
 size = Vector3(4, 0.6, 2.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qblock"]
-albedo_color = Color(0.98, 0.72, 0.12, 1)
-metallic = 0.3
-roughness = 0.35
+albedo_color = Color(0.99, 0.76, 0.12, 1)
+metallic = 0.25
+roughness = 0.3
 emission_enabled = true
-emission = Color(0.9, 0.6, 0.1, 1)
-emission_energy_multiplier = 0.25
+emission = Color(0.95, 0.65, 0.1, 1)
+emission_energy_multiplier = 0.3
 
 [sub_resource type="BoxMesh" id="BoxMesh_qblock"]
 material = SubResource("StandardMaterial3D_qblock")
@@ -52,6 +79,50 @@ size = Vector3(1, 1, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qblock"]
 size = Vector3(1, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hill_far"]
+albedo_color = Color(0.48, 0.54, 0.82, 1)
+roughness = 0.65
+
+[sub_resource type="SphereMesh" id="SphereMesh_hill_far"]
+material = SubResource("StandardMaterial3D_hill_far")
+radius = 9.0
+height = 14.0
+radial_segments = 24
+rings = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hill_mid1"]
+albedo_color = Color(0.24, 0.75, 0.44, 1)
+roughness = 0.55
+
+[sub_resource type="SphereMesh" id="SphereMesh_hill_mid1"]
+material = SubResource("StandardMaterial3D_hill_mid1")
+radius = 7.0
+height = 11.0
+radial_segments = 24
+rings = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hill_mid2"]
+albedo_color = Color(0.38, 0.84, 0.28, 1)
+roughness = 0.55
+
+[sub_resource type="SphereMesh" id="SphereMesh_hill_mid2"]
+material = SubResource("StandardMaterial3D_hill_mid2")
+radius = 8.0
+height = 12.0
+radial_segments = 24
+rings = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cloud"]
+albedo_color = Color(1, 1, 1, 0.94)
+roughness = 0.25
+
+[sub_resource type="SphereMesh" id="SphereMesh_cloud"]
+material = SubResource("StandardMaterial3D_cloud")
+radius = 1.4
+height = 2.4
+radial_segments = 16
+rings = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 bg_color = Color(0.06, 0.09, 0.18, 0.82)
@@ -95,31 +166,124 @@ fov = 42.0
 script = ExtResource("3_camera")
 target_node = NodePath("../PlayerAmbar")
 
+[node name="BackgroundScenery" type="Node3D" parent="."]
+
+[node name="FarHill1" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.8, 8, -7.5, -22)
+mesh = SubResource("SphereMesh_hill_far")
+
+[node name="FarHill2" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.8, 0, 0, 0, 1.3, 0, 0, 0, 0.8, 32, -8, -24)
+mesh = SubResource("SphereMesh_hill_far")
+
+[node name="FarHill3" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.6, 0, 0, 0, 1.2, 0, 0, 0, 0.8, 62, -7.5, -22)
+mesh = SubResource("SphereMesh_hill_far")
+
+[node name="FarHill4" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.9, 0, 0, 0, 1.3, 0, 0, 0, 0.8, 88, -8, -24)
+mesh = SubResource("SphereMesh_hill_far")
+
+[node name="MidHill1" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 0, -5.8, -13)
+mesh = SubResource("SphereMesh_hill_mid1")
+
+[node name="MidHill2" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.4, 0, 0, 0, 1.05, 0, 0, 0, 0.7, 18, -5.2, -12)
+mesh = SubResource("SphereMesh_hill_mid2")
+
+[node name="MidHill3" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 38, -5.8, -13)
+mesh = SubResource("SphereMesh_hill_mid1")
+
+[node name="MidHill4" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.7, 56, -5.2, -12)
+mesh = SubResource("SphereMesh_hill_mid2")
+
+[node name="MidHill5" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.4, 0, 0, 0, 1, 0, 0, 0, 0.7, 76, -5.8, -13)
+mesh = SubResource("SphereMesh_hill_mid1")
+
+[node name="Cloud1" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.4, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 10, 7.2, -14)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud1B" type="MeshInstance3D" parent="BackgroundScenery/Cloud1"]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.2, 0.1, 0)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud1C" type="MeshInstance3D" parent="BackgroundScenery/Cloud1"]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -1.2, -0.1, 0)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud2" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.6, 0, 0, 0, 0.85, 0, 0, 0, 0.8, 28, 8.5, -15)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud2B" type="MeshInstance3D" parent="BackgroundScenery/Cloud2"]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.3, 0.15, 0)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud2C" type="MeshInstance3D" parent="BackgroundScenery/Cloud2"]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -1.3, -0.15, 0)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud3" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.5, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 52, 7.5, -14)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud3B" type="MeshInstance3D" parent="BackgroundScenery/Cloud3"]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.2, 0.1, 0)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud4" type="MeshInstance3D" parent="BackgroundScenery"]
+transform = Transform3D(1.7, 0, 0, 0, 0.9, 0, 0, 0, 0.8, 72, 8.6, -15)
+mesh = SubResource("SphereMesh_cloud")
+
+[node name="Cloud4B" type="MeshInstance3D" parent="BackgroundScenery/Cloud4"]
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.3, 0.1, 0)
+mesh = SubResource("SphereMesh_cloud")
+
 [node name="LevelGeometry" type="Node3D" parent="."]
 
 [node name="GroundPart1" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -0.75, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
-mesh = SubResource("BoxMesh_ground1")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.575, 0)
+mesh = SubResource("BoxMesh_ground_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.175, 0)
+mesh = SubResource("BoxMesh_ground_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart1"]
-shape = SubResource("BoxShape3D_ground1")
+shape = SubResource("BoxShape3D_ground")
 
 [node name="GroundPart2" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, -0.75, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
-mesh = SubResource("BoxMesh_ground1")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.575, 0)
+mesh = SubResource("BoxMesh_ground_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.175, 0)
+mesh = SubResource("BoxMesh_ground_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart2"]
-shape = SubResource("BoxShape3D_ground1")
+shape = SubResource("BoxShape3D_ground")
 
 [node name="Plat1" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.8, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
-mesh = SubResource("BoxMesh_plat")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+mesh = SubResource("BoxMesh_plat_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat1"]
 shape = SubResource("BoxShape3D_plat")
@@ -127,8 +291,13 @@ shape = SubResource("BoxShape3D_plat")
 [node name="Plat2" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 4.4, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
-mesh = SubResource("BoxMesh_plat")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+mesh = SubResource("BoxMesh_plat_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat2"]
 shape = SubResource("BoxShape3D_plat")
@@ -136,8 +305,13 @@ shape = SubResource("BoxShape3D_plat")
 [node name="Plat3" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 3.2, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
-mesh = SubResource("BoxMesh_plat")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+mesh = SubResource("BoxMesh_plat_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat3"]
 shape = SubResource("BoxShape3D_plat")
@@ -145,8 +319,13 @@ shape = SubResource("BoxShape3D_plat")
 [node name="IslandChasm" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2.2, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
-mesh = SubResource("BoxMesh_plat")
+[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+mesh = SubResource("BoxMesh_plat_grass")
+
+[node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/IslandChasm"]
 shape = SubResource("BoxShape3D_plat")
@@ -157,6 +336,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 0)
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock1"]
 mesh = SubResource("BoxMesh_qblock")
 
+[node name="LabelQuestion" type="Label3D" parent="LevelGeometry/QBlock1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.51)
+pixel_size = 0.009
+text = "?"
+font_size = 80
+outline_size = 14
+outline_color = Color(0.6, 0.38, 0.05, 1)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock1"]
 shape = SubResource("BoxShape3D_qblock")
 
@@ -165,6 +352,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.2, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock2"]
 mesh = SubResource("BoxMesh_qblock")
+
+[node name="LabelQuestion" type="Label3D" parent="LevelGeometry/QBlock2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.51)
+pixel_size = 0.009
+text = "?"
+font_size = 80
+outline_size = 14
+outline_color = Color(0.6, 0.38, 0.05, 1)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock2"]
 shape = SubResource("BoxShape3D_qblock")
@@ -186,6 +381,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 5.8, 0)
 [node name="Coin5" parent="CoinsGroup" instance=ExtResource("4_coin")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 4.6, 0)
 
+[node name="Coin6" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 3.6, 0)
+
+[node name="Coin7" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 1.8, 0)
+
+[node name="Coin8" parent="CoinsGroup" instance=ExtResource("4_coin")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 1.8, 0)
+
 [node name="GoalCastle3D" parent="." instance=ExtResource("5_castle")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 78, 0, 0)
 
@@ -205,12 +409,12 @@ mouse_filter = 2
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 24.0
-offset_top = 16.0
+offset_left = 240.0
+offset_top = 14.0
 offset_right = -24.0
 offset_bottom = 54.0
 grow_horizontal = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
 
 [node name="LifeBox" type="PanelContainer" parent="HUD/Control/TopBar"]
 layout_mode = 2
@@ -219,8 +423,8 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 [node name="LabelLives" type="Label" parent="HUD/Control/TopBar/LifeBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.6, 1)
-theme_override_font_sizes/font_size = 18
-text = "♥ × 3"
+theme_override_font_sizes/font_size = 17
+text = "VIDAS: 3"
 
 [node name="CoinBox" type="PanelContainer" parent="HUD/Control/TopBar"]
 layout_mode = 2
@@ -229,8 +433,8 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 [node name="LabelCoins" type="Label" parent="HUD/Control/TopBar/CoinBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.88, 0.2, 1)
-theme_override_font_sizes/font_size = 18
-text = "★ × 00"
+theme_override_font_sizes/font_size = 17
+text = "MONEDAS: 00"
 
 [node name="PowerBox" type="PanelContainer" parent="HUD/Control/TopBar"]
 layout_mode = 2
@@ -239,8 +443,8 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hud")
 [node name="LabelPower" type="Label" parent="HUD/Control/TopBar/PowerBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "SUPER ÁMBAR WONDER"
+theme_override_font_sizes/font_size = 15
+text = "SUPER AMBAR WONDER"
 
 [node name="TouchControls" type="CanvasLayer" parent="."]
 script = ExtResource("7_touch")

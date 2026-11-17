@@ -2,8 +2,8 @@ extends CanvasLayer
 class_name GameHUD
 
 # ==============================================================================
-# SUPER ÁMBAR WONDER - MODERN RESPONSIVE HUD
-# Displays Lives, Coins, Score and Active Wonder Power with glassmorphism style
+# SUPER AMBAR WONDER - MODERN RESPONSIVE HUD
+# Displays Lives, Coins, and Active Wonder Power with glassmorphism style
 # ==============================================================================
 
 @onready var label_coins: Label = $Control/TopBar/CoinBox/LabelCoins
@@ -12,11 +12,11 @@ class_name GameHUD
 
 func update_coins(new_coins: int) -> void:
 	if label_coins:
-		label_coins.text = "× %02d" % new_coins
+		label_coins.text = "MONEDAS: %02d" % new_coins
 
 func update_lives(new_lives: int) -> void:
 	if label_lives:
-		label_lives.text = "♥ × %d" % new_lives
+		label_lives.text = "VIDAS: %d" % new_lives
 
 func update_power(power_name: String) -> void:
 	if label_power:
