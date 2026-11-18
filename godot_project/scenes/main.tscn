@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/player_ambar.tscn" id="2_player"]
@@ -12,6 +12,12 @@
 [ext_resource type="Texture2D" path="res://assets/btn_jump.png" id="10_btn_jump"]
 [ext_resource type="Texture2D" path="res://assets/btn_run.png" id="11_btn_run"]
 [ext_resource type="Texture2D" path="res://assets/btn_power.png" id="12_btn_power"]
+[ext_resource type="Texture2D" path="res://assets/tex_question_block.png" id="14_qblock_tex"]
+[ext_resource type="Texture2D" path="res://assets/tex_wonder_bush.png" id="15_bush_tex"]
+[ext_resource type="Texture2D" path="res://assets/enemy_goomba.png" id="16_goomba_tex"]
+[ext_resource type="Texture2D" path="res://assets/enemy_koopa.png" id="17_koopa_tex"]
+[ext_resource type="Texture2D" path="res://assets/tex_dirt_bricks.png" id="18_dirt_tex"]
+[ext_resource type="Texture2D" path="res://assets/tex_grass_top.png" id="19_grass_tex"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wonder"]
 sky_top_color = Color(0.18, 0.52, 0.96, 1)
@@ -28,53 +34,57 @@ sky_material = SubResource("ProceduralSkyMaterial_wonder")
 background_mode = 2
 sky = SubResource("Sky_wonder")
 ambient_light_source = 3
-ambient_light_color = Color(0.92, 0.96, 1, 1)
-ambient_light_sky_contribution = 0.75
+ambient_light_color = Color(0.95, 0.98, 1, 1)
+ambient_light_sky_contribution = 0.7
 ambient_light_energy = 1.25
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
-albedo_color = Color(0.32, 0.88, 0.38, 1)
-roughness = 0.45
-emission_enabled = true
-emission = Color(0.2, 0.7, 0.25, 1)
-emission_energy_multiplier = 0.12
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass_top"]
+albedo_texture = ExtResource("19_grass_tex")
+uv1_scale = Vector3(9, 1, 1)
+texture_filter = 0
+roughness = 0.55
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dirt"]
-albedo_color = Color(0.54, 0.31, 0.16, 1)
-roughness = 0.75
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dirt_body"]
+albedo_texture = ExtResource("18_dirt_tex")
+uv1_scale = Vector3(9, 1, 1)
+texture_filter = 0
+roughness = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground_grass"]
-material = SubResource("StandardMaterial3D_grass")
-size = Vector3(45, 0.35, 3.2)
+material = SubResource("StandardMaterial3D_grass_top")
+size = Vector3(45, 0.25, 3.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground_dirt"]
-material = SubResource("StandardMaterial3D_dirt")
-size = Vector3(45, 1.15, 3)
+material = SubResource("StandardMaterial3D_dirt_body")
+size = Vector3(45, 1.25, 3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(45, 1.5, 3.2)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plat_dirt"]
+albedo_texture = ExtResource("18_dirt_tex")
+uv1_scale = Vector3(1, 1, 1)
+texture_filter = 0
+roughness = 0.7
+
 [sub_resource type="BoxMesh" id="BoxMesh_plat_grass"]
-material = SubResource("StandardMaterial3D_grass")
-size = Vector3(4, 0.22, 2.5)
+material = SubResource("StandardMaterial3D_grass_top")
+size = Vector3(4, 0.2, 2.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_plat_dirt"]
-material = SubResource("StandardMaterial3D_dirt")
-size = Vector3(4, 0.38, 2.3)
+material = SubResource("StandardMaterial3D_plat_dirt")
+size = Vector3(4, 0.6, 2.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_plat"]
-size = Vector3(4, 0.6, 2.5)
+size = Vector3(4, 0.8, 2.5)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qblock"]
-albedo_color = Color(0.99, 0.76, 0.12, 1)
-metallic = 0.25
-roughness = 0.3
-emission_enabled = true
-emission = Color(0.95, 0.65, 0.1, 1)
-emission_energy_multiplier = 0.3
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qblock_side"]
+albedo_color = Color(0.95, 0.72, 0.1, 1)
+roughness = 0.4
+metallic = 0.2
 
 [sub_resource type="BoxMesh" id="BoxMesh_qblock"]
-material = SubResource("StandardMaterial3D_qblock")
+material = SubResource("StandardMaterial3D_qblock_side")
 size = Vector3(1, 1, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qblock"]
@@ -113,17 +123,6 @@ height = 12.0
 radial_segments = 24
 rings = 12
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cloud"]
-albedo_color = Color(1, 1, 1, 0.94)
-roughness = 0.25
-
-[sub_resource type="SphereMesh" id="SphereMesh_cloud"]
-material = SubResource("StandardMaterial3D_cloud")
-radius = 1.4
-height = 2.4
-radial_segments = 16
-rings = 8
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud"]
 bg_color = Color(0.06, 0.09, 0.18, 0.82)
 corner_radius_top_left = 12
@@ -147,20 +146,20 @@ environment = SubResource("Environment_wonder")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 0)
 light_color = Color(1, 0.98, 0.92, 1)
-light_energy = 1.45
+light_energy = 1.35
 shadow_enabled = false
 
 [node name="FillLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 6, 12)
 light_color = Color(0.88, 0.94, 1, 1)
-light_energy = 0.75
+light_energy = 0.65
 shadow_enabled = false
 
 [node name="PlayerAmbar" parent="." instance=ExtResource("2_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 
 [node name="CameraWonder" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 3.5, 11.5)
+transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 3.4, 11.0)
 current = true
 fov = 42.0
 script = ExtResource("3_camera")
@@ -169,92 +168,97 @@ target_node = NodePath("../PlayerAmbar")
 [node name="BackgroundScenery" type="Node3D" parent="."]
 
 [node name="FarHill1" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.8, 8, -7.5, -22)
+transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.8, 8, -9.5, -22)
 mesh = SubResource("SphereMesh_hill_far")
 
 [node name="FarHill2" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.8, 0, 0, 0, 1.3, 0, 0, 0, 0.8, 32, -8, -24)
+transform = Transform3D(1.8, 0, 0, 0, 1.3, 0, 0, 0, 0.8, 32, -10, -24)
 mesh = SubResource("SphereMesh_hill_far")
 
 [node name="FarHill3" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.6, 0, 0, 0, 1.2, 0, 0, 0, 0.8, 62, -7.5, -22)
-mesh = SubResource("SphereMesh_hill_far")
-
-[node name="FarHill4" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.9, 0, 0, 0, 1.3, 0, 0, 0, 0.8, 88, -8, -24)
+transform = Transform3D(1.6, 0, 0, 0, 1.2, 0, 0, 0, 0.8, 62, -9.5, -22)
 mesh = SubResource("SphereMesh_hill_far")
 
 [node name="MidHill1" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 0, -5.8, -13)
+transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 0, -7.5, -13)
 mesh = SubResource("SphereMesh_hill_mid1")
 
 [node name="MidHill2" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.4, 0, 0, 0, 1.05, 0, 0, 0, 0.7, 18, -5.2, -12)
+transform = Transform3D(1.4, 0, 0, 0, 1.05, 0, 0, 0, 0.7, 18, -7.0, -12)
 mesh = SubResource("SphereMesh_hill_mid2")
 
 [node name="MidHill3" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 38, -5.8, -13)
+transform = Transform3D(1.3, 0, 0, 0, 1, 0, 0, 0, 0.7, 38, -7.5, -13)
 mesh = SubResource("SphereMesh_hill_mid1")
 
 [node name="MidHill4" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.7, 56, -5.2, -12)
+transform = Transform3D(1.5, 0, 0, 0, 1.1, 0, 0, 0, 0.7, 56, -7.0, -12)
 mesh = SubResource("SphereMesh_hill_mid2")
 
-[node name="MidHill5" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.4, 0, 0, 0, 1, 0, 0, 0, 0.7, 76, -5.8, -13)
-mesh = SubResource("SphereMesh_hill_mid1")
+[node name="BushesAndFoliage" type="Node3D" parent="."]
 
-[node name="Cloud1" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.4, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 10, 7.2, -14)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Bush1" type="Sprite3D" parent="BushesAndFoliage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.45, -0.3)
+pixel_size = 0.012
+billboard = 0
+texture_filter = 0
+texture = ExtResource("15_bush_tex")
 
-[node name="Cloud1B" type="MeshInstance3D" parent="BackgroundScenery/Cloud1"]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.2, 0.1, 0)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Bush2" type="Sprite3D" parent="BushesAndFoliage"]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1, 15, 0.55, -0.3)
+pixel_size = 0.012
+billboard = 0
+texture_filter = 0
+texture = ExtResource("15_bush_tex")
 
-[node name="Cloud1C" type="MeshInstance3D" parent="BackgroundScenery/Cloud1"]
-transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -1.2, -0.1, 0)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Bush3" type="Sprite3D" parent="BushesAndFoliage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.45, -0.3)
+pixel_size = 0.012
+billboard = 0
+texture_filter = 0
+texture = ExtResource("15_bush_tex")
 
-[node name="Cloud2" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.6, 0, 0, 0, 0.85, 0, 0, 0, 0.8, 28, 8.5, -15)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Bush4" type="Sprite3D" parent="BushesAndFoliage"]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1, 52, 0.6, -0.3)
+pixel_size = 0.012
+billboard = 0
+texture_filter = 0
+texture = ExtResource("15_bush_tex")
 
-[node name="Cloud2B" type="MeshInstance3D" parent="BackgroundScenery/Cloud2"]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.3, 0.15, 0)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Enemies" type="Node3D" parent="."]
 
-[node name="Cloud2C" type="MeshInstance3D" parent="BackgroundScenery/Cloud2"]
-transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -1.3, -0.15, 0)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Goomba1" type="Sprite3D" parent="Enemies"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.45, 0)
+pixel_size = 0.02
+billboard = 0
+texture_filter = 0
+texture = ExtResource("16_goomba_tex")
 
-[node name="Cloud3" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.5, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 52, 7.5, -14)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Goomba2" type="Sprite3D" parent="Enemies"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.45, 0)
+pixel_size = 0.02
+billboard = 0
+texture_filter = 0
+texture = ExtResource("16_goomba_tex")
 
-[node name="Cloud3B" type="MeshInstance3D" parent="BackgroundScenery/Cloud3"]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.2, 0.1, 0)
-mesh = SubResource("SphereMesh_cloud")
-
-[node name="Cloud4" type="MeshInstance3D" parent="BackgroundScenery"]
-transform = Transform3D(1.7, 0, 0, 0, 0.9, 0, 0, 0, 0.8, 72, 8.6, -15)
-mesh = SubResource("SphereMesh_cloud")
-
-[node name="Cloud4B" type="MeshInstance3D" parent="BackgroundScenery/Cloud4"]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 1.3, 0.1, 0)
-mesh = SubResource("SphereMesh_cloud")
+[node name="Koopa1" type="Sprite3D" parent="Enemies"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0.55, 0)
+pixel_size = 0.02
+billboard = 0
+texture_filter = 0
+texture = ExtResource("17_koopa_tex")
 
 [node name="LevelGeometry" type="Node3D" parent="."]
 
 [node name="GroundPart1" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -0.75, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.575, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.625, 0)
 mesh = SubResource("BoxMesh_ground_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/GroundPart1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.175, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 0)
 mesh = SubResource("BoxMesh_ground_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart1"]
@@ -263,103 +267,101 @@ shape = SubResource("BoxShape3D_ground")
 [node name="GroundPart2" type="StaticBody3D" parent="LevelGeometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, -0.75, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.575, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.625, 0)
 mesh = SubResource("BoxMesh_ground_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/GroundPart2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.175, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 0)
 mesh = SubResource("BoxMesh_ground_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/GroundPart2"]
 shape = SubResource("BoxShape3D_ground")
 
 [node name="Plat1" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.8, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 2.5, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
 mesh = SubResource("BoxMesh_plat_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat1"]
 shape = SubResource("BoxShape3D_plat")
 
 [node name="Plat2" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 4.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 4.0, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
 mesh = SubResource("BoxMesh_plat_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat2"]
 shape = SubResource("BoxShape3D_plat")
 
 [node name="Plat3" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 3.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 2.8, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
 mesh = SubResource("BoxMesh_plat_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/Plat3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/Plat3"]
 shape = SubResource("BoxShape3D_plat")
 
 [node name="IslandChasm" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 2.0, 0)
 
-[node name="GrassCap" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+[node name="GrassTop" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
 mesh = SubResource("BoxMesh_plat_grass")
 
 [node name="DirtBody" type="MeshInstance3D" parent="LevelGeometry/IslandChasm"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.11, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("BoxMesh_plat_dirt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/IslandChasm"]
 shape = SubResource("BoxShape3D_plat")
 
 [node name="QBlock1" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.6, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock1"]
 mesh = SubResource("BoxMesh_qblock")
 
-[node name="LabelQuestion" type="Label3D" parent="LevelGeometry/QBlock1"]
+[node name="FrontSprite" type="Sprite3D" parent="LevelGeometry/QBlock1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.51)
-pixel_size = 0.009
-text = "?"
-font_size = 80
-outline_size = 14
-outline_color = Color(0.6, 0.38, 0.05, 1)
+pixel_size = 0.0039
+billboard = 0
+texture_filter = 0
+texture = ExtResource("14_qblock_tex")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock1"]
 shape = SubResource("BoxShape3D_qblock")
 
 [node name="QBlock2" type="StaticBody3D" parent="LevelGeometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.6, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LevelGeometry/QBlock2"]
 mesh = SubResource("BoxMesh_qblock")
 
-[node name="LabelQuestion" type="Label3D" parent="LevelGeometry/QBlock2"]
+[node name="FrontSprite" type="Sprite3D" parent="LevelGeometry/QBlock2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.51)
-pixel_size = 0.009
-text = "?"
-font_size = 80
-outline_size = 14
-outline_color = Color(0.6, 0.38, 0.05, 1)
+pixel_size = 0.0039
+billboard = 0
+texture_filter = 0
+texture = ExtResource("14_qblock_tex")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="LevelGeometry/QBlock2"]
 shape = SubResource("BoxShape3D_qblock")
@@ -367,22 +369,22 @@ shape = SubResource("BoxShape3D_qblock")
 [node name="CoinsGroup" type="Node3D" parent="."]
 
 [node name="Coin1" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.8, 0)
 
 [node name="Coin2" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.8, 0)
 
 [node name="Coin3" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 3.8, 0)
 
 [node name="Coin4" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 5.8, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 5.2, 0)
 
 [node name="Coin5" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 4.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 4.0, 0)
 
 [node name="Coin6" parent="CoinsGroup" instance=ExtResource("4_coin")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 3.6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 3.2, 0)
 
 [node name="Coin7" parent="CoinsGroup" instance=ExtResource("4_coin")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 1.8, 0)

@@ -2,10 +2,8 @@ extends CharacterBody3D
 class_name PlayerAmbar
 
 # ==============================================================================
-# SUPER ÁMBAR WONDER - 2.5D PLATFORMER CONTROLLER
-# Style: Super Mario Bros. Wonder / Nintendo Switch 2.5D
-# Features: Z-Plane Lock, Responsive Wonder Physics, Dynamic Squash & Stretch,
-#           Coyote Time, Jump Buffering, Running Lean, Rainbow Power & Flight.
+# SUPER AMBAR WONDER - 2.5D CONTROLLER WITH HD SPRITES & 3D PHYSICS
+# Style: Nintendo 2.5D Wonder / Octopath HD-2D / Paper Mario
 # ==============================================================================
 
 signal coins_changed(new_coins: int)
@@ -29,8 +27,8 @@ signal power_changed(power_name: String)
 @export_group("Game Feel & Polish")
 @export var coyote_time_max: float = 0.12
 @export var jump_buffer_max: float = 0.12
-@export var squash_jump: Vector3 = Vector3(0.75, 1.35, 0.75)
-@export var squash_land: Vector3 = Vector3(1.30, 0.70, 1.30)
+@export var squash_jump: Vector3 = Vector3(0.78, 1.28, 0.78)
+@export var squash_land: Vector3 = Vector3(1.25, 0.75, 1.25)
 @export var squash_recover_speed: float = 12.0
 
 # Gameplay State
@@ -44,19 +42,17 @@ var facing_direction: float = 1.0 # 1.0 = Right, -1.0 = Left
 # Internal Timers
 var coyote_timer: float = 0.0
 var jump_buffer_timer: float = 0.0
-var flight_timer: float = 0.0
 var was_on_floor_last_frame: bool = false
 
 # Node references
 @onready var visuals: Node3D = $Visuals
-@onready var anim_player: AnimationPlayer = $Visuals/AnimationPlayer
-@onready var dust_particles: CPUParticles3D = $Visuals/DustParticles
-@onready var rainbow_particles: CPUParticles3D = $Visuals/RainbowParticles
+@onready var sprite: AnimatedSprite3D = $Visuals/Sprite
+@onready var drop_shadow: MeshInstance3D = $Visuals/DropShadow
 
 func _ready() -> void:
 	emit_signal("coins_changed", coins)
 	emit_signal("lives_changed", lives)
-	emit_signal("power_changed", "SUPER ÁMBAR (BUZO+LENTES)")
+	emit_signal("power_changed", "SUPER AMBAR (BUZO + LENTES)")
 
 func _physics_process(dt: float) -> void:
 	# 1. Enforce strict 2.5D Movement Plane (Z = 0)
@@ -78,7 +74,7 @@ func _physics_process(dt: float) -> void:
 	if Input.is_action_just_pressed("jump"):
 		jump_buffer_timer = jump_buffer_max
 
-	# 4. Handle Flight Mode (Superman / Cape)
+	# 4. Handle Flight Mode
 	if is_flying:
 		_process_flight(dt, move_input)
 		move_and_slide()
@@ -97,7 +93,6 @@ func _physics_process(dt: float) -> void:
 	# 6. Vertical Physics & Jump Logic
 	if not is_on_floor():
 		var applied_gravity: float = gravity
-		# Fall faster when falling downward or releasing jump key (Wonder Variable Jump)
 		if velocity.y < 0.0 or not Input.is_action_pressed("jump"):
 			applied_gravity *= fall_gravity_multiplier
 		velocity.y = max(-max_fall_speed, velocity.y - applied_gravity * dt)
@@ -108,18 +103,14 @@ func _physics_process(dt: float) -> void:
 		jump_buffer_timer = 0.0
 		coyote_timer = 0.0
 		_apply_squash(squash_jump)
-		if dust_particles:
-			dust_particles.restart()
 
 	# Variable Jump Cutoff
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
 		velocity.y *= jump_cut_multiplier
 
-	# 7. Landing Detection (Squash & Sound)
+	# 7. Landing Detection (Squash)
 	if not was_on_floor_last_frame and is_on_floor():
 		_apply_squash(squash_land)
-		if dust_particles:
-			dust_particles.restart()
 
 	was_on_floor_last_frame = is_on_floor()
 
@@ -130,7 +121,7 @@ func _physics_process(dt: float) -> void:
 	# 9. Perform Character Movement
 	move_and_slide()
 
-	# 10. Visual Polish: Squash & Stretch recovery + Turning Tilt + Animation
+	# 10. Update 2.5D Visuals & Animation
 	_update_visuals(dt, move_input)
 
 func _process_flight(dt: float, move_input: float) -> void:
@@ -138,6 +129,8 @@ func _process_flight(dt: float, move_input: float) -> void:
 	velocity.x = move_toward(velocity.x, move_input * run_speed, acceleration * dt)
 	velocity.y = move_toward(velocity.y, v_input * run_speed, acceleration * dt)
 	visuals.rotation_degrees.z = -velocity.x * 2.5
+	if sprite:
+		sprite.play("fly")
 
 func _apply_squash(squash: Vector3) -> void:
 	if visuals:
@@ -147,48 +140,41 @@ func _update_visuals(dt: float, move_input: float) -> void:
 	if not visuals:
 		return
 
-	# Smoothly recover to standard 3D scale (1, 1, 1)
+	# Smooth squash recovery
 	visuals.scale = visuals.scale.lerp(Vector3.ONE, squash_recover_speed * dt)
 
-	# Face movement direction smoothly with 3D Y-rotation
-	var target_y_rot: float = 90.0 if facing_direction > 0 else -90.0
-	visuals.rotation_degrees.y = lerp_angle(deg_to_rad(visuals.rotation_degrees.y), deg_to_rad(target_y_rot), 16.0 * dt)
-	visuals.rotation_degrees.y = rad_to_deg(visuals.rotation_degrees.y)
-
-	# Dynamic Running Lean Angle (Mario Wonder athletic posture)
-	var target_tilt: float = -velocity.x * 1.8
+	# Dynamic Running Lean Angle
+	var target_tilt: float = -velocity.x * 1.5
 	visuals.rotation_degrees.z = lerp(visuals.rotation_degrees.z, target_tilt, 12.0 * dt)
 
-	# Animation selection
-	if anim_player:
-		var target_anim: String = "idle"
-		if not is_on_floor():
-			if velocity.y > 1.0 and anim_player.has_animation("jump_up"):
-				target_anim = "jump_up"
-			elif anim_player.has_animation("jump_fall"):
-				target_anim = "jump_fall"
-			else:
-				target_anim = "idle"
-		elif abs(velocity.x) > 0.5:
-			anim_player.speed_scale = abs(velocity.x) / (walk_speed * 0.8)
-			target_anim = "run" if (is_running and anim_player.has_animation("run")) else "walk"
-		else:
-			anim_player.speed_scale = 1.0
-			target_anim = "idle"
+	# Sprite Direction Flip & Animation
+	if sprite:
+		sprite.flip_h = (facing_direction < 0.0)
 
-		if anim_player.has_animation(target_anim):
-			anim_player.play(target_anim)
+		if not is_on_floor():
+			if velocity.y > 0.0:
+				sprite.play("jump")
+			else:
+				sprite.play("fall")
+			sprite.speed_scale = 1.0
+		elif abs(velocity.x) > 0.5:
+			if is_running:
+				sprite.play("run")
+				sprite.speed_scale = clamp(abs(velocity.x) / (run_speed * 0.8), 0.8, 1.8)
+			else:
+				sprite.play("walk")
+				sprite.speed_scale = clamp(abs(velocity.x) / (walk_speed * 0.8), 0.8, 1.4)
+		else:
+			sprite.play("idle")
+			sprite.speed_scale = 1.0
 
 func _cast_rainbow_beam() -> void:
-	# Spawn dynamic 3D Rainbow Projectile beam
 	var scene = load("res://scenes/rainbow_beam_3d.tscn")
 	if scene:
 		var beam = scene.instantiate()
-		beam.global_position = global_position + Vector3(facing_direction * 0.8, 0.7, 0.0)
+		beam.global_position = global_position + Vector3(facing_direction * 0.8, 0.9, 0.0)
 		beam.direction = Vector3(facing_direction, 0.0, 0.0)
 		get_parent().add_child(beam)
-	if rainbow_particles:
-		rainbow_particles.restart()
 
 func collect_coin() -> void:
 	coins += 1
