@@ -4,12 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Super Ámbar Wonder (2.5D)</title>
-		<base href="/wonder/">
-		<script>
-			// Guarantee relative assets resolve to /wonder/ even if accessed at /wonder
-			if (window.location.pathname === '/wonder') {
-				window.location.replace('/wonder/' + window.location.search + window.location.hash);
-			}
+		<base href="./">
 			// Force unregister stale service workers and clear cache storage
 			if ('serviceWorker' in navigator) {
 				navigator.serviceWorker.getRegistrations().then(function(regs) {
