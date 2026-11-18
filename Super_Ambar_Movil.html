@@ -11450,17 +11450,17 @@ window.addEventListener('DOMContentLoaded', () => {
   <script>
 /**
  * ============================================================================
- * SUPER ÁMBAR ALL-STARS - MODERN 2D HD ENGINE (RAYMAN / HOLLOW KNIGHT / WONDER STYLE)
+ * SUPER ÁMBAR ALL-STARS - NEXT-GEN 2D HD ENGINE (NINTENDO SWITCH 2 / WONDER QUALITY)
  * ============================================================================
- * Elevates the retro 16-bit engine to a modern, high-definition illustrated
- * platformer with:
- *  - 128x128 High-Definition Procedural & Beveled Illustrated Tiles
- *  - Dynamic 2D Lighting Engine (Radial glows, sunbeams, torchlight, lava radiance)
- *  - Organic Weather & Particle Systems (Fluttering leaves, drifting snow, running dust, embers)
- *  - Soft Contact Drop Shadows and 2.5D Depth cues for Ámbar
- *  - Cinematic Smooth Camera with Dynamic Look-Ahead
- *  - Sleek Glassmorphism Modern HUD with Titan One / Clean Typography
- *  - Instant Real-time Toggle (Key H or Top Toolbar Button)
+ * Elevates the game to AAA modern console fidelity (Super Mario Wonder / Rayman Legends):
+ *  - Hand-painted multi-tier parallax scenery with atmospheric depth & perspective
+ *  - Volumetric god rays (sunbeams) and dynamic ambient lighting
+ *  - Animated specular light gleams on golden question blocks & coins
+ *  - Cinematic foreground depth-of-field framing (blurred foliage / ferns)
+ *  - Character rim lighting, organic contact shadows & squash/stretch physics
+ *  - Organic weather particle systems (drifting petals, blizzard snow, fire embers)
+ *  - Ultra-sleek Glassmorphism floating HUD with 3D heart containers & animated coins
+ *  - Real-time instant toggle (Key 'H' or Top Toolbar Button)
  * ============================================================================
  */
 
@@ -11476,15 +11476,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Ambient Weather Particles
     weatherParticles: [],
-    lastTheme: null,
 
-    // Smooth Camera State
-    smoothCameraX: 0,
-    targetCameraX: 0,
-    lookAheadX: 0,
+    // Running & Skid Smoke Particles
+    smokeParticles: [],
 
     init() {
-      console.log('✨ [ModernHD] Initializing 2D HD Engine...');
+      console.log('✨ [ModernHD] Initializing Nintendo Switch 2 Quality 2D HD Engine...');
       this.initWeather();
       this.injectHUDStyles();
       this.hookEngine();
@@ -11516,7 +11513,7 @@ window.addEventListener('DOMContentLoaded', () => {
           vy: -1.2,
           life: 1.5,
           maxLife: 1.5,
-          text: this.enabled ? '✨ MODO HD ACTIVADO ✨' : '📺 MODO RETRO 16-BIT 📺',
+          text: this.enabled ? '✨ MODO SWITCH 2 HD ACTIVADO ✨' : '📺 MODO RETRO 16-BIT 📺',
           color: this.enabled ? '#38bdf8' : '#fde047'
         });
       }
@@ -11525,18 +11522,18 @@ window.addEventListener('DOMContentLoaded', () => {
     updateUI() {
       const btn = document.getElementById('btnHdToggle');
       if (btn) {
-        btn.innerHTML = this.enabled ? '✨ MODO: HD ILUSTRADO' : '📺 MODO: RETRO 16-BIT';
+        btn.innerHTML = this.enabled ? '✨ MODO: SWITCH 2 HD' : '📺 MODO: RETRO 16-BIT';
         btn.style.background = this.enabled
           ? 'linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6)'
           : 'linear-gradient(180deg, #475569 0%, #334155 100%)';
         btn.style.borderColor = this.enabled ? '#fde047' : '#94a3b8';
         btn.style.color = '#ffffff';
-        btn.style.boxShadow = this.enabled ? '0 0 12px rgba(236, 72, 153, 0.7)' : 'none';
+        btn.style.boxShadow = this.enabled ? '0 0 14px rgba(236, 72, 153, 0.8)' : 'none';
       }
 
       const badge = document.querySelector('.brand-badge');
       if (badge) {
-        badge.textContent = this.enabled ? 'MODERNO HD 2D' : '16-BIT SNES';
+        badge.textContent = this.enabled ? 'SWITCH 2 EDITION' : '16-BIT SNES';
         badge.style.background = this.enabled
           ? 'linear-gradient(90deg, #ec4899, #8b5cf6)'
           : '#4c1d95';
@@ -11548,7 +11545,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const link = document.createElement('link');
         link.id = 'hd-font-link';
         link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Titan+One&family=Outfit:wght@600;700;800&display=swap';
+        link.href = 'https://fonts.googleapis.com/css2?family=Titan+One&family=Outfit:wght@600;700;800;900&display=swap';
         document.head.appendChild(link);
       }
     },
@@ -11585,7 +11582,7 @@ window.addEventListener('DOMContentLoaded', () => {
           break;
         case '?':
         case 'L':
-          this.renderHDQuestionBlock(g, S, frame);
+          this.renderHDQuestionBlock(g, S, frame, time);
           break;
         case 'E':
           this.renderHDEmptyBlock(g, S);
@@ -11613,11 +11610,11 @@ window.addEventListener('DOMContentLoaded', () => {
       g.save();
 
       // ----------------------------------------------------------------------
-      // THEME 1: PRADERA ARCOÍRIS (Vibrant Grassland / Subterranean Earth)
+      // THEME 1: PRADERA ARCOÍRIS (Grassland / Subterranean Loam)
       // ----------------------------------------------------------------------
       if (theme === 1 || theme === 6 || theme === 7) {
         if (isSubterranean) {
-          // Deep subterranean loam soil (no grass on top)
+          // Deep subterranean loam soil
           const subGrad = g.createLinearGradient(0, 0, 0, S);
           subGrad.addColorStop(0, '#421f0b');
           subGrad.addColorStop(0.5, '#351808');
@@ -11649,7 +11646,7 @@ window.addEventListener('DOMContentLoaded', () => {
             g.fill();
           });
 
-          // Subtle organic root strands
+          // Organic root strands
           g.strokeStyle = '#271408';
           g.lineWidth = 2;
           g.beginPath();
@@ -11763,11 +11760,9 @@ window.addEventListener('DOMContentLoaded', () => {
           g.fillStyle = pGrad;
           g.fillRect(0, py + 2, S, plankH - 4);
 
-          // Top bevel
           g.fillStyle = 'rgba(254, 215, 170, 0.55)';
           g.fillRect(0, py + 2, S, 3);
 
-          // Wood grain line
           g.strokeStyle = 'rgba(69, 26, 3, 0.45)';
           g.lineWidth = 2.5;
           g.beginPath();
@@ -11775,7 +11770,6 @@ window.addEventListener('DOMContentLoaded', () => {
           g.bezierCurveTo(S * 0.3, py + plankH * 0.3, S * 0.7, py + plankH * 0.6, S, py + plankH * 0.45);
           g.stroke();
 
-          // Brass screws
           [14, S - 14].forEach(sx => {
             g.fillStyle = '#fde047';
             g.beginPath();
@@ -11800,7 +11794,6 @@ window.addEventListener('DOMContentLoaded', () => {
         g.fillStyle = obsGrad;
         g.fillRect(4, 4, S - 8, S - 8);
 
-        // Magma crack glowing
         g.strokeStyle = '#f97316';
         g.lineWidth = 4;
         g.shadowColor = '#ea580c';
@@ -11839,7 +11832,6 @@ window.addEventListener('DOMContentLoaded', () => {
         g.closePath();
         g.fill();
 
-        // Ice crystal facets
         g.strokeStyle = 'rgba(255, 255, 255, 0.7)';
         g.lineWidth = 3;
         g.beginPath();
@@ -11897,8 +11889,8 @@ window.addEventListener('DOMContentLoaded', () => {
       g.restore();
     },
 
-    // HD QUESTION BLOCK: Beveled golden metal with animated glowing '?' and rivets
-    renderHDQuestionBlock(g, S, frame) {
+    // HD QUESTION BLOCK: Beveled golden metal with animated glowing '?' and specular sheen
+    renderHDQuestionBlock(g, S, frame, time) {
       g.save();
 
       // Outer drop shadow border
@@ -11963,15 +11955,15 @@ window.addEventListener('DOMContentLoaded', () => {
       g.translate(S / 2, S / 2);
       g.scale(pulse, pulse);
 
-      // Question mark shadow
-      g.font = 'bold 74px "Titan One", "Outfit", "Arial Black", sans-serif';
+      g.font = '900 76px "Titan One", "Outfit", "Arial Black", sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
 
+      // Drop shadow
       g.fillStyle = '#78350f';
       g.fillText('?', 2, 8);
 
-      // Question mark glow
+      // Specular glow
       g.shadowColor = '#ffffff';
       g.shadowBlur = 18;
       g.fillStyle = '#ffffff';
@@ -11994,7 +11986,6 @@ window.addEventListener('DOMContentLoaded', () => {
     renderHDBrick(g, S, theme) {
       g.save();
 
-      // Mortar background
       g.fillStyle = theme === 8 ? '#0f172a' : '#2b1406';
       g.fillRect(0, 0, S, S);
 
@@ -12021,7 +12012,6 @@ window.addEventListener('DOMContentLoaded', () => {
           g.roundRect(b.x, ry, b.w, rH, 3);
           g.fill();
 
-          // Bevel highlight
           g.fillStyle = highlight;
           g.fillRect(b.x + 1, ry + 1, b.w - 2, 2);
           g.fillRect(b.x + 1, ry + 1, 2, rH - 2);
@@ -12081,7 +12071,6 @@ window.addEventListener('DOMContentLoaded', () => {
       g.fillStyle = mGrad;
       g.fillRect(3, 3, S - 6, S - 6);
 
-      // Diamond facet
       g.fillStyle = 'rgba(255, 255, 255, 0.2)';
       g.beginPath();
       g.moveTo(S / 2, 10);
@@ -12113,7 +12102,6 @@ window.addEventListener('DOMContentLoaded', () => {
       pipeGrad.addColorStop(1, '#022c22');
 
       if (isTop) {
-        // Collar lip
         g.fillStyle = '#022c22';
         g.beginPath();
         g.roundRect(0, 0, S, 44, [8, 8, 4, 4]);
@@ -12124,25 +12112,21 @@ window.addEventListener('DOMContentLoaded', () => {
         g.roundRect(3, 3, S - 6, 38, [6, 6, 2, 2]);
         g.fill();
 
-        // Top dark opening hole
         const holeGrad = g.createLinearGradient(0, 4, 0, 16);
         holeGrad.addColorStop(0, '#021811');
         holeGrad.addColorStop(1, '#064e3b');
         g.fillStyle = holeGrad;
         g.fillRect(8, 4, S - 16, 10);
 
-        // Lower stem under collar
         g.fillStyle = '#022c22';
         g.fillRect(10, 44, S - 20, S - 44);
 
         g.fillStyle = pipeGrad;
         g.fillRect(13, 46, S - 26, S - 46);
 
-        // Drop shadow under lip
         g.fillStyle = 'rgba(0, 0, 0, 0.45)';
         g.fillRect(13, 44, S - 26, 8);
       } else {
-        // Pipe Stem
         g.fillStyle = '#022c22';
         g.fillRect(10, 0, S - 20, S);
 
@@ -12156,9 +12140,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // HD CLOUD: Fluffy painterly cumulus cloud puff
     renderHDCloud(g, S) {
       g.save();
-      g.fillStyle = '#ffffff';
-
-      // Soft cloud gradient
       const cGrad = g.createRadialGradient(S / 2, S / 2, 10, S / 2, S / 2, S * 0.48);
       cGrad.addColorStop(0, '#ffffff');
       cGrad.addColorStop(0.7, '#f0fdf4');
@@ -12177,20 +12158,346 @@ window.addEventListener('DOMContentLoaded', () => {
     },
 
     // ========================================================================
-    // 2. WEATHER & AMBIENT PARTICLES
+    // 2. NEXT-GEN PAINTERLY BACKGROUNDS (NINTENDO SWITCH 2 / WONDER QUALITY)
+    // ========================================================================
+    renderNextGenBackground(ctx, game) {
+      const theme = game.level ? game.level.theme : 1;
+      const W = 854;
+      const H = 480;
+      const camX = game.cameraX || 0;
+      const time = game.time || 0;
+
+      ctx.save();
+
+      // ----------------------------------------------------------------------
+      // THEME 1: PRADERA ARCOÍRIS (Wonder Alpine Peaks & Volumetric Sunbeams)
+      // ----------------------------------------------------------------------
+      if (theme === 1 || theme === 6 || theme === 7) {
+        // Sky Gradient (Rich Cerulean Blue down to Golden Peach Horizon)
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+        skyGrad.addColorStop(0, '#1e40af');
+        skyGrad.addColorStop(0.35, '#3b82f6');
+        skyGrad.addColorStop(0.7, '#93c5fd');
+        skyGrad.addColorStop(0.92, '#fed7aa');
+        skyGrad.addColorStop(1, '#fef08a');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Radiant Morning Sun
+        const sunX = W - 180 - (camX * 0.02) % 1200;
+        const sunY = 85;
+        const sunGlow = ctx.createRadialGradient(sunX, sunY, 15, sunX, sunY, 140);
+        sunGlow.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        sunGlow.addColorStop(0.25, 'rgba(254, 240, 138, 0.6)');
+        sunGlow.addColorStop(0.65, 'rgba(253, 186, 116, 0.25)');
+        sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = sunGlow;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 140, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Volumetric Sunbeams (God Rays)
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.22 + Math.sin(time * 0.8) * 0.06;
+        for (let r = 0; r < 5; r++) {
+          const angle = 0.45 + r * 0.16 + Math.sin(time * 0.5 + r) * 0.02;
+          const rGrad = ctx.createLinearGradient(sunX, sunY, sunX + Math.cos(angle) * 700, sunY + Math.sin(angle) * 700);
+          rGrad.addColorStop(0, 'rgba(254, 240, 138, 0.6)');
+          rGrad.addColorStop(0.7, 'rgba(253, 224, 71, 0.15)');
+          rGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = rGrad;
+          ctx.beginPath();
+          ctx.moveTo(sunX, sunY);
+          ctx.lineTo(sunX + Math.cos(angle - 0.06) * 750, sunY + Math.sin(angle - 0.06) * 750);
+          ctx.lineTo(sunX + Math.cos(angle + 0.06) * 750, sunY + Math.sin(angle + 0.06) * 750);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Atmospheric Rainbow
+        ctx.save();
+        ctx.globalAlpha = 0.32;
+        const rainbowColors = ['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#c084fc'];
+        const rx = 440 - (camX * 0.05) % 1000;
+        rainbowColors.forEach((c, idx) => {
+          ctx.strokeStyle = c;
+          ctx.lineWidth = 10;
+          ctx.beginPath();
+          ctx.arc(rx, 440, 310 - idx * 10, Math.PI, 0);
+          ctx.stroke();
+        });
+        ctx.restore();
+
+        // PARALLAX LAYER 1: Far Majestic Alpine Mountains (x0.06)
+        for (let m = 0; m < 5; m++) {
+          const mx = ((m * 290 - camX * 0.06) % (W + 400) + W + 400) % (W + 400) - 180;
+          const peakH = 150 + (m % 2) * 45;
+          const mGrad = ctx.createLinearGradient(mx, peakH, mx + 260, 420);
+          mGrad.addColorStop(0, '#818cf8');
+          mGrad.addColorStop(0.35, '#6366f1');
+          mGrad.addColorStop(0.75, '#4338ca');
+          mGrad.addColorStop(1, '#c7d2fe'); // Atmospheric mist at base
+          ctx.fillStyle = mGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(mx, 420);
+          ctx.lineTo(mx + 110, peakH);
+          ctx.lineTo(mx + 130, peakH + 8);
+          ctx.lineTo(mx + 145, peakH);
+          ctx.lineTo(mx + 260, 420);
+          ctx.closePath();
+          ctx.fill();
+
+          // Snow Cap with lighting
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(mx + 110, peakH);
+          ctx.lineTo(mx + 145, peakH);
+          ctx.lineTo(mx + 160, peakH + 32);
+          ctx.lineTo(mx + 130, peakH + 24);
+          ctx.lineTo(mx + 95, peakH + 32);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // PARALLAX LAYER 2: Rolling Emerald Mid Hills with Pine Forests (x0.16)
+        for (let h = 0; h < 6; h++) {
+          const hx = ((h * 240 - camX * 0.16) % (W + 360) + W + 360) % (W + 360) - 160;
+          const hy = 230 + (h % 3) * 30;
+
+          const hillGrad = ctx.createLinearGradient(hx, hy, hx + 280, 430);
+          hillGrad.addColorStop(0, '#34d399');
+          hillGrad.addColorStop(0.4, '#059669');
+          hillGrad.addColorStop(1, '#065f46');
+          ctx.fillStyle = hillGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(hx, 430);
+          ctx.quadraticCurveTo(hx + 140, hy - 25, hx + 280, 430);
+          ctx.closePath();
+          ctx.fill();
+
+          // Stylized Pine Trees on the ridge
+          ctx.fillStyle = '#064e3b';
+          for (let t = 0; t < 4; t++) {
+            const tx = hx + 70 + t * 38;
+            const ty = hy + 8 + (t % 2) * 6;
+            ctx.beginPath();
+            ctx.moveTo(tx, ty - 18);
+            ctx.lineTo(tx + 8, ty);
+            ctx.lineTo(tx - 8, ty);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillRect(tx - 1.5, ty, 3, 5);
+          }
+        }
+
+        // PARALLAX LAYER 3: Near Rolling Lush Flower Hills (x0.32)
+        for (let n = 0; n < 5; n++) {
+          const nx = ((n * 270 - camX * 0.32) % (W + 340) + W + 340) % (W + 340) - 140;
+          const ny = 295 + (n % 2) * 20;
+
+          const nearGrad = ctx.createLinearGradient(nx, ny, nx + 290, 430);
+          nearGrad.addColorStop(0, '#86efac');
+          nearGrad.addColorStop(0.45, '#22c55e');
+          nearGrad.addColorStop(1, '#15803d');
+          ctx.fillStyle = nearGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(nx, 430);
+          ctx.quadraticCurveTo(nx + 145, ny - 30, nx + 290, 430);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Painterly Cumulus Clouds drifting in the sky
+        for (let c = 0; c < 4; c++) {
+          const cx = ((c * 320 + time * 12 - camX * 0.1) % (W + 300) + W + 300) % (W + 300) - 120;
+          const cy = 60 + (c % 3) * 35;
+          const cGrad = ctx.createRadialGradient(cx + 40, cy + 20, 10, cx + 40, cy + 20, 65);
+          cGrad.addColorStop(0, '#ffffff');
+          cGrad.addColorStop(0.8, '#f0fdf4');
+          cGrad.addColorStop(1, 'rgba(224, 242, 254, 0.85)');
+          ctx.fillStyle = cGrad;
+          ctx.beginPath();
+          ctx.arc(cx + 30, cy + 25, 24, 0, Math.PI * 2);
+          ctx.arc(cx + 55, cy + 18, 30, 0, Math.PI * 2);
+          ctx.arc(cx + 85, cy + 22, 26, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+      // ----------------------------------------------------------------------
+      // THEME 4: PLAYA AL ATARDECER (Sunset Synthwave Horizon & Ocean Reflections)
+      // ----------------------------------------------------------------------
+      } else if (theme === 4) {
+        const sunsetSky = ctx.createLinearGradient(0, 0, 0, H);
+        sunsetSky.addColorStop(0, '#311042');
+        sunsetSky.addColorStop(0.3, '#701a75');
+        sunsetSky.addColorStop(0.55, '#c026d3');
+        sunsetSky.addColorStop(0.72, '#f43f5e');
+        sunsetSky.addColorStop(0.85, '#fb923c');
+        sunsetSky.addColorStop(1, '#fde047');
+        ctx.fillStyle = sunsetSky;
+        ctx.fillRect(0, 0, W, H);
+
+        // Huge Glowing Sunset Sun
+        const sunY = 240;
+        const sunX = W / 2 - (camX * 0.03) % 400;
+        const sGrad = ctx.createLinearGradient(sunX, sunY - 90, sunX, sunY + 90);
+        sGrad.addColorStop(0, '#ffffff');
+        sGrad.addColorStop(0.3, '#fef08a');
+        sGrad.addColorStop(0.7, '#f97316');
+        sGrad.addColorStop(1, '#e11d48');
+        ctx.fillStyle = sGrad;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 80, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ocean Sea Body
+        const seaGrad = ctx.createLinearGradient(0, 260, 0, H);
+        seaGrad.addColorStop(0, '#1e1b4b');
+        seaGrad.addColorStop(0.4, '#312e81');
+        seaGrad.addColorStop(1, '#4338ca');
+        ctx.fillStyle = seaGrad;
+        ctx.fillRect(0, 260, W, H - 260);
+
+        // Sun path glistening ripples on water
+        for (let r = 0; r < 14; r++) {
+          const ry = 265 + r * 11;
+          const rw = 20 + r * 18;
+          ctx.fillStyle = `rgba(254, 240, 138, ${Math.max(0.2, 0.85 - r * 0.05)})`;
+          ctx.fillRect(sunX - rw / 2 + Math.sin(time * 3 + r) * 6, ry, rw, 3.5);
+        }
+
+        // Silhouette Palm Trees waving
+        for (let p = 0; p < 4; p++) {
+          const px = ((p * 280 - camX * 0.22) % (W + 280) + W + 280) % (W + 280) - 100;
+          ctx.strokeStyle = '#18181b';
+          ctx.lineWidth = 9;
+          ctx.beginPath();
+          ctx.moveTo(px, 430);
+          ctx.quadraticCurveTo(px + 20, 320, px + 35, 230);
+          ctx.stroke();
+
+          // Palm fronds
+          ctx.fillStyle = '#18181b';
+          for (let f = 0; f < 5; f++) {
+            const rad = (f * Math.PI) / 4 + Math.sin(time * 2 + p) * 0.08;
+            ctx.beginPath();
+            ctx.ellipse(px + 35 + Math.cos(rad) * 45, 230 + Math.sin(rad) * 30, 45, 12, rad, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+      // ----------------------------------------------------------------------
+      // THEME 8 / 3: CASTILLO DE LAVA (Volcanic Caldera & Magma Falls)
+      // ----------------------------------------------------------------------
+      } else if (theme === 8 || theme === 3) {
+        const fireSky = ctx.createLinearGradient(0, 0, 0, H);
+        fireSky.addColorStop(0, '#09090b');
+        fireSky.addColorStop(0.4, '#261215');
+        fireSky.addColorStop(0.75, '#450a0a');
+        fireSky.addColorStop(1, '#7f1d1d');
+        ctx.fillStyle = fireSky;
+        ctx.fillRect(0, 0, W, H);
+
+        // Volcanic Spires in background
+        for (let v = 0; v < 5; v++) {
+          const vx = ((v * 260 - camX * 0.08) % (W + 300) + W + 300) % (W + 300) - 120;
+          ctx.fillStyle = '#18181b';
+          ctx.beginPath();
+          ctx.moveTo(vx, 430);
+          ctx.lineTo(vx + 60, 110);
+          ctx.lineTo(vx + 140, 430);
+          ctx.closePath();
+          ctx.fill();
+
+          // Magma streak
+          ctx.strokeStyle = '#f97316';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(vx + 60, 110);
+          ctx.lineTo(vx + 75, 280);
+          ctx.lineTo(vx + 65, 430);
+          ctx.stroke();
+        }
+
+      // ----------------------------------------------------------------------
+      // THEME 12 / 14: VALLE GLACIAL (Aurora Borealis & Jagged Snow Peaks)
+      // ----------------------------------------------------------------------
+      } else if (theme === 12 || theme === 14) {
+        const iceSky = ctx.createLinearGradient(0, 0, 0, H);
+        iceSky.addColorStop(0, '#020617');
+        iceSky.addColorStop(0.4, '#0f172a');
+        iceSky.addColorStop(0.75, '#0c4a6e');
+        iceSky.addColorStop(1, '#075985');
+        ctx.fillStyle = iceSky;
+        ctx.fillRect(0, 0, W, H);
+
+        // Waving Aurora Borealis Curtains
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.35 + Math.sin(time) * 0.1;
+        const auroraColors = ['#34d399', '#38bdf8', '#c084fc'];
+        auroraColors.forEach((ac, idx) => {
+          ctx.fillStyle = ac;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          for (let x = 0; x <= W; x += 40) {
+            const ay = 80 + idx * 25 + Math.sin(time * 1.5 + x * 0.01 + idx) * 35;
+            ctx.lineTo(x, ay);
+          }
+          ctx.lineTo(W, 0);
+          ctx.closePath();
+          ctx.fill();
+        });
+        ctx.restore();
+
+        // Jagged Ice Crystals
+        for (let i = 0; i < 5; i++) {
+          const ix = ((i * 250 - camX * 0.1) % (W + 300) + W + 300) % (W + 300) - 120;
+          const iGrad = ctx.createLinearGradient(ix, 140, ix + 180, 430);
+          iGrad.addColorStop(0, '#bae6fd');
+          iGrad.addColorStop(0.5, '#0284c7');
+          iGrad.addColorStop(1, '#082f49');
+          ctx.fillStyle = iGrad;
+          ctx.beginPath();
+          ctx.moveTo(ix, 430);
+          ctx.lineTo(ix + 90, 140);
+          ctx.lineTo(ix + 180, 430);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+      // Default Theme Fallback
+      } else {
+        const defSky = ctx.createLinearGradient(0, 0, 0, H);
+        defSky.addColorStop(0, '#0f172a');
+        defSky.addColorStop(1, '#334155');
+        ctx.fillStyle = defSky;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      ctx.restore();
+    },
+
+    // ========================================================================
+    // 3. WEATHER & AMBIENT PARTICLES
     // ========================================================================
     initWeather() {
       this.weatherParticles = [];
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 45; i++) {
         this.weatherParticles.push({
           x: Math.random() * 900,
           y: Math.random() * 500,
           vx: (Math.random() - 0.5) * 1.5,
           vy: 0.5 + Math.random() * 1.5,
-          size: 2 + Math.random() * 4,
+          size: 2.5 + Math.random() * 4.5,
           rot: Math.random() * Math.PI * 2,
           vrot: (Math.random() - 0.5) * 0.08,
-          alpha: 0.3 + Math.random() * 0.6,
+          alpha: 0.35 + Math.random() * 0.55,
           sway: Math.random() * 10
         });
       }
@@ -12198,8 +12505,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     updateWeather(dt, theme) {
       this.weatherParticles.forEach(p => {
-        p.sway += dt * 2;
-        p.x += (p.vx + Math.sin(p.sway) * 0.6) * 60 * dt;
+        p.sway += dt * 2.2;
+        p.x += (p.vx + Math.sin(p.sway) * 0.8) * 60 * dt;
         p.y += p.vy * 60 * dt;
         p.rot += p.vrot;
 
@@ -12210,10 +12517,35 @@ window.addEventListener('DOMContentLoaded', () => {
         if (p.x < -20) p.x = 880;
         if (p.x > 880) p.x = -20;
       });
+
+      // Update Skid Smoke
+      for (let s = this.smokeParticles.length - 1; s >= 0; s--) {
+        const sm = this.smokeParticles[s];
+        sm.x += sm.vx;
+        sm.y += sm.vy;
+        sm.size += 0.4;
+        sm.alpha -= dt * 2.2;
+        if (sm.alpha <= 0) {
+          this.smokeParticles.splice(s, 1);
+        }
+      }
     },
 
     renderWeather(ctx, theme) {
       ctx.save();
+
+      // Draw Skid Smoke Puffs
+      this.smokeParticles.forEach(sm => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, sm.alpha);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(sm.x, sm.y, sm.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Draw Ambient Weather
       this.weatherParticles.forEach(p => {
         ctx.globalAlpha = p.alpha;
         ctx.save();
@@ -12247,7 +12579,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // Grassland drifting leaves & flower petals
         } else {
-          ctx.fillStyle = p.size > 4 ? '#f472b6' : '#86efac';
+          ctx.fillStyle = p.size > 4.5 ? '#f472b6' : '#86efac';
           ctx.beginPath();
           ctx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
           ctx.fill();
@@ -12255,11 +12587,40 @@ window.addEventListener('DOMContentLoaded', () => {
 
         ctx.restore();
       });
+
       ctx.restore();
     },
 
     // ========================================================================
-    // 3. DYNAMIC 2D LIGHTING PASS
+    // 4. FOREGROUND CINEMATIC DEPTH-OF-FIELD (FERNS / LEAVES FRAMING)
+    // ========================================================================
+    renderForegroundDepth(ctx, game) {
+      const theme = game.level ? game.level.theme : 1;
+      const W = 854;
+      const H = 480;
+      const camX = game.cameraX || 0;
+
+      // Only draw framing foliage on outdoor themes
+      if (theme !== 1 && theme !== 4 && theme !== 6) return;
+
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+
+      // Foreground lush fern in bottom corners (moving at 1.4x speed for 3D depth)
+      const fx1 = ((-camX * 1.4) % (W + 600) + W + 600) % (W + 600) - 200;
+      if (fx1 > -180 && fx1 < W + 100) {
+        ctx.fillStyle = '#14532d';
+        ctx.beginPath();
+        ctx.ellipse(fx1, H - 20, 90, 45, -0.35, 0, Math.PI * 2);
+        ctx.ellipse(fx1 + 60, H - 35, 80, 40, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    },
+
+    // ========================================================================
+    // 5. DYNAMIC 2D LIGHTING PASS
     // ========================================================================
     renderLightingPass(ctx, game) {
       const theme = game.level ? game.level.theme : 1;
@@ -12271,23 +12632,23 @@ window.addEventListener('DOMContentLoaded', () => {
       // Atmospheric Vignette & Color Grade per theme
       if (theme === 8 || theme === 3) {
         // Lava Castle: Fiery warm bottom radiant glow
-        const lavaGlow = ctx.createLinearGradient(0, H - 120, 0, H);
+        const lavaGlow = ctx.createLinearGradient(0, H - 140, 0, H);
         lavaGlow.addColorStop(0, 'rgba(239, 68, 68, 0)');
-        lavaGlow.addColorStop(1, 'rgba(249, 115, 22, 0.35)');
+        lavaGlow.addColorStop(1, 'rgba(249, 115, 22, 0.4)');
         ctx.fillStyle = lavaGlow;
         ctx.fillRect(0, 0, W, H);
       } else if (theme === 12 || theme === 14) {
         // Glacial Frost: Cool cyan atmospheric mist
         const frostGlow = ctx.createLinearGradient(0, 0, 0, H);
         frostGlow.addColorStop(0, 'rgba(186, 230, 253, 0.08)');
-        frostGlow.addColorStop(1, 'rgba(56, 189, 248, 0.12)');
+        frostGlow.addColorStop(1, 'rgba(56, 189, 248, 0.14)');
         ctx.fillStyle = frostGlow;
         ctx.fillRect(0, 0, W, H);
       } else if (theme === 4) {
         // Sunset Beach: Warm golden amber wash
         const sunsetGrad = ctx.createLinearGradient(0, 0, 0, H);
-        sunsetGrad.addColorStop(0, 'rgba(251, 146, 60, 0.14)');
-        sunsetGrad.addColorStop(1, 'rgba(244, 63, 94, 0.1)');
+        sunsetGrad.addColorStop(0, 'rgba(251, 146, 60, 0.16)');
+        sunsetGrad.addColorStop(1, 'rgba(244, 63, 94, 0.12)');
         ctx.fillStyle = sunsetGrad;
         ctx.fillRect(0, 0, W, H);
       }
@@ -12302,7 +12663,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (px >= -80 && px <= W + 80) {
         const isStar = game.player.starTimer > 0;
         const isFlying = game.player.isFlying;
-        const radius = isStar ? 120 : (isFlying ? 90 : 65);
+        const radius = isStar ? 130 : (isFlying ? 95 : 70);
 
         const pLight = ctx.createRadialGradient(px, py, 6, px, py, radius);
         if (isStar) {
@@ -12310,10 +12671,10 @@ window.addEventListener('DOMContentLoaded', () => {
           pLight.addColorStop(0, `hsla(${hue}, 100%, 75%, 0.6)`);
           pLight.addColorStop(1, 'rgba(0, 0, 0, 0)');
         } else if (isFlying) {
-          pLight.addColorStop(0, 'rgba(253, 224, 71, 0.5)');
+          pLight.addColorStop(0, 'rgba(253, 224, 71, 0.55)');
           pLight.addColorStop(1, 'rgba(0, 0, 0, 0)');
         } else {
-          pLight.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+          pLight.addColorStop(0, 'rgba(255, 255, 255, 0.24)');
           pLight.addColorStop(1, 'rgba(0, 0, 0, 0)');
         }
         ctx.fillStyle = pLight;
@@ -12327,13 +12688,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const rx = Math.round(pr.x + pr.w / 2 - game.cameraX);
         const ry = Math.round(pr.y + pr.h / 2);
         if (rx >= 0 && rx <= W) {
-          const rLight = ctx.createRadialGradient(rx, ry, 2, rx, ry, 45);
-          rLight.addColorStop(0, 'rgba(254, 240, 138, 0.7)');
-          rLight.addColorStop(0.5, 'rgba(244, 114, 182, 0.4)');
+          const rLight = ctx.createRadialGradient(rx, ry, 2, rx, ry, 50);
+          rLight.addColorStop(0, 'rgba(254, 240, 138, 0.75)');
+          rLight.addColorStop(0.5, 'rgba(244, 114, 182, 0.45)');
           rLight.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = rLight;
           ctx.beginPath();
-          ctx.arc(rx, ry, 45, 0, Math.PI * 2);
+          ctx.arc(rx, ry, 50, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -12342,7 +12703,7 @@ window.addEventListener('DOMContentLoaded', () => {
     },
 
     // ========================================================================
-    // 4. MODERN GLASSMORPHISM HUD
+    // 6. MODERN GLASSMORPHISM HUD
     // ========================================================================
     renderModernHUD(ctx, game) {
       const W = 854;
@@ -12355,18 +12716,18 @@ window.addEventListener('DOMContentLoaded', () => {
       const barH = 58;
 
       ctx.save();
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
       ctx.beginPath();
       ctx.roundRect(barX, barY, barW, barH, 20);
       ctx.fill();
 
       // Glass border & top reflection sheen
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.9)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
       const sheenGrad = ctx.createLinearGradient(barX, barY, barX, barY + barH * 0.45);
-      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
       sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
       ctx.fillStyle = sheenGrad;
       ctx.beginPath();
@@ -12452,7 +12813,7 @@ window.addEventListener('DOMContentLoaded', () => {
     },
 
     // ========================================================================
-    // 5. ENGINE HOOKS & WRAPPERS
+    // 7. ENGINE HOOKS & WRAPPERS
     // ========================================================================
     hookEngine() {
       const self = this;
@@ -12462,6 +12823,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const renderer = window.spriteRenderer;
         if (renderer && !renderer._hdHooked) {
           renderer._hdHooked = true;
+
+          // Hook drawTile
           const origDrawTile = renderer.drawTile;
           renderer.drawTile = function (ctx, type, x, y, size, time, levelTheme) {
             if (self.enabled) {
@@ -12485,6 +12848,7 @@ window.addEventListener('DOMContentLoaded', () => {
             return origDrawTile.call(this, ctx, type, x, y, size, time, levelTheme);
           };
 
+          // Hook drawEnemy
           const origDrawEnemy = renderer.drawEnemy;
           renderer.drawEnemy = function (ctx, enemy, time, levelTheme) {
             if (self.enabled && !enemy.dead) {
@@ -12502,6 +12866,7 @@ window.addEventListener('DOMContentLoaded', () => {
             return origDrawEnemy.call(this, ctx, enemy, time, levelTheme);
           };
 
+          // Hook drawAmbar (Adds Contact Shadow, Rim Light & Smoothness)
           const origDrawAmbar = renderer.drawAmbar;
           renderer.drawAmbar = function (ctx, player, time) {
             if (self.enabled) {
@@ -12519,10 +12884,17 @@ window.addEventListener('DOMContentLoaded', () => {
               ctx.beginPath();
               ctx.ellipse(shadowX, groundY + 1, shadowRadius, 5, 0, 0, Math.PI * 2);
               ctx.fill();
-              ctx.restore();
+
+              // Character Rim Light Glow (Subtle soft separation halo)
+              ctx.shadowColor = 'rgba(255, 255, 255, 0.45)';
+              ctx.shadowBlur = 8;
             }
 
             origDrawAmbar.call(this, ctx, player, time);
+
+            if (self.enabled) {
+              ctx.restore();
+            }
           };
           console.log('✨ [ModernHD] Hooked window.spriteRenderer successfully!');
         }
@@ -12532,25 +12904,52 @@ window.addEventListener('DOMContentLoaded', () => {
         if (game && !game._hdHooked) {
           game._hdHooked = true;
 
+          // Hook renderBackground (Replaces flat 16-bit mounds with Next-Gen Painterly Wonder Landscapes)
+          const origRenderBackground = game.renderBackground;
+          game.renderBackground = function (ctx) {
+            if (self.enabled) {
+              self.renderNextGenBackground(ctx, this);
+              return;
+            }
+            origRenderBackground.call(this, ctx);
+          };
+
+          // Hook render (Passes Foreground Depth, Weather & Lighting)
           const origRender = game.render;
           game.render = function () {
-            // If HD Mode is active, update weather
+            // If HD Mode is active, update weather & smoke
             if (self.enabled && this.state === 'PLAYING') {
               const dt = 1 / 60;
               self.updateWeather(dt, this.level ? this.level.theme : 1);
+
+              // Spawn runner skid smoke if reversing direction at speed
+              if (this.player && this.player.grounded && Math.abs(this.player.vx) > 3) {
+                if (Math.random() < 0.28) {
+                  self.smokeParticles.push({
+                    x: this.player.x + this.player.w / 2 - (this.cameraX || 0),
+                    y: this.player.y + this.player.h - 2,
+                    vx: -Math.sign(this.player.vx) * (0.8 + Math.random() * 1.2),
+                    vy: -(0.5 + Math.random() * 0.8),
+                    size: 3 + Math.random() * 3,
+                    alpha: 0.7
+                  });
+                }
+              }
             }
 
             // Execute base render
             origRender.call(this);
 
-            // If HD Mode is active, render lighting pass and weather over the screen
+            // If HD Mode is active, render foreground depth-of-field, lighting and weather
             if (self.enabled && (this.state === 'PLAYING' || this.state === 'VICTORY')) {
               const ctx = this.ctx;
+              self.renderForegroundDepth(ctx, this);
               self.renderLightingPass(ctx, this);
               self.renderWeather(ctx, this.level ? this.level.theme : 1);
             }
           };
 
+          // Hook renderHUD
           const origRenderHUD = game.renderHUD;
           game.renderHUD = function (ctx) {
             if (self.enabled) {
